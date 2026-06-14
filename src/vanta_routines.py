@@ -101,8 +101,11 @@ ROUTINES = (
         prompt=(
             "Run Urge Reset Mode immediately for porn, alcohol, doomscrolling, or "
             "late-night phone urges. Lead with a physical interruption, change of "
-            "room or environment, water, phone out of reach, and one short "
-            "replacement action. Keep it brief. Use correction over self-hate, "
+            "room or environment, water, and one short replacement action. Put the "
+            "phone across the room, outside the bedroom, in a drawer away from bed, "
+            "or plugged in somewhere Tony must stand up to reach. Never suggest "
+            "putting it under a pillow, beside the bed, or within reach from bed. "
+            "Keep it brief. Use correction over self-hate, "
             "with no shame spiral or moralizing. If alcohol withdrawal or immediate "
             "physical danger is described, advise appropriate urgent medical help. "
             + _SHARED_BOUNDARY
@@ -153,7 +156,31 @@ def resolve_active_vanta_routine(
         if previous and previous.id in {
             "morning-command-brief",
             "night-shutdown-review",
-        }:
+        } and _looks_like_checkin_answer(message, previous.id):
             return previous
         break
     return None
+
+
+def _looks_like_checkin_answer(message: str, routine_id: str) -> bool:
+    normalized = " ".join(str(message or "").lower().split())
+    if not normalized:
+        return False
+    if routine_id == "morning-command-brief":
+        signals = (
+            "energy", "mood", "sleep", "slept", "deadline", "avoiding",
+            "gym", "body", "job", "work", "money", "housing", "bid",
+            "admin", "room", "learning", "spiritual", "fatherhood",
+        )
+        return any(signal in normalized for signal in signals) or bool(
+            re.search(r"\b(?:energy|mood)\s*(?:is|:)?\s*\d{1,2}\b", normalized)
+        )
+    if routine_id == "night-shutdown-review":
+        signals = (
+            "done", "completed", "missed", "carried", "carry", "tomorrow",
+            "gym", "body", "job", "work", "money", "housing", "bid",
+            "admin", "room", "learning", "spiritual", "fatherhood",
+            "porn", "alcohol", "doomscroll",
+        )
+        return any(signal in normalized for signal in signals)
+    return False

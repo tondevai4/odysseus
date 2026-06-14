@@ -624,7 +624,7 @@ def setup_chat_routes(
         active_doc = None
         _doc_db = SessionLocal()
         try:
-            if active_doc_id:
+            if active_doc_id and not incognito:
                 logger.info(f"[doc-inject] active_doc_id from frontend: {active_doc_id}")
                 # Scope to the caller's documents. The session and in-memory
                 # fallbacks below are already owner/session-bound; this
@@ -653,7 +653,7 @@ def setup_chat_routes(
                         logger.info(f"[doc-inject] found by ID: title={active_doc.title!r}, lang={active_doc.language!r}, is_active={active_doc.is_active}, content_len={len(active_doc.current_content or '')}")
                 else:
                     logger.warning(f"[doc-inject] NOT FOUND by ID {active_doc_id}")
-            if not active_doc:
+            if not incognito and not active_doc:
                 _session_doc_q = _doc_db.query(DBDocument).filter(
                     DBDocument.session_id == session,
                     DBDocument.is_active == True
@@ -667,7 +667,7 @@ def setup_chat_routes(
             # neither lookup above can associate them with this conversation,
             # so the agent never sees what it just wrote. Guarded so we never
             # leak a doc that belongs to a DIFFERENT session.
-            if not active_doc:
+            if not incognito and not active_doc:
                 try:
                     from src.agent_tools.document_tools import get_active_document
                     _mem_id = get_active_document()
@@ -687,6 +687,8 @@ def setup_chat_routes(
             logger.warning(f"Failed to query active document: {e}")
         finally:
             _doc_db.close()
+        if incognito:
+            active_doc = None
 
         # Build disabled-tools set from frontend toggles + user privileges
         disabled_tools = set()
@@ -707,6 +709,8 @@ def setup_chat_routes(
                 "manage_memory",      # persistent memory store
                 "search_chats",       # past chat history
                 "manage_skills",      # skill presets tied to user
+                "manage_notes",       # private notes
+                "manage_documents",   # private Library documents
             })
 
         # Enforce per-user privileges
@@ -817,17 +821,17 @@ def setup_chat_routes(
                     f'data: {json.dumps({"type": "doc_update", **_opened})}\n\n'
                 )
 
-            if ctx.rag_sources:
+            if not incognito and ctx.rag_sources:
                 yield f"data: {json.dumps({'type': 'rag_sources', 'data': ctx.rag_sources})}\n\n"
 
-            if ctx.brain_sources:
+            if not incognito and ctx.brain_sources:
                 yield f"data: {json.dumps({'type': 'brain_sources', 'data': ctx.brain_sources})}\n\n"
 
             if web_sources:
                 yield f"data: {json.dumps({'type': 'web_sources', 'data': web_sources})}\n\n"
 
             # Emit which memories were injected into context (captured before stream)
-            if ctx.used_memories:
+            if not incognito and ctx.used_memories:
                 yield f"data: {json.dumps({'type': 'memories_used', 'data': ctx.used_memories})}\n\n"
 
             # Run research as a background task (survives page refresh)
