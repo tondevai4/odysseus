@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
-<title>Odysseus — Login</title>
+<title>Vanta — Login</title>
+<script src="/static/branding.js"></script>
 <script nonce="{{CSP_NONCE}}">
 (function(){
   // Per-theme bg-effect defaults — mirrors THEME_DEFAULT_* maps in
@@ -89,8 +90,8 @@
      localStorage — renders the login page in the same palette as the rest
      of the app instead of a different greys+offwhite scheme. */
   :root {
-    --bg: #282c34; --fg: #9cdef2; --panel: #111; --border: #355a66;
-    --red: #e06c75; --green: #50fa7b;
+    --bg: #09090b; --fg: #e5e7eb; --panel: #111114; --border: #2d2d33;
+    --red: #c1122f; --green: #50fa7b;
     --bg-effect-intensity: 1;
   }
   /* Background patterns — mirrors static/style.css "Background Patterns"
@@ -127,9 +128,7 @@
        login form. */
     position: relative; z-index: 1;
   }
-  .logo {
-    text-align: center; margin-bottom: 1.5rem;
-  }
+  .logo { text-align: center; margin-bottom: 0.45rem; }
   .logo span {
     font-family: 'Fira Code', monospace;
     font-size: 2rem; font-weight: 600;
@@ -142,6 +141,7 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .brand-tagline { color: color-mix(in srgb, var(--fg) 58%, transparent); font-size: 0.72rem; margin-bottom: 1.5rem; text-align: center; letter-spacing: 0.08em; text-transform: uppercase; }
   .setup-note { color: color-mix(in srgb, var(--fg) 60%, transparent); font-size: 0.8rem; margin-bottom: 1rem; text-align: center; }
   label { display: block; font-size: 0.85rem; margin-bottom: 0.3rem; color: color-mix(in srgb, var(--fg) 65%, transparent); }
   input:not(.remember-check) {
@@ -249,9 +249,8 @@
 </head>
 <body>
 <main class="card">
-  <h1 class="logo">
-    <svg class="logo-boat" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 4L16 22L6 22Z" fill="currentColor"/><path d="M16 8L16 22L24 22Z" fill="currentColor" opacity="0.6"/><path d="M4 24Q10 20 16 24Q22 28 28 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg><span>Odysseus</span>
-  </h1>
+  <h1 class="logo"><span data-brand-wordmark>VANTA</span></h1>
+  <p class="brand-tagline" data-brand-tagline>A better you every day</p>
   <p class="setup-note" id="setupNote" style="display:none"></p>
 
   <div class="error" id="error" role="alert" aria-live="assertive"></div>

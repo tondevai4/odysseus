@@ -1,5 +1,5 @@
 /* ============================================ */
-/* Odysseus UI — Consolidated Stylesheet        */
+/* Vanta UI — Consolidated Stylesheet           */
 /* ============================================ */
 
 
@@ -17,11 +17,11 @@
 
 :root {
   /* Core palette */
-  --bg: #282c34;
-  --fg: #9cdef2;
-  --panel: #111;
-  --border: #355a66;
-  --red: #e06c75;
+  --bg: #09090b;
+  --fg: #e5e7eb;
+  --panel: #111114;
+  --border: #2d2d33;
+  --red: #c1122f;
   /* Were `var(--green)` / `var(--warn)` — self-referential, so they
      resolved to invalid and every site fell back to its own literal
      (or, for sites with no fallback, painted as transparent/inherit).
@@ -562,9 +562,10 @@ body.bg-pattern-sparkles {
     }
     .sidebar-brand-title {
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1.35;
       color: var(--brand-color, var(--red));
+      letter-spacing: 0.18em;
       white-space: nowrap;
       user-select: none;
       position: relative;
@@ -1875,6 +1876,13 @@ body.bg-pattern-sparkles {
       opacity:0.6;
       line-height:1.5;
       max-width:300px;
+    }
+    #welcome-screen .welcome-tagline {
+      margin-top: 0.45rem;
+      color: color-mix(in srgb, var(--fg) 45%, transparent);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
     #welcome-screen .welcome-version {
       font-size:0.7rem;
