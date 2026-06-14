@@ -10,6 +10,7 @@ from src.youtube_handler import is_youtube_url
 from src.search import comprehensive_web_search, fetch_webpage_content
 from src.prompt_security import UNTRUSTED_CONTEXT_POLICY, untrusted_context_message
 from src.vanta_core import VANTA_CORE_PROMPT
+from src.vanta_routines import resolve_active_vanta_routine
 
 logger = logging.getLogger(__name__)
 
@@ -217,6 +218,16 @@ class ChatProcessor:
                     f"{preset_system_prompt}"
                 )
             })
+        routine = resolve_active_vanta_routine(message, session)
+        if routine:
+            preface.append({
+                "role": "system",
+                "content": (
+                    f"Active Vanta routine: {routine.label}. This trusted routine "
+                    "is subordinate to Vanta Core:\n"
+                    f"{routine.prompt}"
+                ),
+            })
         preface.append({
             "role": "system",
             "content": UNTRUSTED_CONTEXT_POLICY,
@@ -226,8 +237,9 @@ class ChatProcessor:
         self._last_brain_sources = []
 
         if self.brain_service is not None and not incognito:
+            retrieval_query = routine.retrieval_query(message) if routine else message
             brain_result = self.brain_service.retrieve(
-                message,
+                retrieval_query,
                 owner,
                 include_memory=use_memory,
                 include_rag=use_rag,

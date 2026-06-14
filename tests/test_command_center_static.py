@@ -34,3 +34,20 @@ def test_command_center_navigation_and_actions_are_frontend_only():
     assert "rail-command-center" in app
     assert "notesModule.openPanel()" in app
     assert "fetch(" not in module
+
+
+def test_command_center_exposes_four_chat_routines():
+    index = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    app = (ROOT / "static" / "app.js").read_text(encoding="utf-8")
+    module = (ROOT / "static" / "js" / "commandCenter.js").read_text(encoding="utf-8")
+
+    assert index.count('data-command-center-action="routine"') == 4
+    for prompt in (
+        "Start my Morning Command Brief.",
+        "Start my Night Shutdown Review.",
+        "I'm overwhelmed. Start Panic / Brain Shutdown Mode.",
+        "Start Urge Reset Mode.",
+    ):
+        assert prompt in index
+    assert "chatForm.requestSubmit()" in app
+    assert "routinePrompt" in module
