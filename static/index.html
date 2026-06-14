@@ -657,6 +657,7 @@
     <!-- Static: core actions -->
     <button class="icon-rail-btn" id="rail-search-btn" title="Search conversations (Ctrl+K)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M21 21l-4.35-4.35"/></svg></button>
     <button class="icon-rail-btn rail-new-chat" id="rail-new-session" title="New chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button class="icon-rail-btn" id="rail-command-center" title="Command Center" aria-label="Open Command Center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
     <button class="icon-rail-btn" id="rail-delete-session" title="Delete session">&#x2715;</button>
     <div class="rail-separator"></div>
     <!-- Dynamic contextual indicators (shown only while active) -->
@@ -691,6 +692,12 @@
       <div class="list-item" id="sidebar-new-chat-btn" title="New chat">
         <svg class="sidebar-action-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;left:-2px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span class="grow" style="position:relative;left:-3px;">New Chat</span>
+      </div>
+      <div class="list-item" id="sidebar-command-center-btn" title="Open Command Center">
+        <svg class="sidebar-action-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span class="grow">Command Center</span>
       </div>
       <div class="list-item" id="sidebar-search-btn" title="Search conversations (Ctrl+K)">
         <svg class="sidebar-action-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -944,6 +951,60 @@
       <div class="welcome-name" data-brand-wordmark>VANTA</div>
       <div class="welcome-sub vanta-greeting" id="welcome-sub" data-brand-greeting>Morning, Boss. What are we handling today?</div>
       <div class="welcome-tagline" data-brand-tagline>A better you every day</div>
+      <section class="command-center" id="command-center" aria-labelledby="command-center-title">
+        <div class="command-center-header">
+          <div>
+            <div class="command-center-kicker">Vanta // Command System</div>
+            <h2 id="command-center-title">Command Center</h2>
+          </div>
+          <div class="command-center-status" aria-label="Command Center ready">
+            <span class="command-center-status-dot" aria-hidden="true"></span>
+            <span>System ready</span>
+          </div>
+        </div>
+        <div class="command-center-grid">
+          <article class="command-card command-card-wide" aria-labelledby="command-card-tasks-title">
+            <div class="command-card-topline"><span>01</span><span>Today</span></div>
+            <h3 id="command-card-tasks-title">Today&rsquo;s Tasks</h3>
+            <p>Turn today&rsquo;s priorities into a simple todo note. Keep the list short, specific, and ready to act on.</p>
+            <button type="button" class="command-card-action" data-command-center-action="notes">
+              Open Notes <span aria-hidden="true">&rarr;</span>
+            </button>
+          </article>
+          <article class="command-card command-card-wide" aria-labelledby="command-card-career-title">
+            <div class="command-card-topline"><span>02</span><span>Mission</span></div>
+            <h3 id="command-card-career-title">Career / Labouring Mission</h3>
+            <p>Organise labouring opportunities, CSCS progress, carpentry goals, interview preparation, and application follow-ups.</p>
+            <button type="button" class="command-card-action" data-command-center-action="notes">
+              Open Mission Notes <span aria-hidden="true">&rarr;</span>
+            </button>
+          </article>
+          <article class="command-card" aria-labelledby="command-card-money-title">
+            <div class="command-card-topline"><span>03</span><span>Manual</span></div>
+            <h3 id="command-card-money-title">Money</h3>
+            <p>Use a private note for manual income, bills, and spending checkpoints. No balances or calculations are generated here.</p>
+            <button type="button" class="command-card-action" data-command-center-action="notes">
+              Open Money Notes <span aria-hidden="true">&rarr;</span>
+            </button>
+          </article>
+          <article class="command-card" aria-labelledby="command-card-habits-title">
+            <div class="command-card-topline"><span>04</span><span>Routine</span></div>
+            <h3 id="command-card-habits-title">Habits</h3>
+            <p>Create a checklist note for the routines you want to repeat. Start with one habit that moves the day forward.</p>
+            <button type="button" class="command-card-action" data-command-center-action="notes">
+              Open Habit Notes <span aria-hidden="true">&rarr;</span>
+            </button>
+          </article>
+          <article class="command-card" aria-labelledby="command-card-housing-title">
+            <div class="command-card-topline"><span>05</span><span>Tracker</span></div>
+            <h3 id="command-card-housing-title">Housing Bids</h3>
+            <p>Keep property references, bid dates, areas, deadlines, and follow-up notes together in one manual tracker.</p>
+            <button type="button" class="command-card-action" data-command-center-action="notes">
+              Open Housing Notes <span aria-hidden="true">&rarr;</span>
+            </button>
+          </article>
+        </div>
+      </section>
       <div class="welcome-tip" id="welcome-tip"></div>
       <button type="button" class="incognito-btn" id="incognito-btn" title="Enable Nobody mode — no memory, no history saved">
         <svg class="eye-open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

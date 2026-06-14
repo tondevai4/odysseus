@@ -27,6 +27,7 @@ import calendarModule from './js/calendar.js';
 import notesModule from './js/notes.js';
 import adminModule from './js/admin.js';
 import settingsModule from './js/settings.js';
+import commandCenterModule from './js/commandCenter.js';
 // Eagerly bind unified minimize/restore behavior across all tool modals.
 import './js/modalManager.js';
 // Desktop window tiling — drag a modal near an edge/corner to snap.
@@ -681,6 +682,19 @@ function initializeEventListeners() {
     // Clear character/persona
     if (presetsModule && presetsModule.deactivateCharacter) presetsModule.deactivateCharacter();
   }
+
+  function _openCommandCenter() {
+    if (_closeCompareIfActive()) return;
+    if (notesModule && notesModule.isPanelOpen && notesModule.isPanelOpen()) notesModule.closePanel();
+    if (tasksModule && tasksModule.isTasksOpen && tasksModule.isTasksOpen()) tasksModule.closeTasks();
+    if (calendarModule && calendarModule.isCalendarOpen && calendarModule.isCalendarOpen()) calendarModule.closeCalendar();
+    _startFreshChat();
+    document.querySelectorAll('.session-item.active').forEach(s => s.classList.remove('active'));
+  }
+
+  [el('sidebar-command-center-btn'), el('rail-command-center')].filter(Boolean).forEach((button) => {
+    button.addEventListener('click', _openCommandCenter);
+  });
 
   /** Sync Research indicator button + overflow + tool sidebar active state. */
   function _syncResearchIndicator(active) {
@@ -3373,6 +3387,11 @@ function startOdysseusApp() {
 
   // Initialize all event listeners
   try { initializeEventListeners(); } catch(e) { console.error('Event init error:', e); }
+  commandCenterModule.init({
+    openNotes: () => {
+      if (notesModule && notesModule.openPanel) notesModule.openPanel();
+    },
+  });
 
   // Reveal the toolbar now that all toggle/overflow state is resolved
   // (hidden via inline style="visibility:hidden" in HTML to prevent FOUC)
