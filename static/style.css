@@ -2085,38 +2085,27 @@ body.bg-pattern-sparkles {
     }
     .command-routines-heading span:first-child { color: #b9b9bf; }
     .command-routines-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 9px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .command-routine {
       min-width: 0;
-      padding: 11px 12px;
+      padding: 8px 13px;
       border: 1px solid rgba(255, 255, 255, 0.075);
-      border-radius: 13px;
+      border-radius: 999px;
       background: rgba(255, 255, 255, 0.025);
       color: #a9a9af;
       font-family: inherit;
-      text-align: left;
+      text-align: center;
       cursor: pointer;
       transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
     }
     .command-routine span {
-      display: block;
-      margin-bottom: 4px;
-      color: #77777d;
-      font-size: 0.56rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    .command-routine strong {
-      display: block;
-      overflow: hidden;
+      display: inline;
       color: #d9d9dd;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 600;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
     .command-routine:hover,
@@ -2126,7 +2115,7 @@ body.bg-pattern-sparkles {
       background: rgba(193, 18, 31, 0.07);
       outline: none;
     }
-    .command-routine-urgent strong { color: #efc8cc; }
+    .command-routine-urgent span { color: #efc8cc; }
     /* Incognito toggle — on welcome screen */
     .incognito-btn {
       pointer-events: auto;
@@ -2195,7 +2184,11 @@ body.bg-pattern-sparkles {
         padding: 14px;
       }
       .command-routines-heading span:last-child { display: none; }
-      .command-routines-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .command-routines-grid { gap: 7px; }
+      .command-routine {
+        flex: 1 1 calc(50% - 7px);
+        padding: 9px 10px;
+      }
       .chat-container.welcome-active .chat-input-bar {
         margin-bottom:0;
         margin-left:0;

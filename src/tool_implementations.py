@@ -1353,9 +1353,62 @@ async def do_manage_notes(content: str, owner: Optional[str] = None) -> Dict:
             # link with no target, leaving the user with a click that
             # did nothing and uncertainty about whether the note was made.
             return {
-                "response": f"Note created: \"{title or '(untitled)'}\" (id: {note.id[:8]})",
+                "response": "Done, Boss. Saved to Notes.",
                 "note_id": note.id,
                 "note_title": title or "",
+                "open_url": f"/#open=notes&note={note.id}",
+                "exit_code": 0,
+            }
+
+        elif action == "append":
+            title = (args.get("title") or "").strip()
+            if not title:
+                return {"error": "A clear note title is required for append.", "exit_code": 1}
+
+            q = db.query(Note).filter(Note.archived == False)  # noqa: E712
+            if owner is not None:
+                q = q.filter(Note.owner == owner)
+            matches = [
+                note for note in q.limit(100).all()
+                if _norm_note_title(note.title or "") == _norm_note_title(title)
+            ]
+            if not matches:
+                return {"error": f'Note "{title}" was not found.', "exit_code": 1}
+            if len(matches) > 1:
+                return {
+                    "error": f'More than one note is called "{title}". Open Notes and choose the right one.',
+                    "exit_code": 1,
+                }
+
+            note = matches[0]
+            checklist_items = args.get("checklist_items")
+            if checklist_items is None:
+                checklist_items = args.get("items")
+            if note.note_type == "checklist":
+                if not isinstance(checklist_items, list) or not checklist_items:
+                    text = (args.get("content") or args.get("text") or args.get("body") or "").strip()
+                    checklist_items = [{"text": text, "done": False}] if text else []
+                if not checklist_items:
+                    return {"error": "Checklist items are required for append.", "exit_code": 1}
+                try:
+                    current_items = json.loads(note.items or "[]")
+                except (json.JSONDecodeError, TypeError):
+                    current_items = []
+                current_items.extend(checklist_items)
+                note.items = json.dumps(current_items)
+                flag_modified(note, "items")
+            else:
+                addition = (args.get("content") or args.get("text") or args.get("body") or "").strip()
+                if not addition:
+                    return {"error": "Note text is required for append.", "exit_code": 1}
+                current = (note.content or "").rstrip()
+                note.content = f"{current}\n\n{addition}" if current else addition
+
+            db.commit()
+            return {
+                "response": "Done, Boss. Saved to Notes.",
+                "note_id": note.id,
+                "note_title": note.title or "",
                 "open_url": f"/#open=notes&note={note.id}",
                 "exit_code": 0,
             }
@@ -1429,7 +1482,7 @@ async def do_manage_notes(content: str, owner: Optional[str] = None) -> Dict:
             return {"response": f"Item '{items[index].get('text', '')}' marked {mark}", "exit_code": 0}
 
         else:
-            return {"error": f"Unknown action: {action}. Use list/add/update/delete/toggle_item", "exit_code": 1}
+            return {"error": f"Unknown action: {action}. Use list/add/append/update/delete/toggle_item", "exit_code": 1}
     except Exception as e:
         logger.error(f"manage_notes error: {e}")
         return {"error": str(e), "exit_code": 1}

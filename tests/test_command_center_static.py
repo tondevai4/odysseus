@@ -12,7 +12,8 @@ def test_command_center_is_part_of_the_existing_welcome_screen():
     welcome = index[welcome_start:welcome_end]
 
     assert 'id="command-center"' in welcome
-    assert "Morning, Boss. What are we handling today?" in welcome
+    assert "data-brand-greeting" in welcome
+    assert "data-brand-home-tagline" in welcome
     for title in (
         "Today&rsquo;s Tasks",
         "Career / Labouring Mission",
@@ -51,3 +52,12 @@ def test_command_center_exposes_four_chat_routines():
         assert prompt in index
     assert "chatForm.requestSubmit()" in app
     assert "routinePrompt" in module
+
+
+def test_command_center_uses_compact_routine_labels():
+    index = (ROOT / "static" / "index.html").read_text(encoding="utf-8")
+    styles = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
+
+    for label in ("Morning Brief", "Shutdown Review", "Brain Shutdown", "Urge Reset"):
+        assert f"<span>{label}</span>" in index
+    assert "border-radius: 999px" in styles
