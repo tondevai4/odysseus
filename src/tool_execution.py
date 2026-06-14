@@ -34,6 +34,29 @@ from src.tool_utils import _truncate, get_mcp_manager
 _AGENT_WORKDIR = DATA_DIR
 
 
+def _guard_chat_note_action(content: str) -> Optional[Tuple[str, Dict]]:
+    """Block destructive Notes mutations from the chat tool surface."""
+    try:
+        note_args = json.loads((content or "").strip())
+    except (ValueError, TypeError):
+        note_args = {}
+    note_action = str(note_args.get("action", "")).replace("-", "_").strip().lower()
+    if note_action in {"delete", "remove"}:
+        return "manage_notes: BLOCKED", {
+            "error": "Notes cannot be deleted from chat. Open Notes to review and delete them yourself.",
+            "exit_code": 1,
+        }
+    if note_action in {"update", "replace", "archive"}:
+        return "manage_notes: CONFIRMATION_REQUIRED", {
+            "error": (
+                "Chat will not overwrite, replace, rename, or archive note content. "
+                "Ask to append to a clearly named note, or make the change in Notes."
+            ),
+            "exit_code": 1,
+        }
+    return None
+
+
 
 # ---------------------------------------------------------------------------
 # Path confinement for read_file / write_file
@@ -618,6 +641,11 @@ async def _execute_tool_block_impl(
         }
         logger.warning("Public tool policy blocked owner=%r tool=%s", owner, tool)
         return desc, result
+
+    if tool == "manage_notes":
+        note_guard = _guard_chat_note_action(content)
+        if note_guard:
+            return note_guard
 
     # ask_user: the agent poses a multiple-choice question to the user to get a
     # decision/clarification. This is a pure UI-control marker — no subprocess,

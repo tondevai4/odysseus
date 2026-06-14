@@ -885,7 +885,7 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
       var roleLabel = _modelRouteLabel(modelName, modelName);
       var _charNameInit = presetsModule.getCharacterName ? presetsModule.getCharacterName() : '';
       if (_charNameInit) roleLabel = _charNameInit;
-      const roleTs = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const roleTs = chatRenderer.formatMessageTimestamp();
       holder.innerHTML = `<div class="role">${uiModule.esc(roleLabel)} <span class="role-timestamp">${roleTs}</span></div><div class="body"></div>`;
       holder._requestedModel = modelName;
       holder._actualModel = modelName;
@@ -3376,7 +3376,7 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
     holder.className = 'msg msg-ai';
     const meta = sessionModule.getSessions().find(s => s.id === sessionId);
     const roleLabel = _shortModel(meta && meta.model);
-    const roleTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const roleTs = chatRenderer.formatMessageTimestamp();
     holder.innerHTML = '<div class="role">' + uiModule.esc(roleLabel) +
       ' <span class="role-timestamp">' + roleTs + '</span></div>' +
       '<div class="body"><div class="stream-content"></div></div>';
@@ -3533,7 +3533,7 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
       holder.className = 'msg msg-ai';
       var meta = sessionModule.getSessions().find(function(s) { return s.id === sessionId; });
       var roleLabel = _shortModel(meta && meta.model);
-      var roleTs = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      var roleTs = chatRenderer.formatMessageTimestamp();
       holder.innerHTML = '<div class="role">' + uiModule.esc(roleLabel) + ' <span class="role-timestamp">' + roleTs + '</span></div><div class="body"></div>';
       _applyModelColor(holder.querySelector('.role'), meta && meta.model);
 
@@ -4333,7 +4333,7 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
       const holder = document.createElement('div');
       holder.className = 'msg msg-ai research-reconnect';
       holder.dataset.researchSession = sessionId;
-      const roleTs = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const roleTs = chatRenderer.formatMessageTimestamp();
       const agentMeta = sessionModule.getSessions().find(s => s.id === sessionModule.getCurrentSessionId());
       const agentModelLabel = _shortModel(agentMeta?.model);
       holder.innerHTML = `<div class="role">${uiModule.esc(agentModelLabel)} <span class="role-timestamp">${roleTs}</span></div><div class="body"></div>`;

@@ -35,6 +35,11 @@ def test_note_todo_and_reminder_actions_promote_to_agent():
     assert message_needs_tools("add milk to my todo list")
     assert message_needs_tools("take a note that the server needs checking")
     assert message_needs_tools("set a reminder to call Pat at 4pm")
+    assert message_needs_tools("Make me a note called Work Leads saying call the agency")
+    assert message_needs_tools("Add this to a note called Work Leads")
+    assert message_needs_tools("Make a checklist note called Tomorrow with gym and housing")
+    assert message_needs_tools("Delete the note called Test")
+    assert message_needs_tools("Overwrite my note called Test")
 
 
 def test_email_and_ui_actions_promote_to_agent():

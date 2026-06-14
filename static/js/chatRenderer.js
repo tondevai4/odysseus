@@ -833,16 +833,32 @@ export function updateSessionCostUI() {
 /** Create a timestamp span for role labels.
  * Pass an ISO string / Date / epoch-ms to render the message's own time
  * (used when replaying history). Falls back to "now" when no value is given. */
-export function roleTimestamp(when) {
-  const ts = document.createElement('span');
-  ts.className = 'role-timestamp';
+export function formatMessageTimestamp(when) {
   let d;
   if (when instanceof Date) d = when;
   else if (typeof when === 'number') d = new Date(when);
   else if (typeof when === 'string' && when) d = new Date(when);
   else d = new Date();
   if (isNaN(d.getTime())) d = new Date();
-  ts.textContent = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  const date = d.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const time = d.toLocaleTimeString('en-GB', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+  return `${date} \u00b7 ${time}`;
+}
+
+export function roleTimestamp(when) {
+  const ts = document.createElement('span');
+  ts.className = 'role-timestamp';
+  let d = when instanceof Date ? when : (when ? new Date(when) : new Date());
+  if (isNaN(d.getTime())) d = new Date();
+  ts.textContent = formatMessageTimestamp(d);
   ts.title = d.toLocaleString();
   return ts;
 }
@@ -2479,6 +2495,7 @@ const chatRenderer = {
   getSessionCost,
   resetSessionCost,
   updateSessionCostUI,
+  formatMessageTimestamp,
   roleTimestamp,
   stripToolBlocks,
   copyMessageText,
