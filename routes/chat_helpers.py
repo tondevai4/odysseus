@@ -49,6 +49,7 @@ class ChatContext:
     """Everything needed to call the LLM after context-building."""
     preface: list
     rag_sources: list
+    brain_sources: list
     web_sources: list
     used_memories: list
     messages: list
@@ -593,6 +594,7 @@ async def build_chat_context(
 
     # Capture used memories immediately
     used_memories = getattr(chat_processor, '_last_used_memories', [])
+    brain_sources = getattr(chat_processor, '_last_brain_sources', [])
 
     # Inject pre-fetched search context (compare mode)
     if search_context and allow_tool_preprocessing:
@@ -644,6 +646,7 @@ async def build_chat_context(
     return ChatContext(
         preface=preface,
         rag_sources=rag_sources,
+        brain_sources=brain_sources,
         web_sources=web_sources,
         used_memories=used_memories,
         messages=messages,
@@ -862,6 +865,7 @@ def save_assistant_response(
     character_name: str = None,
     web_sources: list = None,
     rag_sources: list = None,
+    brain_sources: list = None,
     research_sources: list = None,
     used_memories: list = None,
     do_research: bool = False,
@@ -889,6 +893,8 @@ def save_assistant_response(
         md["web_sources"] = web_sources
     if rag_sources:
         md["rag_sources"] = rag_sources
+    if brain_sources:
+        md["brain_sources"] = brain_sources
     if research_sources:
         md["research_sources"] = research_sources
     if used_memories:

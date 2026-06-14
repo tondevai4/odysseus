@@ -1972,6 +1972,9 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
               } else if (json.type === 'rag_sources') {
                 if (_isBg) continue;
                 holder._ragSources = json.data;
+              } else if (json.type === 'brain_sources') {
+                if (_isBg) continue;
+                holder._brainSources = json.data;
               } else if (json.type === 'memories_used') {
                 if (_isBg) continue;
                 holder._memoriesUsed = json.data;
@@ -2718,8 +2721,32 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
         if (markdownModule.renderMermaid) markdownModule.renderMermaid(roundHolder);
 
         uiModule.scrollHistory();
-        // Render RAG sources if present
-        if (holder._ragSources && holder._ragSources.length) {
+        // Render unified Vanta Brain sources when available, retaining the
+        // legacy RAG-only presentation for older servers.
+        if (holder._brainSources && holder._brainSources.length) {
+          const details = document.createElement('details');
+          details.className = 'rag-sources brain-sources';
+          const summary = document.createElement('summary');
+          summary.textContent = `Vanta Brain (${holder._brainSources.length} sources)`;
+          details.appendChild(summary);
+          holder._brainSources.forEach(src => {
+            const item = document.createElement('div');
+            item.className = 'rag-source-item brain-source-item';
+            const heading = document.createElement('div');
+            heading.className = 'brain-source-heading';
+            const sourceType = document.createElement('span');
+            sourceType.textContent = String(src.source || 'source').toUpperCase();
+            const label = document.createElement('strong');
+            label.textContent = src.label || 'Untitled';
+            heading.append(sourceType, label);
+            const snippet = document.createElement('div');
+            snippet.className = 'rag-snippet';
+            snippet.textContent = src.text || '';
+            item.append(heading, snippet);
+            details.appendChild(item);
+          });
+          holder.querySelector('.body').appendChild(details);
+        } else if (holder._ragSources && holder._ragSources.length) {
           const details = document.createElement('details');
           details.className = 'rag-sources';
           const summary = document.createElement('summary');
@@ -3425,6 +3452,7 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
           } else if (json.type === 'tool_start' || json.type === 'tool_output' ||
                      json.type === 'tool_progress' || json.type === 'agent_step' ||
                      json.type === 'web_sources' || json.type === 'rag_sources' ||
+                     json.type === 'brain_sources' ||
                      json.type === 'research_progress' || json.type === 'research_sources' ||
                      json.type === 'research_findings' || json.type === 'research_done') {
             rich = true;

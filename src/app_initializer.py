@@ -22,6 +22,7 @@ from src.chat_handler import ChatHandler
 from src.research_handler import ResearchHandler
 from src.upload_handler import UploadHandler
 from src.search import update_search_config
+from services.vanta_brain import VantaBrainService
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,18 @@ def initialize_managers(base_dir: str, rag_manager=None) -> Dict[str, Any]:
     ])
 
     # Initialize processors
-    chat_processor = ChatProcessor(memory_manager, personal_docs_manager, memory_vector=memory_vector, skills_manager=skills_manager)
+    brain_service = VantaBrainService(
+        memory_manager,
+        personal_docs_manager,
+        memory_vector=memory_vector,
+    )
+    chat_processor = ChatProcessor(
+        memory_manager,
+        personal_docs_manager,
+        memory_vector=memory_vector,
+        skills_manager=skills_manager,
+        brain_service=brain_service,
+    )
     research_handler = ResearchHandler()
     
     # Initialize chat handler with all dependencies
@@ -112,6 +124,7 @@ def initialize_managers(base_dir: str, rag_manager=None) -> Dict[str, Any]:
         "api_key_manager": api_key_manager,
         "preset_manager": preset_manager,
         "chat_processor": chat_processor,
+        "brain_service": brain_service,
         "research_handler": research_handler,
         "chat_handler": chat_handler,
         "model_discovery": model_discovery,

@@ -1,6 +1,6 @@
 let _initialized = false;
 
-function init({ openNotes, openHousingBids } = {}) {
+function init({ openNotes, openHousingBids, openBrainHealth } = {}) {
   if (_initialized) return;
 
   const commandCenter = document.getElementById('command-center');
@@ -18,6 +18,12 @@ function init({ openNotes, openHousingBids } = {}) {
       && typeof openHousingBids === 'function'
     ) {
       openHousingBids();
+    }
+    if (
+      action.dataset.commandCenterAction === 'brain-health'
+      && typeof openBrainHealth === 'function'
+    ) {
+      openBrainHealth();
     }
   });
 

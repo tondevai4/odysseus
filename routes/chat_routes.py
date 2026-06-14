@@ -820,6 +820,9 @@ def setup_chat_routes(
             if ctx.rag_sources:
                 yield f"data: {json.dumps({'type': 'rag_sources', 'data': ctx.rag_sources})}\n\n"
 
+            if ctx.brain_sources:
+                yield f"data: {json.dumps({'type': 'brain_sources', 'data': ctx.brain_sources})}\n\n"
+
             if web_sources:
                 yield f"data: {json.dumps({'type': 'web_sources', 'data': web_sources})}\n\n"
 
@@ -1111,6 +1114,7 @@ def setup_chat_routes(
                                     character_name=ctx.preset.character_name,
                                     web_sources=web_sources,
                                     rag_sources=ctx.rag_sources,
+                                    brain_sources=ctx.brain_sources,
                                     research_sources=research_sources,
                                     used_memories=ctx.used_memories,
                                     do_research=effective_do_research,
@@ -1242,6 +1246,7 @@ def setup_chat_routes(
                                     character_name=ctx.preset.character_name,
                                     web_sources=web_sources,
                                     rag_sources=ctx.rag_sources,
+                                    brain_sources=ctx.brain_sources,
                                     used_memories=ctx.used_memories,
                                     incognito=incognito,
                                 )

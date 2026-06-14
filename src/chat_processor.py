@@ -9,6 +9,7 @@ from src.chat_helpers import extract_urls
 from src.youtube_handler import is_youtube_url
 from src.search import comprehensive_web_search, fetch_webpage_content
 from src.prompt_security import UNTRUSTED_CONTEXT_POLICY, untrusted_context_message
+from src.vanta_core import VANTA_CORE_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +43,19 @@ def _content_tokens(text: str) -> list:
 
 
 class ChatProcessor:
-    def __init__(self, memory_manager, personal_docs_manager, memory_vector=None, skills_manager=None):
+    def __init__(
+        self,
+        memory_manager,
+        personal_docs_manager,
+        memory_vector=None,
+        skills_manager=None,
+        brain_service=None,
+    ):
         self.memory_manager = memory_manager
         self.personal_docs_manager = personal_docs_manager
         self.memory_vector = memory_vector
         self.skills_manager = skills_manager
+        self.brain_service = brain_service
 
     # Minimum similarity score for RAG results to be injected
     RAG_SIMILARITY_THRESHOLD = 0.35
@@ -192,20 +201,58 @@ class ChatProcessor:
         preface = []
         rag_sources = []
 
-        # Add preset system prompt if specified
+        # Vanta Core is always first. Presets may overlay style/task focus but
+        # cannot replace the trusted identity, privacy, truthfulness, or
+        # approval rules in this prompt.
+        preface.append({
+            "role": "system",
+            "content": VANTA_CORE_PROMPT,
+        })
         if preset_system_prompt:
             preface.append({
                 "role": "system",
-                "content": preset_system_prompt
+                "content": (
+                    "Preset overlay, subordinate to Vanta Core. Apply only its "
+                    "style and task-focus instructions:\n"
+                    f"{preset_system_prompt}"
+                )
             })
         preface.append({
             "role": "system",
             "content": UNTRUSTED_CONTEXT_POLICY,
         })
 
-        # Memory: pinned (always included) + extended (RAG-retrieved when relevant)
         self._last_used_memories = []  # track what was injected
-        if use_memory:
+        self._last_brain_sources = []
+
+        if self.brain_service is not None and not incognito:
+            brain_result = self.brain_service.retrieve(
+                message,
+                owner,
+                include_memory=use_memory,
+                include_rag=use_rag,
+            )
+            self._last_used_memories = brain_result.used_memories
+            self._last_brain_sources = brain_result.public_sources()
+            rag_sources = brain_result.rag_sources
+            memory_ids = [
+                snippet.source_id
+                for snippet in brain_result.snippets
+                if snippet.source == "memory" and snippet.source_id
+            ]
+            if memory_ids and hasattr(self.memory_manager, "increment_uses"):
+                try:
+                    self.memory_manager.increment_uses(memory_ids)
+                except Exception:
+                    logger.warning("Failed to increment Vanta Brain memory uses", exc_info=True)
+            if brain_result.snippets:
+                preface.append(untrusted_context_message(
+                    "Vanta Brain retrieval",
+                    brain_result.context_text(),
+                ))
+        elif self.brain_service is None and use_memory and not incognito:
+            # Legacy fallback for callers that construct ChatProcessor without
+            # the unified Brain service.
             mem_entries = self.memory_manager.load(owner=owner)
 
             pinned = [m for m in mem_entries if m.get("pinned")]
@@ -249,8 +296,9 @@ class ChatProcessor:
             # (skills index injection moved out — see below; only fires in
             # agent mode so chat mode and incognito stay clean.)
 
-        # RAG: search if enabled and rag_manager available, inject only above threshold
-        if use_rag:
+        # Legacy RAG fallback. Production chat resolves Chroma dynamically
+        # through VantaBrainService on every retrieval.
+        if self.brain_service is None and use_rag and not incognito:
             try:
                 rag_manager = getattr(self.personal_docs_manager, 'rag_manager', None)
                 if rag_manager:

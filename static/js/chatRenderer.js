@@ -929,6 +929,25 @@ export function buildRagSourcesBox(sources) {
   return '<details class="rag-sources"><summary>Sources (' + sources.length + ' documents)</summary>' + items + '</details>';
 }
 
+/** Build the persisted Vanta Brain source box from bounded server metadata. */
+export function buildBrainSourcesBox(sources) {
+  if (!sources || !sources.length) return '';
+  var esc = uiModule.esc;
+  var items = sources.map(function(source) {
+    var sourceType = esc(String(source?.source || 'source').toUpperCase());
+    var label = esc(source?.label || 'Untitled');
+    var text = esc(source?.text || '');
+    return '<div class="rag-source-item brain-source-item">'
+      + '<div class="brain-source-heading"><span>' + sourceType + '</span><strong>' + label + '</strong></div>'
+      + '<div class="rag-snippet">' + text + '</div>'
+      + '</div>';
+  }).join('');
+  return '<details class="rag-sources brain-sources">'
+    + '<summary>Vanta Brain (' + sources.length + ' sources)</summary>'
+    + items
+    + '</details>';
+}
+
 /**
  * Build a collapsible "Raw collected findings" section, styled like the sources box.
  * @param {Array<{url, title, summary}>} findings
@@ -2039,7 +2058,9 @@ export function addMessage(role, content, modelName, metadata) {
             agentFindingsSuffix = buildFindingsBox(metadata.research_findings);
           }
           // RAG document sources — restored on the final text round.
-          if (isLastTextRound && metadata?.rag_sources?.length) {
+          if (isLastTextRound && metadata?.brain_sources?.length) {
+            agentFindingsSuffix += buildBrainSourcesBox(metadata.brain_sources);
+          } else if (isLastTextRound && metadata?.rag_sources?.length) {
             agentFindingsSuffix += buildRagSourcesBox(metadata.rag_sources);
           }
           body.innerHTML = agentSourcesPrefix + markdownModule.processWithThinking(markdownModule.squashOutsideCode(txt)) + agentFindingsSuffix;
@@ -2225,7 +2246,9 @@ export function addMessage(role, content, modelName, metadata) {
       findingsSuffix = buildFindingsBox(metadata.research_findings);
     }
     // RAG document sources — restored from metadata so they survive refresh.
-    if (role === 'assistant' && metadata?.rag_sources?.length) {
+    if (role === 'assistant' && metadata?.brain_sources?.length) {
+      findingsSuffix += buildBrainSourcesBox(metadata.brain_sources);
+    } else if (role === 'assistant' && metadata?.rag_sources?.length) {
       findingsSuffix += buildRagSourcesBox(metadata.rag_sources);
     }
     // If thinking is stored in metadata (not in text), reconstruct the full display
