@@ -504,6 +504,7 @@ api_key_manager   = components["api_key_manager"]
 preset_manager    = components["preset_manager"]
 chat_processor    = components["chat_processor"]
 brain_service     = components["brain_service"]
+finance_analyzer  = components["finance_analyzer"]
 research_handler  = components["research_handler"]
 app.state.research_handler = research_handler
 chat_handler      = components["chat_handler"]
@@ -572,6 +573,8 @@ from routes.skills_routes import setup_skills_routes
 app.include_router(setup_skills_routes(skills_manager))
 from routes.brain_routes import setup_brain_routes
 app.include_router(setup_brain_routes(brain_service))
+from routes.finance_routes import setup_finance_routes
+app.include_router(setup_finance_routes(finance_analyzer))
 
 # Chat
 from routes.chat_routes import setup_chat_routes

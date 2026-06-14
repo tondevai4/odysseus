@@ -7,6 +7,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from core.database import Document, Note, SessionLocal
@@ -128,6 +129,41 @@ def _housing_intent(query: str) -> bool:
     ))
 
 
+def _finance_intent(query: str) -> bool:
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
+    tokens = set(normalized.split())
+    if tokens & {"revolut", "statement", "spend", "spending", "spent"}:
+        return True
+    return any(phrase in normalized for phrase in (
+        "bank statement",
+        "money leaking",
+        "money leak",
+        "takeaway transport subscriptions",
+        "takeaway spending",
+        "transport spending",
+        "subscription spending",
+    ))
+
+
+def _finance_categories(query: str) -> List[str]:
+    normalized = (query or "").lower()
+    requested = []
+    aliases = {
+        "takeaway_fast_food": ("takeaway", "fast food", "deliveroo", "uber eats"),
+        "transport": ("transport", "taxi", "uber", "bolt", "bus", "train"),
+        "subscriptions_apps": ("subscription", "subscriptions", "apps", "app spending"),
+        "groceries": ("groceries", "grocery", "supermarket"),
+        "alcohol_vapes": ("alcohol", "vape", "vapes"),
+        "shopping_random": ("shopping",),
+        "cash_withdrawal": ("cash", "withdrawal", "atm"),
+        "transfer_to_person": ("person transfer", "transfers to people"),
+    }
+    for category, terms in aliases.items():
+        if any(term in normalized for term in terms):
+            requested.append(category)
+    return requested
+
+
 def _normalize_housing_entry(entry: Any) -> Optional[Dict[str, str]]:
     if not isinstance(entry, dict):
         return None
@@ -172,10 +208,17 @@ def _housing_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, str]]]:
 class VantaBrainService:
     """Collect small, labelled snippets without mutating source stores."""
 
-    def __init__(self, memory_manager, personal_docs_manager, memory_vector=None):
+    def __init__(
+        self,
+        memory_manager,
+        personal_docs_manager,
+        memory_vector=None,
+        finance_analyzer=None,
+    ):
         self.memory_manager = memory_manager
         self.personal_docs_manager = personal_docs_manager
         self.memory_vector = memory_vector
+        self.finance_analyzer = finance_analyzer
 
     def _resolve_rag(self):
         rag = get_rag_manager()
@@ -382,6 +425,115 @@ class VantaBrainService:
             errors.append({"source": "housing", "detail": "Housing preferences unavailable."})
             return []
 
+    def _finance_candidates(
+        self,
+        query: str,
+        owner: Optional[str],
+        errors: List[Dict[str, str]],
+    ) -> List[BrainSnippet]:
+        if not self.finance_analyzer or not _finance_intent(query):
+            return []
+        try:
+            documents = self.finance_analyzer.find_owner_statements(owner, limit=10)
+            requested_categories = _finance_categories(query)
+            this_month = "this month" in (query or "").lower()
+            month_prefix = datetime.now().strftime("%Y-%m") if this_month else ""
+            candidates = []
+
+            for document in documents:
+                try:
+                    analysis = self.finance_analyzer.analyze_document(
+                        str(document.id),
+                        owner,
+                    )
+                except (LookupError, ValueError, FileNotFoundError):
+                    continue
+                if not analysis.detected:
+                    continue
+                label = f"Revolut Statement: {_clean_text(document.title, 100)}"
+                if not analysis.transactions:
+                    candidates.append(BrainSnippet(
+                        source="finance",
+                        source_id=str(document.id),
+                        label=label,
+                        text=(
+                            "I found the statement but could not extract transaction rows. "
+                            "Upload CSV or text-based PDF."
+                        ),
+                        score=4.0,
+                        metadata={"document_id": str(document.id), "extractable": False},
+                    ))
+                    continue
+
+                rows = analysis.completed
+                if month_prefix:
+                    rows = [row for row in rows if row.date.startswith(month_prefix)]
+                category_totals = analysis.category_totals(rows)
+                if requested_categories:
+                    selected_totals = [
+                        f"{category.replace('_', ' ')}: GBP {category_totals[category]:.2f}"
+                        for category in requested_categories
+                    ]
+                else:
+                    selected_totals = [
+                        f"{category.replace('_', ' ')}: GBP {amount:.2f}"
+                        for category, amount in sorted(
+                            category_totals.items(),
+                            key=lambda item: item[1],
+                            reverse=True,
+                        )
+                        if amount > 0 and category != "internal_savings_transfer"
+                    ][:6]
+
+                examples = [
+                    row for row in rows
+                    if row.money_out
+                    and row.category != "internal_savings_transfer"
+                    and (not requested_categories or row.category in requested_categories)
+                ]
+                examples.sort(key=lambda row: (row.date, row.money_out), reverse=True)
+                example_lines = [
+                    f"{row.date}: {row.description} GBP {row.money_out:.2f} "
+                    f"({row.category.replace('_', ' ')}, page {row.page})"
+                    for row in examples[:8]
+                ]
+                period = (
+                    datetime.now().strftime("%B %Y")
+                    if this_month else
+                    f"{analysis.statement_start or 'unknown'} to {analysis.statement_end or 'unknown'}"
+                )
+                text = "\n".join(filter(None, [
+                    f"Period: {period}",
+                    f"External money out excluding internal savings: GBP {analysis.external_spend(rows):.2f}",
+                    "Category totals: " + "; ".join(selected_totals)
+                    if selected_totals else "Category totals: no matching completed spending.",
+                    "Recent matching transactions:\n" + "\n".join(example_lines)
+                    if example_lines else "Recent matching transactions: none.",
+                    (
+                        "Pending and reverted transactions are excluded from spending totals. "
+                        f"Pending: {len(analysis.pending)}; reverted: {len(analysis.reverted)}."
+                    ),
+                ]))
+                candidates.append(BrainSnippet(
+                    source="finance",
+                    source_id=str(document.id),
+                    label=label,
+                    text=_clean_text(text),
+                    score=4.0,
+                    metadata={
+                        "document_id": str(document.id),
+                        "statement_start": analysis.statement_start,
+                        "statement_end": analysis.statement_end,
+                        "extractable": True,
+                    },
+                ))
+                break
+            return candidates
+        except Exception:
+            logger.warning("Vanta Brain finance retrieval failed", exc_info=True)
+            errors.append({"source": "finance", "detail": "Statement analysis unavailable."})
+            return []
+
     def _rag_candidates(
         self,
         query: str,
@@ -449,6 +601,7 @@ class VantaBrainService:
             owner,
             result.errors,
         ))
+        candidates.extend(self._finance_candidates(query, owner, result.errors))
         if include_rag:
             rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
             candidates.extend(rag)

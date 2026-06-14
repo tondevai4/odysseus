@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from types import SimpleNamespace
 
 import services.vanta_brain as brain_module
 from core.database import Document, Note, SessionLocal
@@ -14,6 +15,7 @@ from services.vanta_brain import (
 )
 from src.chat_processor import ChatProcessor
 from src.vanta_core import VANTA_CORE_PROMPT
+from services.finance_statement_analyzer import FinanceStatementAnalyzer
 
 
 class _MemoryManager:
@@ -433,3 +435,65 @@ def test_brain_routes_return_health_and_preview(monkeypatch):
     assert health == {"overall": "ok", "owner": "alice"}
     assert preview["sources"][0]["label"] == "Mission"
     assert preview["limits"] == {"max_snippets": 8, "max_characters": 6000}
+
+
+def test_finance_intent_adds_bounded_statement_context():
+    analysis = FinanceStatementAnalyzer.parse_pages([
+        "\n".join([
+            "GBP Statement Generated on the 14 Jun 2026",
+            "Revolut Ltd",
+            "Balance summary",
+            " Total £10.00 £12.00 £20.00 £18.00",
+            "Account transactions from 1 June 2026 to 14 June 2026",
+            " Date                            Description"
+            "                                                                       Money out"
+            "                        Money in"
+            "                                  Balance",
+            " 10 Jun 2026                     Deliveroo"
+            "                                                                          £12.00"
+            "                                                                          £18.00",
+            "                                 To: Deliveroo, London",
+            " 11 Jun 2026                     Payment from WORK LTD"
+            "                                                                                                          £20.00"
+            "                                  £38.00",
+        ]),
+    ], document_id="finance-doc", document_title="June Revolut")
+
+    class _Finance:
+        def find_owner_statements(self, owner, limit=10):
+            assert owner == "alice"
+            return [SimpleNamespace(id="finance-doc", title="June Revolut")]
+
+        def analyze_document(self, document_id, owner):
+            assert (document_id, owner) == ("finance-doc", "alice")
+            return analysis
+
+    service = VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_Finance(),
+    )
+    sources = service._finance_candidates(
+        "What did I spend on takeaway this month?",
+        "alice",
+        [],
+    )
+
+    assert len(sources) == 1
+    assert sources[0].source == "finance"
+    assert "takeaway fast food: GBP 12.00" in sources[0].text
+    assert "Deliveroo" in sources[0].text
+    assert len(sources[0].text) <= 900
+
+
+def test_unrelated_query_does_not_open_finance_documents():
+    class _Finance:
+        def find_owner_statements(self, owner, limit=10):
+            raise AssertionError("finance should not run for unrelated queries")
+
+    service = VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_Finance(),
+    )
+    assert service._finance_candidates("Who are you?", "alice", []) == []

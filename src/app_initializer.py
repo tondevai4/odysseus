@@ -23,6 +23,7 @@ from src.research_handler import ResearchHandler
 from src.upload_handler import UploadHandler
 from src.search import update_search_config
 from services.vanta_brain import VantaBrainService
+from services.finance_statement_analyzer import FinanceStatementAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -80,10 +81,12 @@ def initialize_managers(base_dir: str, rag_manager=None) -> Dict[str, Any]:
     ])
 
     # Initialize processors
+    finance_analyzer = FinanceStatementAnalyzer(upload_handler)
     brain_service = VantaBrainService(
         memory_manager,
         personal_docs_manager,
         memory_vector=memory_vector,
+        finance_analyzer=finance_analyzer,
     )
     chat_processor = ChatProcessor(
         memory_manager,
@@ -125,6 +128,7 @@ def initialize_managers(base_dir: str, rag_manager=None) -> Dict[str, Any]:
         "preset_manager": preset_manager,
         "chat_processor": chat_processor,
         "brain_service": brain_service,
+        "finance_analyzer": finance_analyzer,
         "research_handler": research_handler,
         "chat_handler": chat_handler,
         "model_discovery": model_discovery,
