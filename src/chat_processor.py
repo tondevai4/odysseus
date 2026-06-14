@@ -228,6 +228,17 @@ class ChatProcessor:
                     f"{routine.prompt}"
                 ),
             })
+        if incognito:
+            preface.append({
+                "role": "system",
+                "content": (
+                    "Incognito/private mode is active. Do not retrieve or claim "
+                    "access to private notes, memories, housing bids, Library "
+                    "documents, or personal RAG. If Tony asks to use that private "
+                    "context, explain briefly that private retrieval is disabled "
+                    "in incognito and can be used after he leaves incognito."
+                ),
+            })
         preface.append({
             "role": "system",
             "content": UNTRUSTED_CONTEXT_POLICY,
@@ -243,6 +254,7 @@ class ChatProcessor:
                 owner,
                 include_memory=use_memory,
                 include_rag=use_rag,
+                housing_query=message,
             )
             self._last_used_memories = brain_result.used_memories
             self._last_brain_sources = brain_result.public_sources()

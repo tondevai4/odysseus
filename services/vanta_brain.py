@@ -434,6 +434,7 @@ class VantaBrainService:
         *,
         include_memory: bool = True,
         include_rag: bool = True,
+        housing_query: Optional[str] = None,
     ) -> BrainRetrieval:
         result = BrainRetrieval()
         candidates: List[BrainSnippet] = []
@@ -443,7 +444,11 @@ class VantaBrainService:
             candidates.extend(memory)
         candidates.extend(self._note_candidates(query, owner, result.errors))
         candidates.extend(self._document_candidates(query, owner, result.errors))
-        candidates.extend(self._housing_candidates(query, owner, result.errors))
+        candidates.extend(self._housing_candidates(
+            housing_query if housing_query is not None else query,
+            owner,
+            result.errors,
+        ))
         if include_rag:
             rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
             candidates.extend(rag)

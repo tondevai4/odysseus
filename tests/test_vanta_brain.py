@@ -268,6 +268,31 @@ def test_generic_housing_intent_survives_unified_selection(monkeypatch):
     assert housing[-1].source_id == "h2"
 
 
+def test_expanded_general_query_does_not_force_housing_details(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "housing-bids-v1": {
+            "version": 1,
+            "entries": [
+                {"id": "h1", "propertyArea": "Camden", "dateBidded": "2026-06-10"},
+            ],
+        },
+    })
+    service = _service()
+    monkeypatch.setattr(service, "_memory_candidates", lambda *args: ([], []))
+    monkeypatch.setattr(service, "_note_candidates", lambda *args: [])
+    monkeypatch.setattr(service, "_document_candidates", lambda *args: [])
+
+    result = service.retrieve(
+        "Plan today housing bids admin",
+        "alice",
+        include_memory=False,
+        include_rag=False,
+        housing_query="Who are you, and what do you call me?",
+    )
+
+    assert all(source.source != "housing" for source in result.snippets)
+
+
 def test_known_property_query_still_returns_housing_entry(monkeypatch):
     monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
         "housing-bids-v1": {
