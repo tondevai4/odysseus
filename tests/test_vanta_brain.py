@@ -486,6 +486,167 @@ def test_finance_intent_adds_bounded_statement_context():
     assert len(sources[0].text) <= 900
 
 
+def test_finance_preview_intent_includes_full_statement_summary():
+    analysis = FinanceStatementAnalyzer.parse_pages([
+        "\n".join([
+            "GBP Statement Generated on the 14 Jun 2026",
+            "Revolut Ltd",
+            "Balance summary",
+            " Total £10.00 £12.00 £20.00 £18.00",
+            "Account transactions from 1 June 2026 to 14 June 2026",
+            " Date                            Description"
+            "                                                                       Money out"
+            "                        Money in"
+            "                                  Balance",
+            " 10 Jun 2026                     Deliveroo"
+            "                                                                          £12.00"
+            "                                                                          £18.00",
+            " 11 Jun 2026                     Payment from WORK LTD"
+            "                                                                                                          £20.00"
+            "                                  £38.00",
+        ]),
+    ], document_id="finance-doc", document_title="June Revolut")
+
+    class _Finance:
+        def find_owner_statements(self, owner, limit=10):
+            return [SimpleNamespace(
+                id="finance-doc",
+                title="June Revolut",
+                current_content="Revolut GBP Statement",
+            )]
+
+        def analyze_document(self, document_id, owner):
+            return analysis
+
+    service = VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_Finance(),
+    )
+    sources = service._finance_candidates(
+        (
+            "Check my Revolut bank statement in Library. Preview it only. "
+            "Tell me the date range, opening balance, money out, money in, "
+            "closing balance, and whether it reconciles."
+        ),
+        "alice",
+        [],
+    )
+
+    assert len(sources) == 1
+    text = sources[0].text
+    assert "Library access: succeeded" in text
+    assert "Generated: 2026-06-14" in text
+    assert "Range: 2026-06-01 to 2026-06-14" in text
+    assert "Opening balance: GBP 10.00" in text
+    assert "Total money out: GBP 12.00" in text
+    assert "Total money in: GBP 20.00" in text
+    assert "Closing balance: GBP 18.00" in text
+    assert "Completed rows: 2" in text
+    assert "Pending: 0" in text
+    assert "Reverted: 0" in text
+    assert "Reconciled: yes" in text
+    assert "Warnings: None." in text
+    assert "Category totals:" not in text
+    assert sources[0].metadata["status"] == "analyzed"
+    assert "IBAN" not in text
+    assert "Account Number" not in text
+    assert re.search(r"\b\d{6}\*{6}\d{4}\b", text) is None
+
+
+def test_finance_success_adds_trusted_chat_access_status():
+    class _Brain:
+        def retrieve(self, *args, **kwargs):
+            return BrainRetrieval(snippets=[BrainSnippet(
+                "finance",
+                "finance-doc",
+                "Revolut Statement: June",
+                "Statement preview:\nRange: 2026-06-01 to 2026-06-14",
+                4.0,
+                metadata={"status": "analyzed"},
+            )])
+
+    processor = ChatProcessor(
+        _MemoryManager(),
+        _PersonalDocs(),
+        brain_service=_Brain(),
+    )
+    preface, _, _ = processor.build_context_preface(
+        "Preview my Revolut statement in Library.",
+        None,
+        owner="alice",
+        use_memory=False,
+        use_rag=False,
+    )
+    trusted = [
+        row["content"] for row in preface
+        if row.get("role") == "system" and "finance analyzer successfully" in row.get("content", "")
+    ]
+
+    assert len(trusted) == 1
+    assert "Do not claim Library is inaccessible" in trusted[0]
+    assert "ask him to upload the statement" in trusted[0]
+
+
+def test_finance_not_found_and_missing_pdf_are_explicit():
+    class _NoDocuments:
+        def find_owner_statements(self, owner, limit=10):
+            return []
+
+    service = VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_NoDocuments(),
+    )
+    missing = service._finance_candidates("Preview my Revolut statement", "alice", [])
+    assert missing[0].metadata["status"] == "not_found"
+    assert missing[0].text == (
+        "I could not find an owner-owned Revolut statement in Library."
+    )
+
+    class _MissingPdf:
+        def find_owner_statements(self, owner, limit=10):
+            return [SimpleNamespace(
+                id="finance-doc",
+                title="Revolut June",
+                current_content="Revolut GBP Statement",
+            )]
+
+        def analyze_document(self, document_id, owner):
+            raise FileNotFoundError("Source PDF is unavailable")
+
+    service = VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_MissingPdf(),
+    )
+    unavailable = service._finance_candidates("Preview my Revolut statement", "alice", [])
+    assert unavailable[0].metadata["status"] == "source_unavailable"
+    assert unavailable[0].text == (
+        "I found the Library document, but the original PDF upload is unavailable."
+    )
+
+    failed_analysis = FinanceStatementAnalyzer.parse_pages([
+        "GBP Statement\nGenerated on the 14 Jun 2026\nRevolut Ltd\nBalance summary",
+    ], document_id="finance-doc", document_title="Revolut June")
+
+    class _ExtractionFailed(_MissingPdf):
+        def analyze_document(self, document_id, owner):
+            return failed_analysis
+
+    service = VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_ExtractionFailed(),
+    )
+    failed = service._finance_candidates("Preview my Revolut statement", "alice", [])
+    assert failed[0].metadata["status"] == "extraction_failed"
+    assert failed[0].text == (
+        "I found the statement but could not extract transaction rows. "
+        "Upload CSV or text-based PDF."
+    )
+
+
 def test_unrelated_query_does_not_open_finance_documents():
     class _Finance:
         def find_owner_statements(self, owner, limit=10):
@@ -497,3 +658,4 @@ def test_unrelated_query_does_not_open_finance_documents():
         finance_analyzer=_Finance(),
     )
     assert service._finance_candidates("Who are you?", "alice", []) == []
+    assert service._finance_candidates("Summarise this paragraph.", "alice", []) == []

@@ -86,6 +86,15 @@ def _clean_text(value: Any, limit: int = MAX_SNIPPET_CHARS) -> str:
     return text[:limit]
 
 
+def _clean_multiline_text(value: Any, limit: int = MAX_SNIPPET_CHARS) -> str:
+    lines = [
+        re.sub(r"[ \t]+", " ", line).strip()
+        for line in str(value or "").splitlines()
+    ]
+    text = "\n".join(line for line in lines if line)
+    return text[:limit]
+
+
 def _keyword_score(query: str, text: str) -> float:
     query_tokens = set(_tokens(query))
     if not query_tokens:
@@ -130,12 +139,38 @@ def _housing_intent(query: str) -> bool:
 
 
 def _finance_intent(query: str) -> bool:
+    preview, spend = _finance_intents(query)
+    return preview or spend
+
+
+def _finance_intents(query: str) -> tuple[bool, bool]:
     normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
     tokens = set(normalized.split())
-    if tokens & {"revolut", "statement", "spend", "spending", "spent"}:
-        return True
-    return any(phrase in normalized for phrase in (
-        "bank statement",
+    finance_context = bool(tokens & {"revolut", "statement", "bank", "finance"})
+    preview_signal = bool(tokens & {
+        "preview", "summary", "summarise", "summarize", "reconcile",
+        "reconciles", "reconciled",
+    }) or any(phrase in normalized for phrase in (
+        "date range",
+        "opening balance",
+        "closing balance",
+        "money out",
+        "money in",
+        "check my bank statement",
+        "check my revolut",
+    ))
+    explicit_preview_field = any(phrase in normalized for phrase in (
+        "date range",
+        "opening balance",
+        "closing balance",
+        "money out",
+        "money in",
+    ))
+    preview = preview_signal and (finance_context or explicit_preview_field)
+    spend = bool(tokens & {
+        "spend", "spending", "spent", "leaking", "leak", "category",
+        "categories", "takeaway", "transport", "subscription", "subscriptions",
+    }) or any(phrase in normalized for phrase in (
         "money leaking",
         "money leak",
         "takeaway transport subscriptions",
@@ -143,6 +178,11 @@ def _finance_intent(query: str) -> bool:
         "transport spending",
         "subscription spending",
     ))
+    generic_statement = finance_context and any(phrase in normalized for phrase in (
+        "bank statement",
+        "revolut statement",
+    ))
+    return preview or (generic_statement and not spend), spend
 
 
 def _finance_categories(query: str) -> List[str]:
@@ -162,6 +202,14 @@ def _finance_categories(query: str) -> List[str]:
         if any(term in normalized for term in terms):
             requested.append(category)
     return requested
+
+
+def _looks_like_revolut_document(document: Any) -> bool:
+    text = " ".join(filter(None, [
+        str(getattr(document, "title", "") or ""),
+        str(getattr(document, "current_content", "") or "")[:4000],
+    ])).lower()
+    return "revolut" in text and ("gbp statement" in text or "statement" in text)
 
 
 def _normalize_housing_entry(entry: Any) -> Optional[Dict[str, str]]:
@@ -435,10 +483,21 @@ class VantaBrainService:
             return []
         try:
             documents = self.finance_analyzer.find_owner_statements(owner, limit=10)
+            preview_intent, spend_intent = _finance_intents(query)
             requested_categories = _finance_categories(query)
             this_month = "this month" in (query or "").lower()
             month_prefix = datetime.now().strftime("%Y-%m") if this_month else ""
             candidates = []
+
+            if not documents:
+                return [BrainSnippet(
+                    source="finance",
+                    source_id="revolut-statement-not-found",
+                    label="Revolut Statement",
+                    text="I could not find an owner-owned Revolut statement in Library.",
+                    score=4.0,
+                    metadata={"status": "not_found"},
+                )]
 
             for document in documents:
                 try:
@@ -446,7 +505,24 @@ class VantaBrainService:
                         str(document.id),
                         owner,
                     )
-                except (LookupError, ValueError, FileNotFoundError):
+                except FileNotFoundError:
+                    if _looks_like_revolut_document(document):
+                        return [BrainSnippet(
+                            source="finance",
+                            source_id=str(document.id),
+                            label=f"Revolut Statement: {_clean_text(document.title, 100)}",
+                            text=(
+                                "I found the Library document, but the original PDF "
+                                "upload is unavailable."
+                            ),
+                            score=4.0,
+                            metadata={
+                                "document_id": str(document.id),
+                                "status": "source_unavailable",
+                            },
+                        )]
+                    continue
+                except (LookupError, ValueError):
                     continue
                 if not analysis.detected:
                     continue
@@ -461,74 +537,119 @@ class VantaBrainService:
                             "Upload CSV or text-based PDF."
                         ),
                         score=4.0,
-                        metadata={"document_id": str(document.id), "extractable": False},
+                        metadata={
+                            "document_id": str(document.id),
+                            "extractable": False,
+                            "status": "extraction_failed",
+                        },
                     ))
                     continue
+
+                text_blocks = [
+                    "Library access: succeeded. The owner-owned original PDF was opened and analyzed.",
+                ]
+                if preview_intent:
+                    summary = analysis.summary_dict()
+                    counts = summary["counts"]
+                    date_range = summary["date_range"]
+                    warnings = "; ".join(analysis.warnings) if analysis.warnings else "None."
+                    text_blocks.append("\n".join([
+                        "Statement preview:",
+                        f"Generated: {summary['generated_date'] or 'unknown'}",
+                        (
+                            f"Range: {date_range['start'] or 'unknown'} "
+                            f"to {date_range['end'] or 'unknown'}"
+                        ),
+                        f"Opening balance: GBP {summary['opening_balance'] or 'unknown'}",
+                        f"Total money out: GBP {summary['total_money_out'] or 'unknown'}",
+                        f"Total money in: GBP {summary['total_money_in'] or 'unknown'}",
+                        f"Closing balance: GBP {summary['closing_balance'] or 'unknown'}",
+                        f"Completed rows: {counts['completed']}",
+                        f"Pending: {counts['pending']}",
+                        f"Reverted: {counts['reverted']}",
+                        (
+                            "Reconciled: yes"
+                            if summary["completed_totals_reconciled"]
+                            else "Reconciled: no"
+                        ),
+                        f"Warnings: {warnings}",
+                    ]))
 
                 rows = analysis.completed
                 if month_prefix:
                     rows = [row for row in rows if row.date.startswith(month_prefix)]
-                category_totals = analysis.category_totals(rows)
-                if requested_categories:
-                    selected_totals = [
-                        f"{category.replace('_', ' ')}: GBP {category_totals[category]:.2f}"
-                        for category in requested_categories
-                    ]
-                else:
-                    selected_totals = [
-                        f"{category.replace('_', ' ')}: GBP {amount:.2f}"
-                        for category, amount in sorted(
-                            category_totals.items(),
-                            key=lambda item: item[1],
-                            reverse=True,
-                        )
-                        if amount > 0 and category != "internal_savings_transfer"
-                    ][:6]
+                if spend_intent:
+                    category_totals = analysis.category_totals(rows)
+                    if requested_categories:
+                        selected_totals = [
+                            f"{category.replace('_', ' ')}: GBP {category_totals[category]:.2f}"
+                            for category in requested_categories
+                        ]
+                    else:
+                        selected_totals = [
+                            f"{category.replace('_', ' ')}: GBP {amount:.2f}"
+                            for category, amount in sorted(
+                                category_totals.items(),
+                                key=lambda item: item[1],
+                                reverse=True,
+                            )
+                            if amount > 0 and category != "internal_savings_transfer"
+                        ][:6]
 
-                examples = [
-                    row for row in rows
-                    if row.money_out
-                    and row.category != "internal_savings_transfer"
-                    and (not requested_categories or row.category in requested_categories)
-                ]
-                examples.sort(key=lambda row: (row.date, row.money_out), reverse=True)
-                example_lines = [
-                    f"{row.date}: {row.description} GBP {row.money_out:.2f} "
-                    f"({row.category.replace('_', ' ')}, page {row.page})"
-                    for row in examples[:8]
-                ]
-                period = (
-                    datetime.now().strftime("%B %Y")
-                    if this_month else
-                    f"{analysis.statement_start or 'unknown'} to {analysis.statement_end or 'unknown'}"
-                )
-                text = "\n".join(filter(None, [
-                    f"Period: {period}",
-                    f"External money out excluding internal savings: GBP {analysis.external_spend(rows):.2f}",
-                    "Category totals: " + "; ".join(selected_totals)
-                    if selected_totals else "Category totals: no matching completed spending.",
-                    "Recent matching transactions:\n" + "\n".join(example_lines)
-                    if example_lines else "Recent matching transactions: none.",
-                    (
-                        "Pending and reverted transactions are excluded from spending totals. "
-                        f"Pending: {len(analysis.pending)}; reverted: {len(analysis.reverted)}."
-                    ),
-                ]))
+                    examples = [
+                        row for row in rows
+                        if row.money_out
+                        and row.category != "internal_savings_transfer"
+                        and (not requested_categories or row.category in requested_categories)
+                    ]
+                    examples.sort(key=lambda row: (row.date, row.money_out), reverse=True)
+                    example_lines = [
+                        f"{row.date}: {row.description} GBP {row.money_out:.2f} "
+                        f"({row.category.replace('_', ' ')}, page {row.page})"
+                        for row in examples[:8]
+                    ]
+                    period = (
+                        datetime.now().strftime("%B %Y")
+                        if this_month else
+                        f"{analysis.statement_start or 'unknown'} to {analysis.statement_end or 'unknown'}"
+                    )
+                    text_blocks.append("\n".join(filter(None, [
+                        f"Spending period: {period}",
+                        f"External money out excluding internal savings: GBP {analysis.external_spend(rows):.2f}",
+                        "Category totals: " + "; ".join(selected_totals)
+                        if selected_totals else "Category totals: no matching completed spending.",
+                        "Recent matching transactions:\n" + "\n".join(example_lines)
+                        if example_lines else "Recent matching transactions: none.",
+                        (
+                            "Pending and reverted transactions are excluded from spending totals. "
+                            f"Pending: {len(analysis.pending)}; reverted: {len(analysis.reverted)}."
+                        ),
+                    ])))
                 candidates.append(BrainSnippet(
                     source="finance",
                     source_id=str(document.id),
                     label=label,
-                    text=_clean_text(text),
+                    text=_clean_multiline_text("\n\n".join(text_blocks)),
                     score=4.0,
                     metadata={
                         "document_id": str(document.id),
                         "statement_start": analysis.statement_start,
                         "statement_end": analysis.statement_end,
                         "extractable": True,
+                        "status": "analyzed",
+                        "preview": preview_intent,
+                        "spend": spend_intent,
                     },
                 ))
                 break
-            return candidates
+            return candidates or [BrainSnippet(
+                source="finance",
+                source_id="revolut-statement-not-found",
+                label="Revolut Statement",
+                text="I could not find an owner-owned Revolut statement in Library.",
+                score=4.0,
+                metadata={"status": "not_found"},
+            )]
         except Exception:
             logger.warning("Vanta Brain finance retrieval failed", exc_info=True)
             errors.append({"source": "finance", "detail": "Statement analysis unavailable."})
