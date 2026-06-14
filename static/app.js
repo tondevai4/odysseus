@@ -28,6 +28,7 @@ import notesModule from './js/notes.js';
 import adminModule from './js/admin.js';
 import settingsModule from './js/settings.js';
 import commandCenterModule from './js/commandCenter.js';
+import housingBidsModule from './js/housingBids.js';
 // Eagerly bind unified minimize/restore behavior across all tool modals.
 import './js/modalManager.js';
 // Desktop window tiling — drag a modal near an edge/corner to snap.
@@ -928,6 +929,13 @@ function initializeEventListeners() {
       if (notesModule) {
         notesModule.togglePanel();
       }
+    });
+  }
+  const toolHousingBidsBtn = el('tool-housing-bids-btn');
+  if (toolHousingBidsBtn) {
+    toolHousingBidsBtn.addEventListener('click', () => {
+      if (housingBidsModule.isOpen()) housingBidsModule.close();
+      else housingBidsModule.open();
     });
   }
   // Refresh notes due-reminder badge on load and every 5 minutes
@@ -3391,6 +3399,7 @@ function startOdysseusApp() {
     openNotes: () => {
       if (notesModule && notesModule.openPanel) notesModule.openPanel();
     },
+    openHousingBids: () => housingBidsModule.open(),
   });
 
   // Reveal the toolbar now that all toggle/overflow state is resolved
