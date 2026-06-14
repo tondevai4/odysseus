@@ -8,6 +8,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from core.database import Document, Note, SessionLocal
@@ -139,11 +140,11 @@ def _housing_intent(query: str) -> bool:
 
 
 def _finance_intent(query: str) -> bool:
-    preview, spend = _finance_intents(query)
-    return preview or spend
+    preview, spend, money_in, savings, payment = _finance_intents(query)
+    return preview or spend or money_in or savings or payment
 
 
-def _finance_intents(query: str) -> tuple[bool, bool]:
+def _finance_intents(query: str) -> tuple[bool, bool, bool, bool, bool]:
     normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
     tokens = set(normalized.split())
     finance_context = bool(tokens & {"revolut", "statement", "bank", "finance"})
@@ -182,7 +183,40 @@ def _finance_intents(query: str) -> tuple[bool, bool]:
         "bank statement",
         "revolut statement",
     ))
-    return preview or (generic_statement and not spend), spend
+    money_in = bool(tokens & {"income", "incoming", "refund", "refunds"}) or any(
+        phrase in normalized for phrase in (
+            "money came in",
+            "money come in",
+            "money received",
+            "payments received",
+            "what came in",
+        )
+    )
+    savings = (
+        "savings" in tokens
+        and bool(tokens & {"internal", "movement", "movements", "transfer", "transfers"})
+    ) or any(phrase in normalized for phrase in (
+        "internal savings",
+        "savings movement",
+        "savings transfer",
+    ))
+    payment = bool(tokens & {"pay", "payee", "payment"}) or any(
+        phrase in normalized for phrase in (
+            "move money",
+            "send money",
+            "transfer money",
+            "pay someone",
+            "make a payment",
+        )
+    )
+    preview = preview or (
+        generic_statement and not any((spend, money_in, savings, payment))
+    )
+    return preview, spend, money_in, savings, payment
+
+
+def finance_payment_intent(query: str) -> bool:
+    return _finance_intents(query)[4]
 
 
 def _finance_categories(query: str) -> List[str]:
@@ -483,7 +517,13 @@ class VantaBrainService:
             return []
         try:
             documents = self.finance_analyzer.find_owner_statements(owner, limit=10)
-            preview_intent, spend_intent = _finance_intents(query)
+            (
+                preview_intent,
+                spend_intent,
+                money_in_intent,
+                savings_intent,
+                payment_intent,
+            ) = _finance_intents(query)
             requested_categories = _finance_categories(query)
             this_month = "this month" in (query or "").lower()
             month_prefix = datetime.now().strftime("%Y-%m") if this_month else ""
@@ -578,6 +618,88 @@ class VantaBrainService:
                 rows = analysis.completed
                 if month_prefix:
                     rows = [row for row in rows if row.date.startswith(month_prefix)]
+                if money_in_intent:
+                    incoming = [row for row in rows if row.money_in and row.money_in > 0]
+                    income_rows = [row for row in incoming if row.category == "income"]
+                    savings_rows = [
+                        row for row in incoming
+                        if row.category == "internal_savings_transfer"
+                    ]
+                    other_rows = [
+                        row for row in incoming
+                        if row.category not in {"income", "internal_savings_transfer"}
+                    ]
+                    income_total = sum(
+                        (row.money_in for row in income_rows),
+                        Decimal("0.00"),
+                    )
+                    savings_in = sum(
+                        (row.money_in for row in savings_rows),
+                        Decimal("0.00"),
+                    )
+                    other_in = sum(
+                        (row.money_in for row in other_rows),
+                        Decimal("0.00"),
+                    )
+                    incoming.sort(
+                        key=lambda row: (row.money_in or Decimal("0"), row.date),
+                        reverse=True,
+                    )
+                    incoming_lines = [
+                        f"{row.date}: {row.description} GBP {row.money_in:.2f} "
+                        f"({row.category.replace('_', ' ')}, page {row.page})"
+                        for row in incoming[:6]
+                    ]
+                    text_blocks.append("\n".join([
+                        "Money-in breakdown:",
+                        f"Total money in: GBP {analysis.total_money_in or Decimal('0.00'):.2f}",
+                        f"Income: GBP {income_total:.2f}",
+                        f"Internal savings withdrawals: GBP {savings_in:.2f}",
+                        f"Other/refund-like or unknown money in: GBP {other_in:.2f}",
+                        (
+                            "Top incoming transactions:\n" + "\n".join(incoming_lines)
+                            if incoming_lines
+                            else "Top incoming transactions: none."
+                        ),
+                        (
+                            "Income is separated from internal savings movement and "
+                            "refund-like/unknown incoming money where the statement "
+                            "description supports that distinction."
+                        ),
+                    ]))
+                if savings_intent:
+                    internal_rows = [
+                        row for row in rows
+                        if row.category == "internal_savings_transfer"
+                    ]
+                    savings_out = sum(
+                        (row.money_out or Decimal("0.00") for row in internal_rows),
+                        Decimal("0.00"),
+                    )
+                    savings_in = sum(
+                        (row.money_in or Decimal("0.00") for row in internal_rows),
+                        Decimal("0.00"),
+                    )
+                    internal_total = savings_out + savings_in
+                    completed_out = sum(
+                        (row.money_out or Decimal("0.00") for row in rows),
+                        Decimal("0.00"),
+                    )
+                    text_blocks.append("\n".join([
+                        "Internal savings movement:",
+                        f"Deposited into savings: GBP {savings_out:.2f}",
+                        f"Withdrawn from savings: GBP {savings_in:.2f}",
+                        f"Total internal savings movement: GBP {internal_total:.2f}",
+                        f"Completed money out: GBP {completed_out:.2f}",
+                        (
+                            "External spend excluding internal savings: "
+                            f"GBP {analysis.external_spend(rows):.2f}"
+                        ),
+                        (
+                            "Internal savings movement is movement between your own "
+                            "balances, not lifestyle spending."
+                        ),
+                    ]))
                 if spend_intent:
                     category_totals = analysis.category_totals(rows)
                     if requested_categories:
@@ -639,6 +761,9 @@ class VantaBrainService:
                         "status": "analyzed",
                         "preview": preview_intent,
                         "spend": spend_intent,
+                        "money_in": money_in_intent,
+                        "savings": savings_intent,
+                        "payment_request": payment_intent,
                     },
                 ))
                 break
