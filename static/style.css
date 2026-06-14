@@ -36839,3 +36839,461 @@ body.theme-frosted .modal {
   border-top: 1px solid var(--border);
 }
 .workspace-note { margin: 0 0 8px; font-size: 11px; line-height: 1.4; }
+/* Housing Bids Tracker */
+.housing-bids-modal {
+  z-index: 2200;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.housing-bids-modal-content {
+  width: min(920px, 94vw);
+  height: min(760px, 88vh);
+  max-height: 88vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #d6d6d8;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(172, 20, 43, 0.16), transparent 35%),
+    linear-gradient(145deg, rgba(23, 23, 25, 0.98), rgba(7, 7, 8, 0.98));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.62);
+}
+
+.housing-bids-header {
+  min-height: 82px;
+  padding: 18px 22px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.housing-bids-header h4 {
+  margin: 3px 0 0;
+  color: #f2f2f3;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+.housing-bids-header h4 span {
+  color: #848489;
+  font-weight: 500;
+}
+
+.housing-bids-kicker {
+  color: #c42036;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.housing-bids-close {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #a6a6aa;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.housing-bids-close:hover {
+  color: #fff;
+  border-color: rgba(196, 32, 54, 0.68);
+  background: rgba(196, 32, 54, 0.14);
+}
+
+.housing-bids-toolbar {
+  min-height: 68px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex: 0 0 auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.housing-bids-toolbar p {
+  margin: 0;
+  color: #8f8f94;
+  font-size: 0.78rem;
+}
+
+.housing-bids-body {
+  min-height: 0;
+  padding: 22px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scrollbar-color: rgba(196, 32, 54, 0.55) transparent;
+}
+
+.housing-bids-primary-btn,
+.housing-bids-secondary-btn,
+.housing-bids-danger-btn {
+  min-height: 38px;
+  padding: 9px 15px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.housing-bids-primary-btn {
+  color: #fff;
+  border: 1px solid #c42036;
+  background: linear-gradient(145deg, #c42036, #851025);
+  box-shadow: 0 8px 22px rgba(160, 15, 37, 0.24);
+}
+
+.housing-bids-primary-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(145deg, #d52640, #99132b);
+}
+
+.housing-bids-secondary-btn {
+  color: #d7d7da;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.housing-bids-secondary-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.23);
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.housing-bids-danger-btn {
+  color: #dd6a7b;
+  border: 1px solid rgba(196, 32, 54, 0.26);
+  background: rgba(196, 32, 54, 0.08);
+}
+
+.housing-bids-danger-btn:hover {
+  color: #ff8798;
+  border-color: rgba(196, 32, 54, 0.58);
+  background: rgba(196, 32, 54, 0.15);
+}
+
+.housing-bids-primary-btn:disabled,
+.housing-bids-secondary-btn:disabled,
+.housing-bids-danger-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+.housing-bids-state {
+  min-height: 320px;
+  padding: 42px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.housing-bids-state-mark {
+  margin-bottom: 13px;
+  color: #c42036;
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+}
+
+.housing-bids-state h3 {
+  margin: 0 0 8px;
+  color: #eeeef0;
+  font-size: 1.08rem;
+}
+
+.housing-bids-state p {
+  max-width: 440px;
+  margin: 0 0 20px;
+  color: #929297;
+  font-size: 0.83rem;
+  line-height: 1.6;
+}
+
+.housing-bids-list {
+  display: grid;
+  gap: 14px;
+}
+
+.housing-bid-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 16px;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.047), transparent 70%),
+    rgba(2, 2, 3, 0.38);
+  box-shadow: inset 3px 0 0 rgba(196, 32, 54, 0.72);
+}
+
+.housing-bid-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.housing-bid-title-group h3 {
+  margin: 3px 0 0;
+  color: #f0f0f2;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.housing-bid-date {
+  color: #85858a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.housing-bid-status {
+  padding: 5px 9px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 999px;
+  color: #bfc0c4;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.housing-bid-status.status-shortlisted,
+.housing-bid-status.status-offered {
+  color: #f08a9a;
+  border-color: rgba(196, 32, 54, 0.43);
+  background: rgba(196, 32, 54, 0.12);
+}
+
+.housing-bid-status.status-unsuccessful,
+.housing-bid-status.status-withdrawn {
+  color: #85858b;
+}
+
+.housing-bid-description {
+  margin: 12px 0 0;
+  color: #b2b2b6;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.housing-bid-details {
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.housing-bid-detail {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.housing-bid-detail dt {
+  margin-bottom: 5px;
+  color: #77777d;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.housing-bid-detail dd {
+  margin: 0;
+  color: #c2c2c5;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.housing-bid-actions {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.housing-bid-form {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.housing-bid-form-heading {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.housing-bid-form-heading h3 {
+  margin: 4px 0 0;
+  color: #f0f0f2;
+  font-size: 1.1rem;
+}
+
+.housing-bid-form-heading p {
+  margin: 0;
+  color: #77777c;
+  font-size: 0.72rem;
+}
+
+.housing-bid-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.housing-bid-field {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.housing-bid-field-wide {
+  grid-column: 1 / -1;
+}
+
+.housing-bid-field span {
+  color: #aaaab0;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.housing-bid-field input,
+.housing-bid-field select,
+.housing-bid-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  color: #ededee;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 11px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  font-size: 0.82rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.housing-bid-field textarea {
+  resize: vertical;
+}
+
+.housing-bid-field input:focus,
+.housing-bid-field select:focus,
+.housing-bid-field textarea:focus {
+  border-color: rgba(196, 32, 54, 0.78);
+  box-shadow: 0 0 0 3px rgba(196, 32, 54, 0.1);
+}
+
+.housing-bid-field select option {
+  color: #e8e8ea;
+  background: #151517;
+}
+
+.housing-bid-form-error {
+  min-height: 20px;
+  margin-top: 12px;
+  color: #ef7185;
+  font-size: 0.76rem;
+}
+
+.housing-bid-form-actions {
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+@media (max-width: 768px) {
+  .housing-bids-modal {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .housing-bids-modal-content {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-width: 1px 0 0;
+    border-radius: 18px 18px 0 0;
+  }
+
+  #housing-bids-modal .housing-bids-modal-content::before {
+    display: none;
+  }
+
+  #housing-bids-modal .housing-bids-close {
+    display: inline-flex !important;
+  }
+
+  .housing-bids-header,
+  .housing-bids-toolbar,
+  .housing-bids-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .housing-bids-toolbar {
+    gap: 10px;
+  }
+
+  .housing-bids-toolbar p {
+    max-width: 55%;
+    font-size: 0.68rem;
+  }
+
+  .housing-bid-details,
+  .housing-bid-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .housing-bid-field-wide {
+    grid-column: auto;
+  }
+
+  .housing-bid-form-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .housing-bid-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .housing-bid-actions {
+    justify-content: stretch;
+  }
+
+  .housing-bid-actions button {
+    flex: 1;
+  }
+}

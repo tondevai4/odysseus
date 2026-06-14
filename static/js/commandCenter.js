@@ -1,6 +1,6 @@
 let _initialized = false;
 
-function init({ openNotes } = {}) {
+function init({ openNotes, openHousingBids } = {}) {
   if (_initialized) return;
 
   const commandCenter = document.getElementById('command-center');
@@ -12,6 +12,12 @@ function init({ openNotes } = {}) {
 
     if (action.dataset.commandCenterAction === 'notes' && typeof openNotes === 'function') {
       openNotes();
+    }
+    if (
+      action.dataset.commandCenterAction === 'housing-bids'
+      && typeof openHousingBids === 'function'
+    ) {
+      openHousingBids();
     }
   });
 
