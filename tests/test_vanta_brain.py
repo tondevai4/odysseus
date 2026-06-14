@@ -1,5 +1,7 @@
 import asyncio
+import re
 import uuid
+from decimal import Decimal
 from types import SimpleNamespace
 
 import services.vanta_brain as brain_module
@@ -15,7 +17,11 @@ from services.vanta_brain import (
 )
 from src.chat_processor import ChatProcessor
 from src.vanta_core import VANTA_CORE_PROMPT
-from services.finance_statement_analyzer import FinanceStatementAnalyzer
+from services.finance_statement_analyzer import (
+    FinanceStatementAnalyzer,
+    StatementAnalysis,
+    StatementTransaction,
+)
 
 
 class _MemoryManager:
@@ -659,3 +665,152 @@ def test_unrelated_query_does_not_open_finance_documents():
     )
     assert service._finance_candidates("Who are you?", "alice", []) == []
     assert service._finance_candidates("Summarise this paragraph.", "alice", []) == []
+
+
+def _income_savings_analysis():
+    return StatementAnalysis(
+        detected=True,
+        document_id="finance-doc",
+        document_title="June Revolut",
+        statement_start="2026-06-01",
+        statement_end="2026-06-14",
+        total_money_out=Decimal("42.00"),
+        total_money_in=Decimal("125.00"),
+        transactions=[
+            StatementTransaction(
+                date="2026-06-10",
+                description="Payment from WORK LTD",
+                money_out=None,
+                money_in=Decimal("100.00"),
+                balance=Decimal("100.00"),
+                status="completed",
+                page=2,
+                category="income",
+            ),
+            StatementTransaction(
+                date="2026-06-11",
+                description="Withdrawing savings",
+                money_out=None,
+                money_in=Decimal("20.00"),
+                balance=Decimal("120.00"),
+                status="completed",
+                page=3,
+                category="internal_savings_transfer",
+            ),
+            StatementTransaction(
+                date="2026-06-12",
+                description="Uber Eats refund",
+                money_out=None,
+                money_in=Decimal("5.00"),
+                balance=Decimal("125.00"),
+                status="completed",
+                page=4,
+                category="unknown",
+            ),
+            StatementTransaction(
+                date="2026-06-12",
+                description="Depositing savings",
+                money_out=Decimal("30.00"),
+                money_in=None,
+                balance=Decimal("95.00"),
+                status="completed",
+                page=4,
+                category="internal_savings_transfer",
+            ),
+            StatementTransaction(
+                date="2026-06-13",
+                description="Deliveroo",
+                money_out=Decimal("12.00"),
+                money_in=None,
+                balance=Decimal("83.00"),
+                status="completed",
+                page=5,
+                category="takeaway_fast_food",
+            ),
+        ],
+    )
+
+
+def _finance_service_for(analysis):
+    class _Finance:
+        def find_owner_statements(self, owner, limit=10):
+            return [SimpleNamespace(
+                id="finance-doc",
+                title="June Revolut",
+                current_content="Revolut GBP Statement",
+            )]
+
+        def analyze_document(self, document_id, owner):
+            return analysis
+
+    return VantaBrainService(
+        _MemoryManager(),
+        _PersonalDocs(),
+        finance_analyzer=_Finance(),
+    )
+
+
+def test_finance_money_in_intent_returns_breakdown_and_examples():
+    sources = _finance_service_for(_income_savings_analysis())._finance_candidates(
+        "What money came in on this statement?",
+        "alice",
+        [],
+    )
+
+    text = sources[0].text
+    assert "Total money in: GBP 125.00" in text
+    assert "Income: GBP 100.00" in text
+    assert "Internal savings withdrawals: GBP 20.00" in text
+    assert "Other/refund-like or unknown money in: GBP 5.00" in text
+    assert "2026-06-10: Payment from WORK LTD GBP 100.00 (income, page 2)" in text
+    assert "2026-06-11: Withdrawing savings GBP 20.00" in text
+    assert "2026-06-12: Uber Eats refund GBP 5.00" in text
+    assert "cannot see transaction list" not in text.lower()
+    assert sources[0].metadata["money_in"] is True
+
+
+def test_finance_internal_savings_intent_returns_numeric_movement():
+    sources = _finance_service_for(_income_savings_analysis())._finance_candidates(
+        "How much of this statement is internal savings movement?",
+        "alice",
+        [],
+    )
+
+    text = sources[0].text
+    assert "Deposited into savings: GBP 30.00" in text
+    assert "Withdrawn from savings: GBP 20.00" in text
+    assert "Total internal savings movement: GBP 50.00" in text
+    assert "Completed money out: GBP 42.00" in text
+    assert "External spend excluding internal savings: GBP 12.00" in text
+    assert "not lifestyle spending" in text
+    assert sources[0].metadata["savings"] is True
+
+
+def test_payment_request_adds_no_payment_workflow_guard():
+    class _Brain:
+        def retrieve(self, *args, **kwargs):
+            return BrainRetrieval()
+
+    processor = ChatProcessor(
+        _MemoryManager(),
+        _PersonalDocs(),
+        brain_service=_Brain(),
+    )
+    preface, _, _ = processor.build_context_preface(
+        "Can you move money or pay someone from this statement?",
+        None,
+        owner="alice",
+        use_memory=False,
+        use_rag=False,
+    )
+    guard = [
+        row["content"] for row in preface
+        if row.get("role") == "system"
+        and row.get("content", "").startswith("Payment safety boundary:")
+    ]
+
+    assert len(guard) == 1
+    assert "cannot move money, pay anyone, or prepare payment instructions" in guard[0]
+    assert "Do not ask Tony for a sort code, IBAN, Revolut handle" in guard[0]
+    assert "must handle any payment himself inside Revolut" in guard[0]
+    assert "analyse spending, identify bills, or help build a budget" in guard[0]

@@ -43,6 +43,20 @@ def _content_tokens(text: str) -> list:
     return [w for w in words if len(w) >= 3 and w not in _STOPWORDS]
 
 
+def _finance_payment_request(text: str) -> bool:
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
+    tokens = set(normalized.split())
+    return bool(tokens & {"pay", "payee", "payment"}) or any(
+        phrase in normalized for phrase in (
+            "move money",
+            "send money",
+            "transfer money",
+            "pay someone",
+            "make a payment",
+        )
+    )
+
+
 class ChatProcessor:
     def __init__(
         self,
@@ -237,6 +251,18 @@ class ChatProcessor:
                     "documents, or personal RAG. If Tony asks to use that private "
                     "context, explain briefly that private retrieval is disabled "
                     "in incognito and can be used after he leaves incognito."
+                ),
+            })
+        if _finance_payment_request(message):
+            preface.append({
+                "role": "system",
+                "content": (
+                    "Payment safety boundary: Vanta cannot move money, pay anyone, "
+                    "or prepare payment instructions. Do not ask Tony for a sort "
+                    "code, IBAN, Revolut handle, payment amount, payee identity, or "
+                    "other payment details. Say he must handle any payment himself "
+                    "inside Revolut. You may instead offer to analyse spending, "
+                    "identify bills, or help build a budget."
                 ),
             })
         preface.append({
