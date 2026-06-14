@@ -259,6 +259,46 @@ class ChatProcessor:
             self._last_used_memories = brain_result.used_memories
             self._last_brain_sources = brain_result.public_sources()
             rag_sources = brain_result.rag_sources
+            finance_statuses = {
+                snippet.metadata.get("status")
+                for snippet in brain_result.snippets
+                if snippet.source == "finance"
+            }
+            if "analyzed" in finance_statuses:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "The finance analyzer successfully opened and analyzed an "
+                        "owner-owned Revolut statement from Library for this turn. "
+                        "Answer from the finance fields in Vanta Brain context. Do "
+                        "not claim Library is inaccessible, describe the data as an "
+                        "excerpt supplied by Tony, or ask him to upload the statement."
+                    ),
+                })
+            elif "source_unavailable" in finance_statuses:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "Finance status: I found the Library document, but the "
+                        "original PDF upload is unavailable."
+                    ),
+                })
+            elif "extraction_failed" in finance_statuses:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "Finance status: I found the statement but could not extract "
+                        "transaction rows. Upload CSV or text-based PDF."
+                    ),
+                })
+            elif "not_found" in finance_statuses:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "Finance status: I could not find an owner-owned Revolut "
+                        "statement in Library."
+                    ),
+                })
             memory_ids = [
                 snippet.source_id
                 for snippet in brain_result.snippets

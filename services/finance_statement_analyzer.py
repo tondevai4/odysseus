@@ -60,10 +60,12 @@ def _money(value: Optional[Decimal]) -> Optional[str]:
 
 
 def _iso_date(value: str) -> str:
-    try:
-        return datetime.strptime(value.strip(), "%d %b %Y").date().isoformat()
-    except ValueError:
-        return value.strip()
+    for date_format in ("%d %b %Y", "%d %B %Y"):
+        try:
+            return datetime.strptime(value.strip(), date_format).date().isoformat()
+        except ValueError:
+            continue
+    return value.strip()
 
 
 def _clean(value: Any, limit: int = 500) -> str:
