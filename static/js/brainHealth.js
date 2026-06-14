@@ -112,6 +112,13 @@ function _renderHealth(payload) {
       });
     } else {
       row.appendChild(_el('p', '', `${Number(source.count || 0)} available`));
+      if (key === 'housing') {
+        row.appendChild(_el(
+          'div',
+          'brain-health-lane',
+          source.schema_recognized ? 'Stored schema recognised' : 'Stored schema not recognised',
+        ));
+      }
     }
     sources.appendChild(row);
   });

@@ -15,6 +15,7 @@ def test_command_center_system_ready_opens_brain_health():
     assert "openBrainHealth" in command_center
     assert "fetch('/api/brain/health'" in brain_health
     assert "fetch('/api/brain/preview'" in brain_health
+    assert "Stored schema recognised" in brain_health
     assert "textContent" in brain_health
     assert "index-rebuild" not in brain_health
 

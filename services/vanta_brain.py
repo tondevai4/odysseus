@@ -100,6 +100,75 @@ def _keyword_score(query: str, text: str) -> float:
     return min(score, 1.0)
 
 
+def _first_value(entry: Dict[str, Any], *keys: str, limit: int) -> str:
+    for key in keys:
+        value = _clean_text(entry.get(key), limit)
+        if value:
+            return value
+    return ""
+
+
+def _housing_intent(query: str) -> bool:
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
+    tokens = set(normalized.split())
+    domain_terms = {
+        "housing", "bid", "bids", "bidding", "property", "properties",
+        "flat", "flats", "council", "homechoice", "applied",
+        "application", "applications",
+    }
+    if tokens & domain_terms:
+        return True
+    return any(phrase in normalized for phrase in (
+        "home choice",
+        "housing applications",
+        "properties i applied",
+        "property i applied",
+        "what have i bid",
+        "what have i made",
+    ))
+
+
+def _normalize_housing_entry(entry: Any) -> Optional[Dict[str, str]]:
+    if not isinstance(entry, dict):
+        return None
+    property_area = _first_value(
+        entry, "propertyArea", "property", "area", "address", "title", limit=160,
+    )
+    date_bidded = _first_value(
+        entry, "dateBidded", "bidDate", "date", limit=40,
+    )
+    if not property_area or not date_bidded:
+        return None
+    return {
+        "id": _clean_text(entry.get("id"), 100),
+        "property_area": property_area,
+        "date_bidded": date_bidded,
+        "description": _clean_text(entry.get("description"), 300),
+        "status": _clean_text(entry.get("status"), 80),
+        "priority_band": _first_value(entry, "priorityBand", "band", limit=120),
+        "notes": _clean_text(entry.get("notes"), 2000),
+        "outcome": _clean_text(entry.get("outcome"), 500),
+        "updated_at": _clean_text(entry.get("updatedAt"), 40),
+    }
+
+
+def _housing_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, str]]]:
+    value = (_load_for_user(owner) or {}).get("housing-bids-v1")
+    recognized = (
+        isinstance(value, dict)
+        and value.get("version") == 1
+        and isinstance(value.get("entries"), list)
+    )
+    if not recognized:
+        return False, []
+    entries = [
+        normalized
+        for normalized in (_normalize_housing_entry(entry) for entry in value["entries"])
+        if normalized is not None
+    ]
+    return True, entries
+
+
 class VantaBrainService:
     """Collect small, labelled snippets without mutating source stores."""
 
@@ -260,40 +329,53 @@ class VantaBrainService:
         errors: List[Dict[str, str]],
     ) -> List[BrainSnippet]:
         try:
-            value = (_load_for_user(owner) or {}).get("housing-bids-v1")
-            if not isinstance(value, dict) or value.get("version") != 1:
+            recognized, entries = _housing_store(owner)
+            if not recognized:
                 return []
-            entries = value.get("entries")
-            if not isinstance(entries, list):
-                return []
+            housing_intent = _housing_intent(query)
+            if housing_intent and not entries:
+                return [BrainSnippet(
+                    source="housing",
+                    source_id="housing-bids-v1-empty",
+                    label="Housing Bids",
+                    text="No housing bids are saved in the Housing Bids tracker yet.",
+                    score=3.0,
+                    metadata={"empty": True, "schema_recognized": True},
+                )]
+
+            entries.sort(
+                key=lambda entry: (entry["date_bidded"], entry["updated_at"]),
+                reverse=True,
+            )
             candidates = []
-            for entry in entries[:250]:
-                if not isinstance(entry, dict):
-                    continue
-                property_area = _clean_text(entry.get("propertyArea"), 160)
-                date_bidded = _clean_text(entry.get("dateBidded"), 20)
-                if not property_area or not date_bidded:
-                    continue
+            for index, entry in enumerate(entries[:250]):
                 combined = "\n".join(filter(None, [
-                    property_area,
-                    date_bidded,
-                    entry.get("description"),
-                    entry.get("status"),
-                    entry.get("priorityBand"),
-                    entry.get("notes"),
-                    entry.get("outcome"),
+                    f"Property / area: {entry['property_area']}",
+                    f"Bid date: {entry['date_bidded']}",
+                    f"Status: {entry['status']}" if entry["status"] else "",
+                    f"Priority / band: {entry['priority_band']}" if entry["priority_band"] else "",
+                    f"Outcome: {entry['outcome']}" if entry["outcome"] else "",
+                    f"Description: {entry['description']}" if entry["description"] else "",
+                    f"Notes: {entry['notes']}" if entry["notes"] else "",
                 ]))
                 score = _keyword_score(query, combined)
-                if score <= 0:
+                if not housing_intent and score <= 0:
                     continue
                 candidates.append(BrainSnippet(
                     source="housing",
-                    source_id=_clean_text(entry.get("id"), 100),
-                    label=f"Housing Bid: {property_area}",
+                    source_id=entry["id"],
+                    label=f"Housing Bid: {entry['property_area']}",
                     text=_clean_text(combined),
-                    score=score,
-                    metadata={"status": _clean_text(entry.get("status"), 40)},
+                    score=(3.0 + score + max(MAX_SNIPPETS - index, 0) * 0.001)
+                    if housing_intent else score,
+                    metadata={
+                        "status": entry["status"],
+                        "date_bidded": entry["date_bidded"],
+                        "schema_recognized": True,
+                    },
                 ))
+                if housing_intent and len(candidates) >= MAX_SNIPPETS:
+                    break
             return candidates
         except Exception:
             logger.warning("Vanta Brain housing retrieval failed", exc_info=True)
@@ -491,11 +573,11 @@ class VantaBrainService:
             db.close()
 
         try:
-            housing = (_load_for_user(owner) or {}).get("housing-bids-v1")
-            housing_entries = housing.get("entries") if isinstance(housing, dict) and housing.get("version") == 1 else []
-            housing_count = len([row for row in housing_entries if isinstance(row, dict)])
+            housing_schema_recognized, housing_entries = _housing_store(owner)
+            housing_count = len(housing_entries)
         except Exception:
             housing_count = 0
+            housing_schema_recognized = False
             errors.append({"source": "housing", "detail": "Housing count unavailable."})
 
         rag = self._owner_rag_inventory(owner)
@@ -517,7 +599,11 @@ class VantaBrainService:
             "memory": {"ready": not any(e["source"] == "memory" for e in errors), "count": memory_count},
             "notes": {"ready": not any(e["source"] == "database" for e in errors), "count": notes_count},
             "documents": {"ready": not any(e["source"] == "database" for e in errors), "count": document_count},
-            "housing": {"ready": not any(e["source"] == "housing" for e in errors), "count": housing_count},
+            "housing": {
+                "ready": not any(e["source"] == "housing" for e in errors),
+                "count": housing_count,
+                "schema_recognized": housing_schema_recognized,
+            },
             "rag": {
                 **rag,
                 "listed_document_count": len(listed_files),

@@ -204,6 +204,148 @@ def test_malformed_housing_preferences_are_ignored(monkeypatch):
     assert service._housing_candidates("housing", "alice", []) == []
 
 
+def test_generic_housing_intent_returns_latest_alias_entries(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "housing-bids-v1": {
+            "version": 1,
+            "entries": [
+                {
+                    "id": "older",
+                    "property": "Old Kent Road",
+                    "bidDate": "2026-05-01",
+                    "status": "Unsuccessful",
+                },
+                {
+                    "id": "latest",
+                    "address": "12 Camden High Street",
+                    "date": "2026-06-12",
+                    "status": "Pending",
+                    "band": "Band B",
+                    "outcome": "Awaiting shortlist",
+                    "notes": "Near the station",
+                },
+            ],
+        },
+    })
+    service = _service()
+
+    results = service._housing_candidates("What housing bids have I made?", "alice", [])
+
+    assert [result.source_id for result in results] == ["latest", "older"]
+    assert results[0].label == "Housing Bid: 12 Camden High Street"
+    assert "Bid date: 2026-06-12" in results[0].text
+    assert "Priority / band: Band B" in results[0].text
+    assert "Outcome: Awaiting shortlist" in results[0].text
+    assert "Notes: Near the station" in results[0].text
+    assert results[0].score >= 3.0
+
+
+def test_generic_housing_intent_survives_unified_selection(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "housing-bids-v1": {
+            "version": 1,
+            "entries": [
+                {"id": f"h{index}", "propertyArea": f"Property {index}", "dateBidded": f"2026-06-{index + 1:02d}"}
+                for index in range(10)
+            ],
+        },
+    })
+    service = _service()
+    monkeypatch.setattr(service, "_memory_candidates", lambda *args: ([], []))
+    monkeypatch.setattr(service, "_note_candidates", lambda *args: [])
+    monkeypatch.setattr(service, "_document_candidates", lambda *args: [])
+
+    result = service.retrieve(
+        "What housing bids have I made?",
+        "alice",
+        include_memory=False,
+        include_rag=False,
+    )
+
+    housing = [source for source in result.snippets if source.source == "housing"]
+    assert len(housing) == 8
+    assert housing[0].source_id == "h9"
+    assert housing[-1].source_id == "h2"
+
+
+def test_known_property_query_still_returns_housing_entry(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "housing-bids-v1": {
+            "version": 1,
+            "entries": [
+                {"id": "h1", "area": "Camden", "dateBidded": "2026-06-10"},
+                {"id": "h2", "area": "Hackney", "dateBidded": "2026-06-11"},
+            ],
+        },
+    })
+    service = _service()
+
+    results = service._housing_candidates("Camden", "alice", [])
+
+    assert len(results) == 1
+    assert results[0].label == "Housing Bid: Camden"
+
+
+def test_empty_housing_tracker_returns_honest_intent_result(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "housing-bids-v1": {"version": 1, "entries": []},
+    })
+    service = _service()
+
+    results = service._housing_candidates("Show my housing bids", "alice", [])
+
+    assert len(results) == 1
+    assert results[0].metadata["empty"] is True
+    assert "No housing bids are saved" in results[0].text
+
+
+def test_housing_preferences_remain_owner_scoped(monkeypatch):
+    stores = {
+        "alice": {
+            "housing-bids-v1": {
+                "version": 1,
+                "entries": [{"id": "alice-bid", "propertyArea": "Camden", "dateBidded": "2026-06-10"}],
+            },
+        },
+        "bob": {
+            "housing-bids-v1": {
+                "version": 1,
+                "entries": [{"id": "bob-bid", "propertyArea": "Hackney", "dateBidded": "2026-06-11"}],
+            },
+        },
+    }
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: stores[owner])
+    service = _service()
+
+    results = service._housing_candidates("Show my housing bids", "alice", [])
+
+    assert [result.source_id for result in results] == ["alice-bid"]
+    assert all("Hackney" not in result.text for result in results)
+
+
+def test_housing_health_reports_count_and_schema_recognition(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "housing-bids-v1": {
+            "version": 1,
+            "entries": [{"id": "h1", "title": "Council flat", "bidDate": "2026-06-10"}],
+        },
+    })
+    service = _service()
+    monkeypatch.setattr(service, "_owner_rag_inventory", lambda owner: {
+        "ready": True,
+        "healthy": True,
+        "chunk_count": 0,
+        "embedding_lanes": [],
+        "indexed_sources": set(),
+        "detail": "Personal RAG ready.",
+    })
+
+    health = service.health("alice")
+
+    assert health["sources"]["housing"]["count"] == 1
+    assert health["sources"]["housing"]["schema_recognized"] is True
+
+
 def test_dynamic_rag_recovers_and_updates_legacy_manager(monkeypatch):
     docs = _PersonalDocs(rag_manager=None)
     rag = _Rag([{
