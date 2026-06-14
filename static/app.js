@@ -3396,12 +3396,27 @@ function startOdysseusApp() {
 
   // Initialize all event listeners
   try { initializeEventListeners(); } catch(e) { console.error('Event init error:', e); }
+
+  function runCommandRoutine(prompt) {
+    const messageInput = document.getElementById('message');
+    const chatForm = document.getElementById('chat-form');
+    if (!messageInput || !chatForm || !prompt) return;
+    messageInput.value = prompt;
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+    if (typeof chatForm.requestSubmit === 'function') {
+      chatForm.requestSubmit();
+    } else {
+      chatForm.querySelector('button[type="submit"]')?.click();
+    }
+  }
+
   commandCenterModule.init({
     openNotes: () => {
       if (notesModule && notesModule.openPanel) notesModule.openPanel();
     },
     openHousingBids: () => housingBidsModule.open(),
     openBrainHealth: () => brainHealthModule.open(),
+    runRoutine: runCommandRoutine,
   });
 
   // Reveal the toolbar now that all toggle/overflow state is resolved

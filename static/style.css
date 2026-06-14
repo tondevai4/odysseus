@@ -2066,6 +2066,67 @@ body.bg-pattern-sparkles {
       gap: 10px;
       outline: none;
     }
+    .command-routines {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.075);
+    }
+    .command-routines-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 2px 10px;
+      color: #77777d;
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .command-routines-heading span:first-child { color: #b9b9bf; }
+    .command-routines-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+    }
+    .command-routine {
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.075);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #a9a9af;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+    }
+    .command-routine span {
+      display: block;
+      margin-bottom: 4px;
+      color: #77777d;
+      font-size: 0.56rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .command-routine strong {
+      display: block;
+      overflow: hidden;
+      color: #d9d9dd;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .command-routine:hover,
+    .command-routine:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(193, 18, 31, 0.4);
+      background: rgba(193, 18, 31, 0.07);
+      outline: none;
+    }
+    .command-routine-urgent strong { color: #efc8cc; }
     /* Incognito toggle — on welcome screen */
     .incognito-btn {
       pointer-events: auto;
@@ -2133,6 +2194,8 @@ body.bg-pattern-sparkles {
         min-height: 142px;
         padding: 14px;
       }
+      .command-routines-heading span:last-child { display: none; }
+      .command-routines-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .chat-container.welcome-active .chat-input-bar {
         margin-bottom:0;
         margin-left:0;
@@ -2146,8 +2209,10 @@ body.bg-pattern-sparkles {
       .command-card:last-child { grid-column: 1 / -1; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .command-card { transition: none; }
+      .command-card,
+      .command-routine { transition: none; }
       .command-card:hover { transform: none; }
+      .command-routine:hover { transform: none; }
     }
     .msg {
       margin: 8px 0;

@@ -1,6 +1,6 @@
 let _initialized = false;
 
-function init({ openNotes, openHousingBids, openBrainHealth } = {}) {
+function init({ openNotes, openHousingBids, openBrainHealth, runRoutine } = {}) {
   if (_initialized) return;
 
   const commandCenter = document.getElementById('command-center');
@@ -24,6 +24,13 @@ function init({ openNotes, openHousingBids, openBrainHealth } = {}) {
       && typeof openBrainHealth === 'function'
     ) {
       openBrainHealth();
+    }
+    if (
+      action.dataset.commandCenterAction === 'routine'
+      && action.dataset.routinePrompt
+      && typeof runRoutine === 'function'
+    ) {
+      runRoutine(action.dataset.routinePrompt);
     }
   });
 
