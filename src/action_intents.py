@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Iterable, Pattern
+from typing import Any, Iterable, Pattern, Sequence
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,27 @@ class ToolIntent:
 _NOTE_DESTRUCTIVE_RE = re.compile(
     r"\b(delete|remove|archive|overwrite|replace|clear|reset|rename)\b"
     r".{0,180}\bnotes?\b",
+    re.I,
+)
+_NOTE_CONFIRMATION_RE = re.compile(
+    r"^\s*(?:yes|yep|yeah|ok(?:ay)?|sure|create then|create it|go ahead|"
+    r"do it|save it|add it|make the note)\s*[.!]?\s*$",
+    re.I,
+)
+_NOTE_FORMAT_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:format (?:it )?nicely|make (?:it )?(?:neat|clean|tidy)|"
+    r"(?:keep|use) (?:it )?exact(?:ly)? as[- ]is)\s*[.!]?\s*$",
+    re.I,
+)
+_NOTE_WORKFLOW_RE = re.compile(
+    r"\badd\s+to\s+notes?\b|"
+    r"\b(?:create|make|new)\b.{0,100}\bnotes?\b|"
+    r"\bnotes?\s+(?:called|named)\b",
+    re.I,
+)
+_NOTE_TITLE_PROMPT_RE = re.compile(
+    r"\b(?:what|which|provide|give me|need)\b.{0,80}\btitle\b|"
+    r"\btitle\b.{0,80}\b(?:note|use|want|call)\b",
     re.I,
 )
 
@@ -80,6 +101,7 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("notes", "assistant note/todo action request", rf"{_ACTION_QUESTION}(?:add|create|make|take|jot|write\s+down|set)\b.{{0,120}}\b(?:note|todo|task|checklist|reminder)\b"),
         ("notes", "note/todo imperative request", rf"{_PLEASE}(?:add|create|make)\s+(?:a\s+|an\s+)?(?:todo|task|reminder|note|checklist)\b"),
         ("notes", "named note creation request", rf"{_PLEASE}(?:make|create)\s+(?:me\s+)?(?:a\s+)?(?:checklist\s+)?note\s+(?:called|named)\b"),
+        ("notes", "new note request", rf"{_PLEASE}new\s+(?:checklist\s+)?note\b"),
         ("notes", "append to named note request", rf"{_PLEASE}(?:add|append|put)\b.{{0,160}}\bto\s+(?:a\s+|my\s+|the\s+)?note\s+(?:called|named)\b"),
         ("notes", "protected note mutation request", rf"{_PLEASE}(?:delete|remove|archive|overwrite|replace|clear|reset|rename)\b.{{0,180}}\bnotes?\b"),
         ("notes", "take note request", rf"{_PLEASE}(?:take|jot|write\s+down)\s+(?:a\s+|an\s+)?note\b"),
@@ -143,6 +165,54 @@ def classify_tool_intent(text: str) -> ToolIntent:
         if pattern.search(text):
             return ToolIntent(True, category=category, reason=reason)
     return ToolIntent(False, reason="no tool-action pattern matched")
+
+
+def _message_text(message: Any) -> str:
+    if hasattr(message, "get"):
+        return str(message.get("content", "") or "")
+    return str(getattr(message, "content", "") or "")
+
+
+def pending_note_workflow(messages: Sequence[Any], limit: int = 10) -> bool:
+    """Return whether recent history contains an unfinished Notes workflow."""
+    recent = list(messages or [])[-limit:]
+    saw_note_request = any(
+        str(message.get("role", "") if hasattr(message, "get") else getattr(message, "role", "")).lower() == "user"
+        and _NOTE_WORKFLOW_RE.search(_message_text(message))
+        for message in recent
+    )
+    if not saw_note_request:
+        return False
+    return any(
+        str(message.get("role", "") if hasattr(message, "get") else getattr(message, "role", "")).lower() == "assistant"
+        and re.search(r"\b(?:format|formatted|draft|note|title|save|create|as-is)\b", _message_text(message), re.I)
+        for message in recent
+    )
+
+
+def note_followup_turn(text: str, messages: Sequence[Any]) -> bool:
+    """Recognize a short follow-up that continues a pending Notes action."""
+    if not pending_note_workflow(messages):
+        return False
+    if _NOTE_CONFIRMATION_RE.match(text or "") or _NOTE_FORMAT_FOLLOWUP_RE.match(text or ""):
+        return True
+    recent = list(messages or [])
+    if recent:
+        latest = recent[-1]
+        role = latest.get("role", "") if hasattr(latest, "get") else getattr(latest, "role", "")
+        if str(role).lower() == "assistant" and _NOTE_TITLE_PROMPT_RE.search(_message_text(latest)):
+            return bool((text or "").strip())
+    return False
+
+
+def classify_tool_intent_with_context(text: str, messages: Sequence[Any]) -> ToolIntent:
+    """Classify a turn, recovering short Notes follow-ups from chat history."""
+    direct = classify_tool_intent(text)
+    if direct.needs_tools:
+        return direct
+    if note_followup_turn(text, messages):
+        return ToolIntent(True, category="notes", reason="pending Notes workflow follow-up")
+    return direct
 
 
 def message_needs_tools(text: str, patterns: Iterable[Pattern[str]] = _TOOL_INTENT_PATTERNS) -> bool:

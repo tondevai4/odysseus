@@ -200,6 +200,7 @@ class ChatProcessor:
         agent_mode: bool = False,
         incognito: bool = False,
         use_skills: bool = True,
+        note_action_turn: bool = False,
     ) -> Tuple[List[Dict[str, str]], List[Dict[str, Any]], List[Dict[str, str]]]:
         """Build the context preface for LLM calls.
 
@@ -239,7 +240,7 @@ class ChatProcessor:
                 )
             })
         routine = resolve_active_vanta_routine(message, session)
-        note_intent = note_management_intent(message)
+        note_intent = note_action_turn or note_management_intent(message)
         reading_turn = (
             reading_context_intent(message) or reading_management_intent(message)
         ) and routine is None
@@ -302,6 +303,25 @@ class ChatProcessor:
                 "content": (
                     "This is a destructive Notes request. Do not call any Notes "
                     f"tool. Reply exactly: \"{note_reply}\""
+                ),
+            })
+        elif note_action_turn:
+            preface.append({
+                "role": "system",
+                "content": (
+                    "This turn continues or starts a Notes action. Use "
+                    "`manage_notes`, never `manage_memory`. Recover the pending "
+                    "title and content from recent conversation history. If the "
+                    "assistant already formatted a draft, that formatted draft "
+                    "is the pending note content. A confirmation such as "
+                    "\"create then\", \"go ahead\", \"yes\", \"do it\", "
+                    "\"save it\", \"add it\", \"make the note\", or "
+                    "\"create it\" means execute the pending non-destructive "
+                    "action now. For a new note call action=add with note_type=note. "
+                    "Do not claim Notes are unavailable while `manage_notes` is "
+                    "available. Ask only for a missing title or genuinely ambiguous "
+                    "target. Never delete, archive, replace, clear, reset, or "
+                    "overwrite note content from chat."
                 ),
             })
         if _finance_payment_request(message):

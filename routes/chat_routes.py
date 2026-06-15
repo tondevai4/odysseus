@@ -41,7 +41,9 @@ from routes.chat_helpers import (
 )
 from src.action_intents import (
     classify_tool_intent as _classify_tool_intent,
+    classify_tool_intent_with_context as _classify_tool_intent_with_context,
     destructive_note_action as _destructive_note_action,
+    note_followup_turn as _note_followup_turn,
 )
 from src.tool_policy import build_effective_tool_policy
 
@@ -517,6 +519,7 @@ def setup_chat_routes(
         # its way through a plain chat request (and fail, especially with the
         # shell disabled).
         auto_escalated = False
+        _note_action_turn = False
         _tool_intent = _classify_tool_intent(message) if isinstance(message, str) else None
         if chat_mode == "chat" and _tool_intent and _tool_intent.needs_tools:
             chat_mode = "agent"
@@ -544,6 +547,21 @@ def setup_chat_routes(
             _verify_session_owner(request, session)
             sess = session_manager.get_session(session)
             owner = get_current_user(request)
+            _contextual_intent = _classify_tool_intent_with_context(message, sess.history)
+            if _contextual_intent.needs_tools:
+                _tool_intent = _contextual_intent
+                _note_action_turn = bool(
+                    _tool_intent.category == "notes"
+                    or _note_followup_turn(message, sess.history)
+                )
+                if chat_mode == "chat":
+                    chat_mode = "agent"
+                    auto_escalated = True
+                    logger.info(
+                        "chat-to-agent contextual escalation: category=%s reason=%s",
+                        _tool_intent.category,
+                        _tool_intent.reason,
+                    )
             if _clear_orphaned_session_endpoint(sess, owner=owner):
                 raise HTTPException(400, "Selected model endpoint was removed. Pick another model in Settings.")
             # Issue #587: picker shows a model from the endpoint cache but
@@ -619,6 +637,7 @@ def setup_chat_routes(
             # index would be useless / unwanted noise.
             agent_mode=(chat_mode == "agent"),
             allow_tool_preprocessing=allow_tool_preprocessing,
+            note_action_turn=_note_action_turn,
         )
 
         _research_flags = {"do": do_research}  # Mutable container for generator scope
@@ -725,6 +744,9 @@ def setup_chat_routes(
             # tool out of the model's available schema so no delete/update
             # attempt is made before that refusal.
             disabled_tools.add("manage_notes")
+        if _tool_intent and _tool_intent.category == "notes":
+            # Note content belongs in Notes, never ambient memory.
+            disabled_tools.add("manage_memory")
         if _tool_intent and _tool_intent.category == "reading":
             # Reading state belongs on the shelf item, never in Notes or
             # ambient memory.
