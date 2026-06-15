@@ -107,8 +107,14 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
 
         # Gym / Body tracker actions and lookups.
         ("gym", "log workout", rf"{_PLEASE}(?:log|record|create)\b.{{0,100}}\b(?:gym|workout|training)\b"),
+        ("gym", "start live workout", rf"{_PLEASE}start\b.{{0,100}}\bworkout\b"),
+        ("gym", "add live workout set", rf"{_PLEASE}add\b.{{0,140}}\b\d+(?:\.\d+)?\s*(?:kg|lb|lbs)\b.{{0,30}}\bx?\s*\d+\b"),
+        ("gym", "finish live workout", rf"{_PLEASE}(?:finish|save)\b.{{0,80}}\bworkout\b"),
+        ("gym", "update Garmin metrics", rf"{_PLEASE}(?:add|update|set)\b.{{0,180}}\b(?:garmin|heart\s*rate|active\s*calories|primary\s*benefit|intensity\s*minutes|body\s*battery)\b"),
         ("gym", "append workout note", rf"{_PLEASE}add\b.{{0,120}}\bto\s+(?:today'?s?\s+)?(?:gym|workout)\s+log\b"),
         ("gym", "latest workout lookup", r"\bwhat\s+was\s+my\s+(?:last|latest)\s+workout\b"),
+        ("gym", "Garmin workout lookup", r"\bwhat\s+did\s+garmin\s+say\b.{0,100}\bworkout\b"),
+        ("gym", "workout difficulty lookup", r"\bhow\s+hard\s+was\b.{0,100}\b(?:session|workout)\b"),
         ("gym", "next training lookup", r"\bwhat\s+should\s+i\s+train\s+next\b"),
         ("gym", "exercise progress lookup", r"\bshow\s+my\s+.{1,100}\s+progress\b"),
         ("gym", "delete workout request", rf"{_PLEASE}(?:delete|remove)\b.{{0,120}}\b(?:gym|workout|training)\s+log\b"),
@@ -212,11 +218,19 @@ def gym_context_intent(text: str) -> bool:
     return any(phrase in normalized for phrase in (
         "what should i train",
         "last workout",
+        "leg press",
         "leg press progress",
         "heart rate",
         "active calories",
         "total reps",
         "total sets",
+        "start a full body workout",
+        "finish workout",
+        "add another set",
+        "primary benefit",
+        "intensity minutes",
+        "body battery",
+        "how hard was that session",
     ))
 
 

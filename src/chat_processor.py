@@ -354,7 +354,11 @@ class ChatProcessor:
                 "role": "system",
                 "content": (
                     "Use the private Gym Log for this turn, never memory or "
-                    "free-form Notes. Encourage steady progress without shame, "
+                    "free-form Notes. Use live session actions for start/add set/"
+                    "finish commands and update_garmin for watch summaries. "
+                    "Preserve pasted Garmin text as raw_garmin_text. For training "
+                    "advice, use the last workout's exercises, notes, effort, and "
+                    "recovery signals; avoid ego lifting. Encourage steady progress without shame, "
                     "eating-disorder framing, or unsafe extreme calorie cuts. "
                     "If the user reports pain, dizziness, injury, chest pain, "
                     "fainting, or severe symptoms, advise stopping and seeking "

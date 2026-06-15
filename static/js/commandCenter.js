@@ -79,7 +79,21 @@ async function _loadLatestWorkout() {
     if (entry.duration) _text(meta, 'span', '', `Duration: ${entry.duration}`);
     if (entry.total_sets !== null) _text(meta, 'span', '', `Sets: ${entry.total_sets}`);
     if (entry.total_reps !== null) _text(meta, 'span', '', `Reps: ${entry.total_reps}`);
-    _text(body, 'p', 'command-reading-notes', 'Next: recover, then train the next movement with clean form.');
+    if (entry.active_calories !== null) {
+      _text(meta, 'span', '', `Active kcal: ${entry.active_calories}`);
+    }
+    if (entry.primary_benefit) {
+      _text(body, 'p', 'command-reading-notes', entry.primary_benefit);
+    }
+    let hint = 'Next: recover, then train the next movement with clean form.';
+    if (
+      Number(entry.max_hr || 0) >= 165
+      || Number(entry.body_battery_net_impact || 0) <= -10
+      || /anaerobic|high aerobic/i.test(entry.primary_benefit || '')
+    ) {
+      hint = 'Hard session. Recover first; keep the next effort controlled.';
+    }
+    _text(body, 'p', 'command-reading-notes', hint);
   } catch (error) {
     _text(body, 'p', 'command-reading-empty', 'Gym Log is unavailable right now.');
   }

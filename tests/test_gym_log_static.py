@@ -20,5 +20,20 @@ def test_gym_panel_and_command_center_wiring():
     assert "No gym log yet. Log today’s proof." in command
     assert "textContent" in panel
     assert "innerHTML" in panel  # fixed application-owned modal shell only
+    assert "Start Workout" in panel
+    assert "Add Set" in panel
+    assert "Delete Last Set" in panel
+    assert "Finish Workout" in panel
+    assert "Reset 90s" in panel
+    assert "Garmin stats" in panel
+    assert "window.prompt" not in panel
+    assert "Start Logging" in panel
+    assert "'/session/start'" in panel
+    assert "'/session/set'" in panel
+    assert "'/session/finish'" in panel
+    assert "entry.active_calories" in command
+    assert "entry.primary_benefit" in command
     assert "@media (max-width: 640px)" in css
     assert ".gym-log-content" in css
+    assert ".gym-live-stepper-controls" in css
+    assert ".gym-rest-timer" in css
