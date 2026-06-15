@@ -152,6 +152,24 @@ def current_reading_item(owner: Optional[str]) -> Optional[Dict[str, Any]]:
     return None
 
 
+def chat_current_reading_item(owner: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Select the most useful item when chat asks what to read."""
+    current = current_reading_item(owner)
+    if current:
+        return current
+    items = load_reading_list(owner)["items"]
+    if not items:
+        return None
+    relevant = [
+        item for item in items
+        if item.get("status") in {"paused", "want_to_read"}
+    ] or items
+    return _with_document(
+        max(relevant, key=lambda item: item.get("updated_at", "")),
+        owner,
+    )
+
+
 def _resolve_item(
     items: List[Dict[str, str]],
     identifier: str,
@@ -260,7 +278,12 @@ async def manage_reading_list_tool(content: str, owner: Optional[str]) -> Dict[s
     try:
         if action == "list":
             items = list_reading_items(owner)
-            return {"items": items, "count": len(items), "exit_code": 0}
+            return {
+                "items": items,
+                "current_item": chat_current_reading_item(owner),
+                "count": len(items),
+                "exit_code": 0,
+            }
         if action == "add":
             item = add_reading_item(owner, args)
             return {

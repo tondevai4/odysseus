@@ -353,7 +353,8 @@ class ToolIndex:
             {"manage_notes"},
         frozenset({"reading list", "reading shelf", "add book", "mark as reading",
                    "mark as finished", "mark as paused", "reading progress",
-                   "chapter", "what should i read", "reading note",
+                   "set my progress", "update my progress", "chapter",
+                   "what am i reading", "what should i read", "reading note",
                    "add this note to"}):
             {"manage_reading_list"},
         # Chat/session management. "rename" alone maps to documents below, so a
@@ -497,6 +498,14 @@ class ToolIndex:
         for keywords, tools in self._KEYWORD_HINTS.items():
             if any(re.search(rf"\b{re.escape(kw)}\b", ql) for kw in keywords):
                 base.update(tools)
+        try:
+            from src.action_intents import reading_context_intent
+
+            if reading_context_intent(query):
+                base.add("manage_reading_list")
+                base.discard("manage_memory")
+        except Exception:
+            pass
         # Structural scheduling-intent detection — typo-resilient (the literal
         # keyword "every day" misses "every dya"). Catches "every <word>",
         # daily/nightly/etc., or a clock time like "at 7:30 am" / "7am", which
