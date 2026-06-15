@@ -54,6 +54,7 @@ _COMMON_TOOL_NAMES = {
     "manage_mcp",
     "manage_memory",
     "manage_notes",
+    "manage_reading_list",
     "manage_research",
     "manage_session",
     "manage_settings",

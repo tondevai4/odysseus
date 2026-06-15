@@ -29,6 +29,7 @@ import adminModule from './js/admin.js';
 import settingsModule from './js/settings.js';
 import commandCenterModule from './js/commandCenter.js';
 import housingBidsModule from './js/housingBids.js';
+import readingListModule from './js/readingList.js';
 import brainHealthModule from './js/brainHealth.js';
 // Eagerly bind unified minimize/restore behavior across all tool modals.
 import './js/modalManager.js';
@@ -937,6 +938,13 @@ function initializeEventListeners() {
     toolHousingBidsBtn.addEventListener('click', () => {
       if (housingBidsModule.isOpen()) housingBidsModule.close();
       else housingBidsModule.open();
+    });
+  }
+  const toolReadingListBtn = el('tool-reading-list-btn');
+  if (toolReadingListBtn) {
+    toolReadingListBtn.addEventListener('click', () => {
+      if (readingListModule.isOpen()) readingListModule.close();
+      else readingListModule.open();
     });
   }
   // Refresh notes due-reminder badge on load and every 5 minutes

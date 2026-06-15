@@ -287,6 +287,52 @@ def _housing_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, str]]]:
     return True, entries
 
 
+def _reading_intent(query: str) -> bool:
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
+    tokens = set(normalized.split())
+    if tokens & {"reading", "book", "books", "bookshelf", "learning"}:
+        return True
+    return any(phrase in normalized for phrase in (
+        "reading list",
+        "reading shelf",
+        "what should i read",
+        "current book",
+        "tonight s reading",
+        "tonights reading",
+    ))
+
+
+def _reading_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, str]]]:
+    value = (_load_for_user(owner) or {}).get("reading-list-v1")
+    recognized = (
+        isinstance(value, dict)
+        and value.get("version") == 1
+        and isinstance(value.get("items"), list)
+    )
+    if not recognized:
+        return False, []
+    items = []
+    for row in value["items"]:
+        if not isinstance(row, dict):
+            continue
+        title = _clean_text(row.get("title"), 200)
+        if not title:
+            continue
+        items.append({
+            "id": _clean_text(row.get("id"), 100),
+            "title": title,
+            "author": _clean_text(row.get("author"), 160),
+            "category": _clean_text(row.get("category"), 40),
+            "status": _clean_text(row.get("status"), 40),
+            "priority": _clean_text(row.get("priority"), 30),
+            "progress": _clean_text(row.get("progress"), 160),
+            "notes": _clean_text(row.get("notes"), 500),
+            "document_id": _clean_text(row.get("document_id"), 100),
+            "updated_at": _clean_text(row.get("updated_at"), 50),
+        })
+    return True, items
+
+
 class VantaBrainService:
     """Collect small, labelled snippets without mutating source stores."""
 
@@ -825,6 +871,67 @@ class VantaBrainService:
             errors.append({"source": "rag", "detail": "Personal RAG search degraded."})
             return [], []
 
+    def _reading_candidates(
+        self,
+        query: str,
+        owner: Optional[str],
+        errors: List[Dict[str, str]],
+    ) -> List[BrainSnippet]:
+        if not _reading_intent(query):
+            return []
+        try:
+            recognized, items = _reading_store(owner)
+        except Exception:
+            logger.warning("Vanta Brain reading-list retrieval failed", exc_info=True)
+            errors.append({"source": "reading", "detail": "Reading list unavailable."})
+            return []
+        if not recognized or not items:
+            return [BrainSnippet(
+                source="reading",
+                source_id="reading-list-empty",
+                label="Reading List",
+                text="No books or documents are saved on the reading list yet.",
+                score=3.0,
+                metadata={"status": "empty"},
+            )]
+
+        candidates = []
+        for item in items:
+            parts = [
+                f'Title: {item["title"]}',
+                f'Status: {item["status"] or "want_to_read"}',
+                f'Priority: {item["priority"] or "normal"}',
+            ]
+            if item["author"]:
+                parts.append(f'Author: {item["author"]}')
+            if item["category"]:
+                parts.append(f'Category: {item["category"]}')
+            if item["progress"]:
+                parts.append(f'Progress: {item["progress"]}')
+            if item["notes"]:
+                parts.append(f'Notes: {item["notes"]}')
+            if item["document_id"]:
+                parts.append("Linked Library document: yes")
+            searchable = " ".join(parts)
+            score = 2.5 + _keyword_score(query, searchable)
+            if item["status"] == "reading":
+                score += 0.45
+            if item["priority"] == "high":
+                score += 0.25
+            candidates.append(BrainSnippet(
+                source="reading",
+                source_id=item["id"],
+                label=f'Reading: {item["title"]}',
+                text="\n".join(parts),
+                score=score,
+                metadata={
+                    "status": item["status"],
+                    "document_id": item["document_id"] or None,
+                },
+            ))
+        candidates.sort(key=lambda item: (-item.score, item.label.lower()))
+        return candidates[:MAX_SNIPPETS]
+
     def retrieve(
         self,
         query: str,
@@ -848,6 +955,7 @@ class VantaBrainService:
             result.errors,
         ))
         candidates.extend(self._finance_candidates(query, owner, result.errors))
+        candidates.extend(self._reading_candidates(query, owner, result.errors))
         if include_rag:
             rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
             candidates.extend(rag)
@@ -984,6 +1092,14 @@ class VantaBrainService:
             housing_schema_recognized = False
             errors.append({"source": "housing", "detail": "Housing count unavailable."})
 
+        try:
+            reading_schema_recognized, reading_items = _reading_store(owner)
+            reading_count = len(reading_items)
+        except Exception:
+            reading_count = 0
+            reading_schema_recognized = False
+            errors.append({"source": "reading", "detail": "Reading-list count unavailable."})
+
         rag = self._owner_rag_inventory(owner)
         indexed_sources = rag.pop("indexed_sources")
         listed_files = []
@@ -1007,6 +1123,11 @@ class VantaBrainService:
                 "ready": not any(e["source"] == "housing" for e in errors),
                 "count": housing_count,
                 "schema_recognized": housing_schema_recognized,
+            },
+            "reading": {
+                "ready": not any(e["source"] == "reading" for e in errors),
+                "count": reading_count,
+                "schema_recognized": reading_schema_recognized,
             },
             "rag": {
                 **rag,

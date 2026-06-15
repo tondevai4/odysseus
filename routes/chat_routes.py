@@ -713,6 +713,7 @@ def setup_chat_routes(
                 "search_chats",       # past chat history
                 "manage_skills",      # skill presets tied to user
                 "manage_notes",       # private notes
+                "manage_reading_list",  # private reading list
                 "manage_documents",   # private Library documents
             })
         if (
