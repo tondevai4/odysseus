@@ -26,6 +26,14 @@ _NOTE_DESTRUCTIVE_RE = re.compile(
     r".{0,180}\bnotes?\b",
     re.I,
 )
+_DIRECT_NOTE_PAYLOAD_RE = re.compile(
+    r"^\s*(?:create|make)\s+(?:me\s+)?(?:a\s+)?(?:new\s+)?"
+    r"(?:checklist\s+)?note\s+(?:called|named)\b.+?"
+    r"(?:\s+with(?:\s+this)?\s*:|\s+saying\s+|:\s*)|"
+    r"^\s*add\s+this\s+to\s+(?:a\s+)?new\s+(?:checklist\s+)?"
+    r"note\s+(?:called|named)\b.+?:\s*",
+    re.I | re.S,
+)
 
 
 _ACTION_QUESTION = r"\b(?:can|could|would|will)\s+you\s+"
@@ -79,7 +87,8 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("notes", "reminder request", r"\bremind\s+me\b"),
         ("notes", "assistant note/todo action request", rf"{_ACTION_QUESTION}(?:add|create|make|take|jot|write\s+down|set)\b.{{0,120}}\b(?:note|todo|task|checklist|reminder)\b"),
         ("notes", "note/todo imperative request", rf"{_PLEASE}(?:add|create|make)\s+(?:a\s+|an\s+)?(?:todo|task|reminder|note|checklist)\b"),
-        ("notes", "named note creation request", rf"{_PLEASE}(?:make|create)\s+(?:me\s+)?(?:a\s+)?(?:checklist\s+)?note\s+(?:called|named)\b"),
+        ("notes", "named note creation request", rf"{_PLEASE}(?:make|create)\s+(?:me\s+)?(?:a\s+)?(?:new\s+)?(?:checklist\s+)?note\s+(?:called|named)\b"),
+        ("notes", "add content to new named note", rf"{_PLEASE}add\b.{{0,80}}\bto\s+(?:a\s+)?new\s+(?:checklist\s+)?note\s+(?:called|named)\b"),
         ("notes", "append to named note request", rf"{_PLEASE}(?:add|append|put)\b.{{0,160}}\bto\s+(?:a\s+|my\s+|the\s+)?note\s+(?:called|named)\b"),
         ("notes", "protected note mutation request", rf"{_PLEASE}(?:delete|remove|archive|overwrite|replace|clear|reset|rename)\b.{{0,180}}\bnotes?\b"),
         ("notes", "take note request", rf"{_PLEASE}(?:take|jot|write\s+down)\s+(?:a\s+|an\s+)?note\b"),
@@ -185,5 +194,12 @@ def reading_management_intent(text: str) -> bool:
 
 def destructive_note_action(text: str) -> str:
     """Return the destructive Notes verb, or an empty string."""
-    match = _NOTE_DESTRUCTIVE_RE.search(text or "")
+    candidate = text or ""
+    payload = _DIRECT_NOTE_PAYLOAD_RE.match(candidate)
+    if payload:
+        # Commands inside a directly supplied note body are inert payload data,
+        # not instructions that can turn an allowed create into a destructive
+        # chat action.
+        candidate = candidate[:payload.end()]
+    match = _NOTE_DESTRUCTIVE_RE.search(candidate)
     return match.group(1).lower() if match else ""
