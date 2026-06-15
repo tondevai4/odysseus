@@ -248,6 +248,9 @@ _DOMAIN_RULES = {
     "reading": """\
 ## Reading List rules
 - Use `manage_reading_list` to list, add, or update the owner's Reading List.
+- "What am I reading?" and "What should I read tonight?" use action=list and
+  report the returned current_item. Do not search or write memory.
+- Reading progress, status, and book notes belong only in manage_reading_list.
 - Never delete a reading item from chat.
 - Only link a Library document when its owner-visible document id is known.""",
     "ui": """\
@@ -423,6 +426,9 @@ Generate an image. Line 1 = description, line 2 = model name, line 3 = WxH (e.g.
 ```manage_reading_list
 {"action": "add", "title": "Can't Hurt Me", "status": "want_to_read"}
 ```
+Use `{"action":"list"}` for "What am I reading?" or recommendations. Progress
+updates use `{"action":"update","title":"Can't Hurt Me","progress":"chapter 3"}`.
+Book notes use `{"action":"append_note","title":"Can't Hurt Me","note":"..."}`.
 Private Reading List actions: `list`, `add`, `update`, and `append_note`. Update by exact
 `title` or item `id`; fields include author, category, status, priority,
 progress, notes, and owner-visible `document_id`. Use `append_note` with `note`
@@ -793,7 +799,7 @@ def _classify_agent_request(messages: List[Dict], last_user: str) -> Dict[str, o
         domains.add("email")
     if has(r"\b(note|todo|to-do|checklist|task list|remind me|reminder|buy|pickup|pick up)\b"):
         domains.add("notes_calendar_tasks")
-    if has(r"\b(reading list|reading shelf|add book|mark .{0,80} as reading|mark .{0,80} as finished|mark .{0,80} as paused|reading progress|add .{0,40} note to)\b"):
+    if has(r"\b(reading list|reading shelf|add book|mark .{0,80} as reading|mark .{0,80} as finished|mark .{0,80} as paused|(?:set|update) (?:my )?progress on|reading progress|what am i reading|what should i read|add .{0,40} note to)\b"):
         domains.add("reading")
     if has(r"\b(every day|every morning|every evening|recurring|automatically|cron|scheduled task|background task)\b"):
         domains.add("notes_calendar_tasks")

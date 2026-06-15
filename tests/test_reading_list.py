@@ -8,6 +8,7 @@ from services.reading_list import (
     ReadingListError,
     add_reading_item,
     append_reading_note,
+    chat_current_reading_item,
     current_reading_item,
     list_reading_items,
     manage_reading_list_tool,
@@ -16,6 +17,8 @@ from services.reading_list import (
 from services.vanta_brain import BrainRetrieval, BrainSnippet, VantaBrainService
 from src.action_intents import classify_tool_intent
 from src.chat_processor import ChatProcessor
+from src.tool_index import ToolIndex
+from src.tool_policy import build_effective_tool_policy
 
 
 class _Memory:
@@ -104,6 +107,26 @@ def test_current_book_selection_prefers_reading_priority_and_recency(monkeypatch
     update_reading_item("alice", "Normal Current", {"status": "finished"})
     assert current_reading_item("alice")["title"] == "Next Book"
     assert current_reading_item("bob") is None
+
+
+def test_chat_current_item_falls_back_to_recent_relevant_item(monkeypatch, tmp_path):
+    _prefs_file(monkeypatch, tmp_path)
+    add_reading_item("alice", {
+        "title": "Finished Book",
+        "status": "finished",
+        "priority": "high",
+    })
+    paused = add_reading_item("alice", {
+        "title": "Paused Book",
+        "status": "paused",
+    })
+    assert chat_current_reading_item("alice")["id"] == paused["id"]
+
+    listed = asyncio.run(manage_reading_list_tool(
+        json.dumps({"action": "list"}),
+        "alice",
+    ))
+    assert listed["current_item"]["title"] == "Paused Book"
 
 
 def test_append_reading_note_preserves_existing_and_asks_on_ambiguity(monkeypatch, tmp_path):
@@ -196,8 +219,11 @@ def test_chat_requests_reading_only_brain_scope():
 def test_reading_actions_promote_to_tools_and_incognito_blocks_them():
     assert classify_tool_intent("Add Can't Hurt Me to my reading list.").category == "reading"
     assert classify_tool_intent("Set my progress on Can't Hurt Me to chapter 3.").category == "reading"
+    assert classify_tool_intent("Update my progress on Can't Hurt Me to 40%.").category == "reading"
     assert classify_tool_intent("Mark Can't Hurt Me as paused.").category == "reading"
     assert classify_tool_intent("Add this note to Can't Hurt Me: stay hard.").category == "reading"
+    assert classify_tool_intent("What am I reading?").category == "reading"
+    assert classify_tool_intent("What should I read tonight?").category == "reading"
     processor = ChatProcessor(_Memory(), _Docs())
     preface, _, _ = processor.build_context_preface(
         "Mark Can't Hurt Me as finished.",
@@ -210,6 +236,33 @@ def test_reading_actions_promote_to_tools_and_incognito_blocks_them():
         "reading list actions are disabled in incognito/private mode" in row["content"]
         for row in preface
     )
+
+
+def test_reading_turn_policy_hides_memory_and_notes():
+    for message in (
+        "Set my progress on Can't Hurt Me to chapter 3.",
+        "What am I reading?",
+        "What should I read tonight?",
+        "Add a reading note to Can't Hurt Me: review chapter 3.",
+    ):
+        policy = build_effective_tool_policy(last_user_message=message)
+        assert policy.blocks("manage_memory")
+        assert policy.blocks("manage_notes")
+        assert not policy.blocks("manage_reading_list")
+
+
+def test_reading_tool_hints_force_reading_list_not_memory():
+    index = ToolIndex.__new__(ToolIndex)
+    index.retrieve = lambda _query, k=8: []
+    tools = index.get_tools_for_query("What am I reading?")
+    assert "manage_reading_list" in tools
+    assert "manage_memory" not in tools
+
+
+def test_chat_route_disables_memory_for_reading_tool_turns():
+    root = Path(__file__).resolve().parents[1]
+    source = (root / "routes" / "chat_routes.py").read_text(encoding="utf-8")
+    assert 'disabled_tools.update({"manage_memory", "manage_notes"})' in source
 
 
 def test_reading_list_static_wiring():

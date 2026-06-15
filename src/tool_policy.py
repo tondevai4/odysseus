@@ -203,6 +203,19 @@ def build_effective_tool_policy(
             disable_mcp=True,
         )
 
+    # Reading List state is distinct from persistent memory. Hiding memory at
+    # policy level prevents models from storing progress or searching generic
+    # memories when the dedicated owner-scoped Reading List tool applies.
+    try:
+        from src.action_intents import reading_context_intent
+
+        if reading_context_intent(str(last_user_message or "")):
+            for tool in ("manage_memory", "manage_notes"):
+                hidden.add(tool)
+                reasons[tool] = "Use manage_reading_list for Reading List requests."
+    except Exception:
+        pass
+
     return ToolPolicy(
         disabled_tools=frozenset(disabled),
         hidden_tools=frozenset(hidden),

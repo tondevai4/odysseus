@@ -726,8 +726,9 @@ def setup_chat_routes(
             # attempt is made before that refusal.
             disabled_tools.add("manage_notes")
         if _tool_intent and _tool_intent.category == "reading":
-            # Reading notes belong on the shelf item, not in unrelated Notes.
-            disabled_tools.add("manage_notes")
+            # Reading state belongs on the shelf item, never in Notes or
+            # ambient memory.
+            disabled_tools.update({"manage_memory", "manage_notes"})
 
         # Enforce per-user privileges
         _privs = {}
