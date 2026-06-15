@@ -92,6 +92,7 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("reading", "add reading-list item", rf"{_PLEASE}(?:add|put)\b.{{0,140}}\b(?:reading\s+list|reading\s+shelf)\b"),
         ("reading", "update reading-list status", rf"{_PLEASE}mark\b.{{0,140}}\b(?:as\s+)?(?:reading|finished|paused|want(?:ing)?\s+to\s+read)\b"),
         ("reading", "update reading progress", rf"{_PLEASE}set\b.{{0,140}}\bprogress\b.{{0,140}}\b(?:book|reading|chapter|page|percent)\b"),
+        ("reading", "append reading note", rf"{_PLEASE}add\s+(?:this\s+|a\s+reading\s+)?note\s+to\b.{{0,220}}"),
 
         # Email actions.
         ("email", "assistant email action request", rf"{_ACTION_QUESTION}(?:send|write|reply|email|message|archive|delete|mark)\b.{{0,120}}\b(?:emails?|mail|messages?|inbox|unread|read)\b"),
@@ -156,6 +157,28 @@ def message_needs_tools(text: str, patterns: Iterable[Pattern[str]] = _TOOL_INTE
 def note_management_intent(text: str) -> bool:
     """Return whether the turn is an actionable Notes request."""
     return classify_tool_intent(text).category == "notes"
+
+
+def reading_context_intent(text: str) -> bool:
+    """Return whether a turn is specifically about the Reading List/books."""
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
+    tokens = set(normalized.split())
+    if tokens & {"reading", "book", "books", "bookshelf"}:
+        return True
+    return any(phrase in normalized for phrase in (
+        "what am i reading",
+        "what should i read",
+        "current book",
+        "reading list",
+        "reading shelf",
+        "my progress on",
+        "add this note to",
+    ))
+
+
+def reading_management_intent(text: str) -> bool:
+    """Return whether the turn asks to mutate the Reading List."""
+    return classify_tool_intent(text).category == "reading"
 
 
 def destructive_note_action(text: str) -> str:

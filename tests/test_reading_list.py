@@ -5,12 +5,15 @@ from pathlib import Path
 import routes.prefs_routes as prefs_routes
 import services.vanta_brain as brain_module
 from services.reading_list import (
+    ReadingListError,
     add_reading_item,
+    append_reading_note,
+    current_reading_item,
     list_reading_items,
     manage_reading_list_tool,
     update_reading_item,
 )
-from services.vanta_brain import VantaBrainService
+from services.vanta_brain import BrainRetrieval, BrainSnippet, VantaBrainService
 from src.action_intents import classify_tool_intent
 from src.chat_processor import ChatProcessor
 
@@ -78,6 +81,48 @@ def test_chat_tool_add_update_and_delete_refusal(monkeypatch, tmp_path):
     assert "not available from chat" in refused["error"]
 
 
+def test_current_book_selection_prefers_reading_priority_and_recency(monkeypatch, tmp_path):
+    _prefs_file(monkeypatch, tmp_path)
+    add_reading_item("alice", {
+        "title": "Normal Current",
+        "status": "reading",
+        "priority": "normal",
+    })
+    add_reading_item("alice", {
+        "title": "High Current",
+        "status": "reading",
+        "priority": "high",
+    })
+    add_reading_item("alice", {
+        "title": "Next Book",
+        "status": "want_to_read",
+        "priority": "high",
+    })
+    assert current_reading_item("alice")["title"] == "High Current"
+
+    update_reading_item("alice", "High Current", {"status": "finished"})
+    update_reading_item("alice", "Normal Current", {"status": "finished"})
+    assert current_reading_item("alice")["title"] == "Next Book"
+    assert current_reading_item("bob") is None
+
+
+def test_append_reading_note_preserves_existing_and_asks_on_ambiguity(monkeypatch, tmp_path):
+    _prefs_file(monkeypatch, tmp_path)
+    add_reading_item("alice", {"title": "Can't Hurt Me", "notes": "First note"})
+    updated = append_reading_note("alice", "Can't Hurt Me", "Chapter 3 hit hard.")
+    assert updated["notes"] == "First note\nChapter 3 hit hard."
+
+    add_reading_item("alice", {"title": "Deep Work"})
+    add_reading_item("alice", {"title": "Deep Work Workbook"})
+    try:
+        append_reading_note("alice", "Deep", "Ambiguous note")
+    except ReadingListError as exc:
+        assert "ambiguous" in str(exc).lower()
+        assert "Deep Work" in str(exc)
+    else:
+        raise AssertionError("ambiguous title should require clarification")
+
+
 def test_reading_intent_is_relevant_only(monkeypatch):
     monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
         "reading-list-v1": {
@@ -96,8 +141,63 @@ def test_reading_intent_is_relevant_only(monkeypatch):
     assert service._reading_candidates("What housing bids have I made?", "alice", []) == []
 
 
+def test_reading_scope_excludes_unrelated_brain_sources(monkeypatch):
+    monkeypatch.setattr(brain_module, "_load_for_user", lambda owner: {
+        "reading-list-v1": {
+            "version": 1,
+            "items": [{"id": "r1", "title": "Atomic Habits", "status": "reading"}],
+        },
+    })
+    service = VantaBrainService(_Memory(), _Docs())
+    for name in (
+        "_memory_candidates", "_note_candidates", "_document_candidates",
+        "_housing_candidates", "_finance_candidates", "_rag_candidates",
+    ):
+        monkeypatch.setattr(
+            service,
+            name,
+            lambda *args, _name=name, **kwargs: (
+                (_ for _ in ()).throw(AssertionError(f"{_name} should not run"))
+            ),
+        )
+    result = service.retrieve(
+        "What am I reading?",
+        "alice",
+        source_scope="reading",
+    )
+    assert result.snippets
+    assert {snippet.source for snippet in result.snippets} == {"reading"}
+    assert result.rag_sources == []
+    assert result.used_memories == []
+
+
+def test_chat_requests_reading_only_brain_scope():
+    class _Brain:
+        def __init__(self):
+            self.kwargs = None
+
+        def retrieve(self, *args, **kwargs):
+            self.kwargs = kwargs
+            return BrainRetrieval(snippets=[
+                BrainSnippet("reading", "r1", "Reading: Atomic Habits", "Status: reading", 3.0),
+            ])
+
+    brain = _Brain()
+    processor = ChatProcessor(_Memory(), _Docs(), brain_service=brain)
+    processor.build_context_preface(
+        "What am I reading?",
+        None,
+        owner="alice",
+    )
+    assert brain.kwargs["source_scope"] == "reading"
+    assert {source["source"] for source in processor._last_brain_sources} == {"reading"}
+
+
 def test_reading_actions_promote_to_tools_and_incognito_blocks_them():
     assert classify_tool_intent("Add Can't Hurt Me to my reading list.").category == "reading"
+    assert classify_tool_intent("Set my progress on Can't Hurt Me to chapter 3.").category == "reading"
+    assert classify_tool_intent("Mark Can't Hurt Me as paused.").category == "reading"
+    assert classify_tool_intent("Add this note to Can't Hurt Me: stay hard.").category == "reading"
     processor = ChatProcessor(_Memory(), _Docs())
     preface, _, _ = processor.build_context_preface(
         "Mark Can't Hurt Me as finished.",
@@ -126,3 +226,17 @@ def test_reading_list_static_wiring():
     assert "/export-pdf" in module
     assert "localStorage" not in module
     assert "textContent" in module
+
+
+def test_command_center_current_book_card_is_wired():
+    root = Path(__file__).resolve().parents[1]
+    index = (root / "static" / "index.html").read_text(encoding="utf-8")
+    app = (root / "static" / "app.js").read_text(encoding="utf-8")
+    command = (root / "static" / "js" / "commandCenter.js").read_text(encoding="utf-8")
+
+    assert 'id="command-reading-body"' in index
+    assert "No current book. Add one to Reading List." in command
+    assert "openReadingList" in app
+    assert "openLinkedDocument" in app
+    assert "downloadLinkedDocument" in app
+    assert "/api/reading-list/current" in command

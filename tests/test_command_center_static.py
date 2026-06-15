@@ -34,7 +34,7 @@ def test_command_center_navigation_and_actions_are_frontend_only():
     assert "sidebar-command-center-btn" in app
     assert "rail-command-center" in app
     assert "notesModule.openPanel()" in app
-    assert "fetch(" not in module
+    assert "fetch('/api/reading-list/current'" in module
 
 
 def test_command_center_exposes_four_chat_routines():

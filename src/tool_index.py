@@ -353,7 +353,8 @@ class ToolIndex:
             {"manage_notes"},
         frozenset({"reading list", "reading shelf", "add book", "mark as reading",
                    "mark as finished", "mark as paused", "reading progress",
-                   "chapter", "what should i read"}):
+                   "chapter", "what should i read", "reading note",
+                   "add this note to"}):
             {"manage_reading_list"},
         # Chat/session management. "rename" alone maps to documents below, so a
         # request like "rename the last 12 sessions/chats" needs these session

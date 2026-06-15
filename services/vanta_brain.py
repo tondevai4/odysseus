@@ -290,7 +290,7 @@ def _housing_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, str]]]:
 def _reading_intent(query: str) -> bool:
     normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
     tokens = set(normalized.split())
-    if tokens & {"reading", "book", "books", "bookshelf", "learning"}:
+    if tokens & {"reading", "book", "books", "bookshelf"}:
         return True
     return any(phrase in normalized for phrase in (
         "reading list",
@@ -940,25 +940,29 @@ class VantaBrainService:
         include_memory: bool = True,
         include_rag: bool = True,
         housing_query: Optional[str] = None,
+        source_scope: Optional[str] = None,
     ) -> BrainRetrieval:
         result = BrainRetrieval()
         candidates: List[BrainSnippet] = []
 
-        if include_memory:
-            memory, result.used_memories = self._memory_candidates(query, owner, result.errors)
-            candidates.extend(memory)
-        candidates.extend(self._note_candidates(query, owner, result.errors))
-        candidates.extend(self._document_candidates(query, owner, result.errors))
-        candidates.extend(self._housing_candidates(
-            housing_query if housing_query is not None else query,
-            owner,
-            result.errors,
-        ))
-        candidates.extend(self._finance_candidates(query, owner, result.errors))
-        candidates.extend(self._reading_candidates(query, owner, result.errors))
-        if include_rag:
-            rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
-            candidates.extend(rag)
+        if source_scope == "reading":
+            candidates.extend(self._reading_candidates(query, owner, result.errors))
+        else:
+            if include_memory:
+                memory, result.used_memories = self._memory_candidates(query, owner, result.errors)
+                candidates.extend(memory)
+            candidates.extend(self._note_candidates(query, owner, result.errors))
+            candidates.extend(self._document_candidates(query, owner, result.errors))
+            candidates.extend(self._housing_candidates(
+                housing_query if housing_query is not None else query,
+                owner,
+                result.errors,
+            ))
+            candidates.extend(self._finance_candidates(query, owner, result.errors))
+            candidates.extend(self._reading_candidates(query, owner, result.errors))
+            if include_rag:
+                rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
+                candidates.extend(rag)
 
         candidates.sort(key=lambda item: (-item.score, item.source, item.label.lower()))
         selected = []
