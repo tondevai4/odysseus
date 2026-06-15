@@ -55,6 +55,7 @@ _COMMON_TOOL_NAMES = {
     "manage_memory",
     "manage_notes",
     "manage_reading_list",
+    "manage_gym_log",
     "manage_research",
     "manage_session",
     "manage_settings",
@@ -213,6 +214,15 @@ def build_effective_tool_policy(
             for tool in ("manage_memory", "manage_notes"):
                 hidden.add(tool)
                 reasons[tool] = "Use manage_reading_list for Reading List requests."
+    except Exception:
+        pass
+    try:
+        from src.action_intents import gym_context_intent
+
+        if gym_context_intent(str(last_user_message or "")):
+            for tool in ("manage_memory", "manage_notes"):
+                hidden.add(tool)
+                reasons[tool] = "Use manage_gym_log for Gym / Body requests."
     except Exception:
         pass
 

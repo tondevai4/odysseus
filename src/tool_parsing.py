@@ -177,6 +177,8 @@ _TOOL_NAME_MAP = {
     "todos": "manage_notes",
     "manage_reading_list": "manage_reading_list",
     "reading_list": "manage_reading_list",
+    "manage_gym_log": "manage_gym_log",
+    "gym_log": "manage_gym_log",
 }
 
 _MISFENCED_WEB_TOOL_NAMES = {

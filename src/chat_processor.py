@@ -13,6 +13,9 @@ from src.vanta_core import VANTA_CORE_PROMPT
 from src.vanta_routines import resolve_active_vanta_routine
 from src.action_intents import (
     destructive_note_action,
+    gym_context_intent,
+    gym_management_intent,
+    destructive_gym_action,
     note_management_intent,
     reading_context_intent,
     reading_management_intent,
@@ -243,6 +246,10 @@ class ChatProcessor:
         reading_turn = (
             reading_context_intent(message) or reading_management_intent(message)
         ) and routine is None
+        gym_turn = (
+            gym_context_intent(message) or gym_management_intent(message)
+        ) and routine is None
+        destructive_gym_verb = destructive_gym_action(message) if gym_turn else ""
         destructive_note_verb = destructive_note_action(message) if note_intent else ""
         if routine:
             preface.append({
@@ -284,6 +291,16 @@ class ChatProcessor:
                         "incognito/private mode.\""
                     ),
                 })
+            elif gym_turn:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "The user requested a Gym Log action while "
+                        "incognito/private mode is active. Do not call any Gym "
+                        "Log tool. Reply exactly: \"Boss, gym log actions are "
+                        "disabled in incognito/private mode.\""
+                    ),
+                })
         elif destructive_note_verb:
             if destructive_note_verb in {"delete", "remove"}:
                 note_reply = (
@@ -323,6 +340,27 @@ class ChatProcessor:
                     "`manage_notes`, never `manage_memory`."
                 ),
             })
+        elif destructive_gym_verb:
+            preface.append({
+                "role": "system",
+                "content": (
+                    "This is a destructive Gym Log request. Do not call any Gym "
+                    "Log tool. Reply exactly: \"Boss, I can't delete gym logs "
+                    "from chat. Open Gym / Body to manage it manually.\""
+                ),
+            })
+        elif gym_turn:
+            preface.append({
+                "role": "system",
+                "content": (
+                    "Use the private Gym Log for this turn, never memory or "
+                    "free-form Notes. Encourage steady progress without shame, "
+                    "eating-disorder framing, or unsafe extreme calorie cuts. "
+                    "If the user reports pain, dizziness, injury, chest pain, "
+                    "fainting, or severe symptoms, advise stopping and seeking "
+                    "appropriate medical help."
+                ),
+            })
         if _finance_payment_request(message):
             preface.append({
                 "role": "system",
@@ -351,7 +389,7 @@ class ChatProcessor:
                 include_memory=use_memory,
                 include_rag=use_rag,
                 housing_query=message,
-                source_scope="reading" if reading_turn else None,
+                source_scope="reading" if reading_turn else ("gym" if gym_turn else None),
             )
             self._last_used_memories = brain_result.used_memories
             self._last_brain_sources = brain_result.public_sources()

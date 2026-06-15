@@ -672,6 +672,46 @@ FUNCTION_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "manage_gym_log",
+            "description": (
+                "Manage the owner's private Gym / Body tracker. Use add for a "
+                "new workout, list for latest workout or exercise progress, "
+                "update for an existing id/date, and append_note for today's "
+                "workout. Preserve pasted details in raw_log and parse exercises "
+                "when possible. Never delete gym logs from chat."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["list", "add", "update", "append_note"]},
+                    "id": {"type": "string"},
+                    "date": {"type": "string", "description": "Workout date as YYYY-MM-DD."},
+                    "title": {"type": "string"},
+                    "duration": {"type": "string"},
+                    "work_time": {"type": "string"},
+                    "rest_time": {"type": "string"},
+                    "avg_hr": {"type": "integer"},
+                    "max_hr": {"type": "integer"},
+                    "active_calories": {"type": "integer"},
+                    "total_calories": {"type": "integer"},
+                    "total_reps": {"type": "integer"},
+                    "total_sets": {"type": "integer"},
+                    "primary_benefit": {"type": "string"},
+                    "exercises": {"type": "array", "items": {"type": "object"}},
+                    "notes": {"type": "string"},
+                    "note": {"type": "string"},
+                    "win": {"type": "string"},
+                    "raw_log": {"type": "string"},
+                    "details": {"type": "string"},
+                    "exercise": {"type": "string", "description": "Filter list results by exercise name."},
+                },
+                "required": ["action"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "ask_teacher",
             "description": "Ask a more capable AI model for help when stuck on a difficult problem. The teacher provides guidance that can be saved as a learned skill.",
             "parameters": {

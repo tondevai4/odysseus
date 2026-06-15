@@ -58,10 +58,38 @@ async function _loadCurrentReading({ openReadingDocument, downloadReadingDocumen
   }
 }
 
+async function _loadLatestWorkout() {
+  const body = document.getElementById('command-gym-body');
+  if (!body) return;
+  body.replaceChildren();
+  try {
+    const response = await fetch('/api/gym-log/latest', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error('Gym Log unavailable');
+    const { entry } = await response.json();
+    if (!entry) {
+      _text(body, 'p', 'command-reading-empty', 'No gym log yet. Log today’s proof.');
+      return;
+    }
+    _text(body, 'strong', 'command-reading-title', entry.title);
+    const meta = _text(body, 'div', 'command-reading-meta', '');
+    _text(meta, 'span', '', new Date(`${entry.date}T00:00:00`).toLocaleDateString());
+    if (entry.duration) _text(meta, 'span', '', `Duration: ${entry.duration}`);
+    if (entry.total_sets !== null) _text(meta, 'span', '', `Sets: ${entry.total_sets}`);
+    if (entry.total_reps !== null) _text(meta, 'span', '', `Reps: ${entry.total_reps}`);
+    _text(body, 'p', 'command-reading-notes', 'Next: recover, then train the next movement with clean form.');
+  } catch (error) {
+    _text(body, 'p', 'command-reading-empty', 'Gym Log is unavailable right now.');
+  }
+}
+
 function init({
   openNotes,
   openHousingBids,
   openReadingList,
+  openGymLog,
   openReadingDocument,
   downloadReadingDocument,
   openBrainHealth,
@@ -92,6 +120,12 @@ function init({
       openReadingList();
     }
     if (
+      action.dataset.commandCenterAction === 'gym-log'
+      && typeof openGymLog === 'function'
+    ) {
+      openGymLog();
+    }
+    if (
       action.dataset.commandCenterAction === 'brain-health'
       && typeof openBrainHealth === 'function'
     ) {
@@ -108,9 +142,11 @@ function init({
 
   const readingOptions = { openReadingDocument, downloadReadingDocument };
   _loadCurrentReading(readingOptions);
+  _loadLatestWorkout();
   window.addEventListener('vanta:reading-list-updated', () => {
     _loadCurrentReading(readingOptions);
   });
+  window.addEventListener('vanta:gym-log-updated', _loadLatestWorkout);
   _initialized = true;
 }
 

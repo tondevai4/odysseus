@@ -30,6 +30,7 @@ import settingsModule from './js/settings.js';
 import commandCenterModule from './js/commandCenter.js';
 import housingBidsModule from './js/housingBids.js';
 import readingListModule from './js/readingList.js';
+import gymLogModule from './js/gymLog.js';
 import brainHealthModule from './js/brainHealth.js';
 // Eagerly bind unified minimize/restore behavior across all tool modals.
 import './js/modalManager.js';
@@ -945,6 +946,13 @@ function initializeEventListeners() {
     toolReadingListBtn.addEventListener('click', () => {
       if (readingListModule.isOpen()) readingListModule.close();
       else readingListModule.open();
+    });
+  }
+  const toolGymLogBtn = el('tool-gym-log-btn');
+  if (toolGymLogBtn) {
+    toolGymLogBtn.addEventListener('click', () => {
+      if (gymLogModule.isOpen()) gymLogModule.close();
+      else gymLogModule.open();
     });
   }
   // Refresh notes due-reminder badge on load and every 5 minutes
@@ -3424,6 +3432,7 @@ function startOdysseusApp() {
     },
     openHousingBids: () => housingBidsModule.open(),
     openReadingList: () => readingListModule.open(),
+    openGymLog: () => gymLogModule.open(),
     openReadingDocument: (item) => readingListModule.openLinkedDocument(item),
     downloadReadingDocument: (item) => readingListModule.downloadLinkedDocument(item),
     openBrainHealth: () => brainHealthModule.open(),

@@ -68,6 +68,7 @@ COLLECTION_NAME = "odysseus_tool_index"
 # These are richer than the system prompt one-liners — they're for embedding.
 BUILTIN_TOOL_DESCRIPTIONS: Dict[str, str] = {
     "manage_reading_list": "Manage the owner's private Reading List. Add books or linked Library documents, list items, and update exact titles with reading status, progress, priority, or notes. Never delete reading items from chat.",
+    "manage_gym_log": "Manage the owner's private Gym / Body tracker. Log workouts, list the latest session or exercise progress, update a dated workout, and append notes. Keep pasted text in raw_log when parsing is partial. Never use memory or Notes as the main gym store, and never delete gym logs from chat.",
     "bash": "Run shell commands on the server. Install packages, git operations, builds, system info, process management. Prefer a dedicated tool whenever one fits the job (file read/write/edit, search, listing); use bash only for what no dedicated tool covers. Do not use for web lookup/search; use web_search or web_fetch when web tools are available.",
     "python": "Execute Python code for computation, data processing, math, scripting, and parsing. Not for writing code for the user. Prefer a dedicated tool for reading, writing, or searching files; use python only for what no dedicated tool covers. Do not use for web lookup/search; use web_search or web_fetch when web tools are available.",
     "web_search": "Quick single web lookup for a fact, current event, latest/current information, or doc mid-task. Use this instead of bash/curl/python/requests for web searches. NOT for 'research X' / 'do research on X' requests — those are deep-research jobs (use trigger_research). web_search = one query; trigger_research = a full researched report in the sidebar.",
@@ -357,6 +358,10 @@ class ToolIndex:
                    "what am i reading", "what should i read", "reading note",
                    "add this note to"}):
             {"manage_reading_list"},
+        frozenset({"gym", "workout", "training", "lift", "lifting", "leg press",
+                   "heart rate", "garmin", "total reps", "total sets",
+                   "train next", "gym log"}):
+            {"manage_gym_log"},
         # Chat/session management. "rename" alone maps to documents below, so a
         # request like "rename the last 12 sessions/chats" needs these session
         # keywords to surface the right tools (NOT app_api — /api/sessions is
@@ -504,6 +509,15 @@ class ToolIndex:
             if reading_context_intent(query):
                 base.add("manage_reading_list")
                 base.discard("manage_memory")
+        except Exception:
+            pass
+        try:
+            from src.action_intents import gym_context_intent
+
+            if gym_context_intent(query):
+                base.add("manage_gym_log")
+                base.discard("manage_memory")
+                base.discard("manage_notes")
         except Exception:
             pass
         # Structural scheduling-intent detection — typo-resilient (the literal
