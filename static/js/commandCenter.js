@@ -1,6 +1,72 @@
 let _initialized = false;
 
-function init({ openNotes, openHousingBids, openBrainHealth, runRoutine } = {}) {
+function _text(parent, tag, className, value) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  node.textContent = value;
+  parent.appendChild(node);
+  return node;
+}
+
+function _label(value) {
+  return String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+async function _loadCurrentReading({ openReadingDocument, downloadReadingDocument } = {}) {
+  const body = document.getElementById('command-reading-body');
+  const actions = document.getElementById('command-reading-actions');
+  if (!body || !actions) return;
+  try {
+    const response = await fetch('/api/reading-list/current', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error('Reading List unavailable');
+    const payload = await response.json();
+    const item = payload.item;
+    body.replaceChildren();
+    actions.querySelectorAll('[data-reading-document-action]').forEach((node) => node.remove());
+    if (!item) {
+      _text(body, 'p', 'command-reading-empty', 'No current book. Add one to Reading List.');
+      return;
+    }
+
+    _text(body, 'strong', 'command-reading-title', item.title);
+    if (item.author) _text(body, 'span', 'command-reading-author', item.author);
+    const meta = _text(body, 'div', 'command-reading-meta', '');
+    ['status', 'progress', 'priority'].forEach((field) => {
+      if (!item[field]) return;
+      _text(meta, 'span', '', `${_label(field)}: ${_label(item[field])}`);
+    });
+    if (item.notes) {
+      const preview = item.notes.length > 150 ? `${item.notes.slice(0, 147)}...` : item.notes;
+      _text(body, 'p', 'command-reading-notes', preview);
+    }
+    if (item.document?.available) {
+      const openButton = _text(actions, 'button', 'command-card-action', 'Open Document');
+      openButton.type = 'button';
+      openButton.dataset.readingDocumentAction = 'open';
+      openButton.addEventListener('click', () => openReadingDocument?.(item));
+      const downloadButton = _text(actions, 'button', 'command-card-action', 'Download');
+      downloadButton.type = 'button';
+      downloadButton.dataset.readingDocumentAction = 'download';
+      downloadButton.addEventListener('click', () => downloadReadingDocument?.(item));
+    }
+  } catch (error) {
+    body.replaceChildren();
+    _text(body, 'p', 'command-reading-empty', 'Reading List is unavailable right now.');
+  }
+}
+
+function init({
+  openNotes,
+  openHousingBids,
+  openReadingList,
+  openReadingDocument,
+  downloadReadingDocument,
+  openBrainHealth,
+  runRoutine,
+} = {}) {
   if (_initialized) return;
 
   const commandCenter = document.getElementById('command-center');
@@ -20,6 +86,12 @@ function init({ openNotes, openHousingBids, openBrainHealth, runRoutine } = {}) 
       openHousingBids();
     }
     if (
+      action.dataset.commandCenterAction === 'reading-list'
+      && typeof openReadingList === 'function'
+    ) {
+      openReadingList();
+    }
+    if (
       action.dataset.commandCenterAction === 'brain-health'
       && typeof openBrainHealth === 'function'
     ) {
@@ -34,6 +106,11 @@ function init({ openNotes, openHousingBids, openBrainHealth, runRoutine } = {}) 
     }
   });
 
+  const readingOptions = { openReadingDocument, downloadReadingDocument };
+  _loadCurrentReading(readingOptions);
+  window.addEventListener('vanta:reading-list-updated', () => {
+    _loadCurrentReading(readingOptions);
+  });
   _initialized = true;
 }
 

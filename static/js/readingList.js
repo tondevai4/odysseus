@@ -181,6 +181,7 @@ function renderCard(item) {
       });
       items = items.map((row) => row.id === item.id ? updated : row);
       uiModule.showToast('Reading item updated.', 'success');
+      window.dispatchEvent(new CustomEvent('vanta:reading-list-updated'));
       render();
     } catch (error) {
       uiModule.showToast(error.message, 'error');
@@ -205,23 +206,10 @@ function renderCard(item) {
   if (item.document?.available) {
     const openDocument = element('button', 'reading-list-secondary', 'Open document');
     openDocument.type = 'button';
-    openDocument.addEventListener('click', () => {
-      if (item.document.is_pdf) {
-        window.open(`/api/document/${encodeURIComponent(item.document.id)}/render-pdf`, '_blank', 'noopener');
-        return;
-      }
-      close();
-      window.documentModule?.loadDocument(item.document.id);
-    });
+    openDocument.addEventListener('click', () => openLinkedDocument(item));
     const download = element('button', 'reading-list-secondary', 'Download');
     download.type = 'button';
-    download.addEventListener('click', () => {
-      if (item.document.is_pdf) {
-        window.location.assign(`/api/document/${encodeURIComponent(item.document.id)}/export-pdf`);
-      } else {
-        downloadDocument(item.document.id);
-      }
-    });
+    download.addEventListener('click', () => downloadLinkedDocument(item));
     actions.append(openDocument, download);
   } else if (item.document_id) {
     actions.appendChild(element('span', 'reading-list-unavailable', 'Linked document unavailable'));
@@ -246,6 +234,31 @@ async function downloadDocument(documentId) {
   } catch (error) {
     uiModule.showToast(error.message, 'error');
   }
+}
+
+function openLinkedDocument(item) {
+  if (!item?.document?.available) return;
+  if (item.document.is_pdf) {
+    window.open(
+      `/api/document/${encodeURIComponent(item.document.id)}/render-pdf`,
+      '_blank',
+      'noopener',
+    );
+    return;
+  }
+  close();
+  window.documentModule?.loadDocument(item.document.id);
+}
+
+function downloadLinkedDocument(item) {
+  if (!item?.document?.available) return;
+  if (item.document.is_pdf) {
+    window.location.assign(
+      `/api/document/${encodeURIComponent(item.document.id)}/export-pdf`,
+    );
+    return;
+  }
+  downloadDocument(item.document.id);
 }
 
 function openForm(id = '') {
@@ -336,6 +349,7 @@ function renderForm() {
         : [result, ...items];
       editingId = null;
       uiModule.showToast(existing ? 'Reading item updated.' : 'Added to Reading List.', 'success');
+      window.dispatchEvent(new CustomEvent('vanta:reading-list-updated'));
       render();
     } catch (requestError) {
       error.textContent = requestError.message;
@@ -375,5 +389,11 @@ function isOpen() {
   return openState;
 }
 
-export { open, close, isOpen };
-export default { open, close, isOpen };
+export { open, close, isOpen, openLinkedDocument, downloadLinkedDocument };
+export default {
+  open,
+  close,
+  isOpen,
+  openLinkedDocument,
+  downloadLinkedDocument,
+};

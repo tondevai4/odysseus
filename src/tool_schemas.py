@@ -614,7 +614,7 @@ FUNCTION_TOOL_SCHEMAS = [
                 "properties": {
                     "action": {
                         "type": "string",
-                        "enum": ["list", "add", "update"],
+                        "enum": ["list", "add", "update", "append_note"],
                     },
                     "id": {"type": "string", "description": "Reading item id for update."},
                     "title": {
@@ -639,6 +639,10 @@ FUNCTION_TOOL_SCHEMAS = [
                     },
                     "progress": {"type": "string"},
                     "notes": {"type": "string"},
+                    "note": {
+                        "type": "string",
+                        "description": "Reading note text for append_note.",
+                    },
                     "document_id": {
                         "type": "string",
                         "description": "Owner-owned Library document id to link.",

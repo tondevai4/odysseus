@@ -12,9 +12,10 @@ from src.prompt_security import UNTRUSTED_CONTEXT_POLICY, untrusted_context_mess
 from src.vanta_core import VANTA_CORE_PROMPT
 from src.vanta_routines import resolve_active_vanta_routine
 from src.action_intents import (
-    classify_tool_intent,
     destructive_note_action,
     note_management_intent,
+    reading_context_intent,
+    reading_management_intent,
 )
 
 logger = logging.getLogger(__name__)
@@ -239,7 +240,9 @@ class ChatProcessor:
             })
         routine = resolve_active_vanta_routine(message, session)
         note_intent = note_management_intent(message)
-        reading_action_intent = classify_tool_intent(message).category == "reading"
+        reading_turn = (
+            reading_context_intent(message) or reading_management_intent(message)
+        ) and routine is None
         destructive_note_verb = destructive_note_action(message) if note_intent else ""
         if routine:
             preface.append({
@@ -255,8 +258,8 @@ class ChatProcessor:
                 "role": "system",
                 "content": (
                     "Incognito/private mode is active. Do not retrieve or claim "
-                    "access to private notes, memories, housing bids, Library "
-                    "documents, or personal RAG. If Tony asks to use that private "
+                    "access to private notes, memories, reading list, housing bids, "
+                    "Library documents, or personal RAG. If Tony asks to use that private "
                     "context, explain briefly that private retrieval is disabled "
                     "in incognito and can be used after he leaves incognito."
                 ),
@@ -270,7 +273,7 @@ class ChatProcessor:
                         "\"Boss, note actions are disabled in incognito/private mode.\""
                     ),
                 })
-            elif reading_action_intent:
+            elif reading_turn:
                 preface.append({
                     "role": "system",
                     "content": (
@@ -329,6 +332,7 @@ class ChatProcessor:
                 include_memory=use_memory,
                 include_rag=use_rag,
                 housing_query=message,
+                source_scope="reading" if reading_turn else None,
             )
             self._last_used_memories = brain_result.used_memories
             self._last_brain_sources = brain_result.public_sources()

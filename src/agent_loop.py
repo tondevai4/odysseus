@@ -85,7 +85,7 @@ _AGENT_RULES = """\
 - Multiple email accounts: if tool output says "Other accounts" or the user asks "my Gmail?", "other inbox?", "work mail?", "custom domain mail?", or names any mailbox/account, DO NOT answer from memory. Call `list_email_accounts` if needed, then call `list_emails`/`read_email`/`bulk_email` with the exact `account` value for that mailbox. Account names are user-defined labels; if the user typo-matches a known account, use the closest listed account instead of claiming it does not exist. NEVER use `app_api` or `/api/email/accounts` to discover email accounts; that route is owner-filtered in tool context and can falsely return empty.
 - User identity facts/preferences ("my name is <name>", "I live in <place>", "I prefer concise replies", "call me <name>") → use `manage_memory` with action=add. NEVER use `manage_contact` for facts about the user unless the user explicitly says to create/update a contact and provides contact details such as an email or phone.
 - "Create/add/write a note" / "notes" / "todos" / "remind me to X at <time>" → use `manage_notes`. Do NOT store notes in `manage_memory`; memory is for persistent facts/preferences about the user, not note content. For reminders, include a `due_date`; for todos, use `note_type=checklist` when appropriate. To add text or checklist items to a clearly named existing note, use action=append with its exact title. If add reports duplicate/requires_user_choice, stop and ask whether to append, rename, or cancel; never append automatically. Never delete, archive, replace, rename, or overwrite a note from chat. After a successful add/append, reply exactly: "Done, Boss. Saved to Notes."
-- Reading-list commands use `manage_reading_list`. Add new titles, or update an exact title's status, progress, priority, or notes. Never delete reading items from chat. Use linked Library document ids only when the owner-visible id is already known.
+- Reading-list commands use `manage_reading_list`. Add new titles, update an exact title's status/progress/priority, or use `append_note` to add a book note without replacing existing notes. If a title is ambiguous, ask which item the user means. Never delete reading items from chat. Use linked Library document ids only when the owner-visible id is already known.
 - "Do X every morning / daily / on a schedule / automatically" (e.g. "summarize my inbox every morning") → this is a request to CREATE A SCHEDULED TASK, not to do X once right now. Call `manage_tasks` with action=create (prompt = what to do, schedule + cron/time). Do NOT just perform the action inline this turn — the user wants it to recur. After creating, return a clickable `[Task name](#task-<id>)` link and tell them it'll run on schedule and show in the Tasks panel. If you also want to show a sample of this run, do that AFTER creating the task, not instead of it.
 
 ## UI conventions
@@ -423,9 +423,10 @@ Generate an image. Line 1 = description, line 2 = model name, line 3 = WxH (e.g.
 ```manage_reading_list
 {"action": "add", "title": "Can't Hurt Me", "status": "want_to_read"}
 ```
-Private Reading List actions: `list`, `add`, and `update`. Update by exact
+Private Reading List actions: `list`, `add`, `update`, and `append_note`. Update by exact
 `title` or item `id`; fields include author, category, status, priority,
-progress, notes, and owner-visible `document_id`. Never delete reading items
+progress, notes, and owner-visible `document_id`. Use `append_note` with `note`
+to add book notes without replacing existing notes. Never delete reading items
 from chat.""",
     "manage_notes": """\
 ```manage_notes
@@ -792,7 +793,7 @@ def _classify_agent_request(messages: List[Dict], last_user: str) -> Dict[str, o
         domains.add("email")
     if has(r"\b(note|todo|to-do|checklist|task list|remind me|reminder|buy|pickup|pick up)\b"):
         domains.add("notes_calendar_tasks")
-    if has(r"\b(reading list|reading shelf|add book|mark .{0,80} as reading|mark .{0,80} as finished|reading progress)\b"):
+    if has(r"\b(reading list|reading shelf|add book|mark .{0,80} as reading|mark .{0,80} as finished|mark .{0,80} as paused|reading progress|add .{0,40} note to)\b"):
         domains.add("reading")
     if has(r"\b(every day|every morning|every evening|recurring|automatically|cron|scheduled task|background task)\b"):
         domains.add("notes_calendar_tasks")

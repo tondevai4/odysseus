@@ -2066,6 +2066,53 @@ body.bg-pattern-sparkles {
       gap: 10px;
       outline: none;
     }
+    .command-card-reading {
+      min-height: 184px;
+    }
+    .command-reading-body {
+      display: grid;
+      gap: 5px;
+    }
+    .command-reading-title {
+      color: #f5f5f7;
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+    .command-reading-author {
+      color: #96969d;
+      font-size: 0.68rem;
+    }
+    .command-reading-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .command-reading-meta span {
+      padding: 4px 7px;
+      border: 1px solid rgba(255, 255, 255, 0.075);
+      border-radius: 999px;
+      color: #b9b9bf;
+      background: rgba(255, 255, 255, 0.025);
+      font-size: 0.58rem;
+    }
+    .command-reading-notes,
+    .command-reading-empty {
+      margin-top: 4px !important;
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    .command-reading-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 13px;
+      margin-top: auto;
+    }
+    .command-reading-actions .command-card-action {
+      margin-top: 0;
+    }
     .command-routines {
       margin-top: 14px;
       padding-top: 14px;

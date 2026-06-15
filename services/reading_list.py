@@ -129,6 +129,51 @@ def list_reading_items(owner: Optional[str]) -> List[Dict[str, Any]]:
     return [_with_document(item, owner) for item in items]
 
 
+def current_reading_item(owner: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Select the current/next book for the Command Center."""
+    items = load_reading_list(owner)["items"]
+    priority_rank = {"high": 2, "normal": 1, "low": 0}
+
+    def sort_key(item: Dict[str, str]):
+        return (
+            priority_rank.get(item.get("priority", "normal"), 1),
+            item.get("updated_at", ""),
+        )
+
+    reading = [item for item in items if item.get("status") == "reading"]
+    if reading:
+        return _with_document(max(reading, key=sort_key), owner)
+    queued = [
+        item for item in items
+        if item.get("status") == "want_to_read" and item.get("priority") == "high"
+    ]
+    if queued:
+        return _with_document(max(queued, key=sort_key), owner)
+    return None
+
+
+def _resolve_item(
+    items: List[Dict[str, str]],
+    identifier: str,
+) -> Dict[str, str]:
+    needle = _text(identifier, 200).casefold()
+    exact = [
+        row for row in items
+        if row["id"].casefold() == needle or row["title"].casefold() == needle
+    ]
+    if exact:
+        return exact[0]
+    partial = [row for row in items if needle and needle in row["title"].casefold()]
+    if len(partial) == 1:
+        return partial[0]
+    if len(partial) > 1:
+        titles = ", ".join(f'"{row["title"]}"' for row in partial[:5])
+        raise ReadingListError(
+            f"That title is ambiguous. Which reading item did you mean: {titles}?"
+        )
+    raise ReadingListError("Reading item not found.")
+
+
 def add_reading_item(owner: Optional[str], payload: Dict[str, Any]) -> Dict[str, Any]:
     title = _text(payload.get("title"), 200)
     if not title:
@@ -161,16 +206,7 @@ def update_reading_item(
     changes: Dict[str, Any],
 ) -> Dict[str, Any]:
     state = load_reading_list(owner)
-    needle = _text(identifier, 200).casefold()
-    item = next(
-        (
-            row for row in state["items"]
-            if row["id"].casefold() == needle or row["title"].casefold() == needle
-        ),
-        None,
-    )
-    if item is None:
-        raise ReadingListError("Reading item not found.")
+    item = _resolve_item(state["items"], identifier)
 
     allowed = {
         "title", "author", "category", "status", "priority", "progress",
@@ -196,6 +232,21 @@ def update_reading_item(
     ]
     save_reading_list(owner, state)
     return _with_document(normalized, owner)
+
+
+def append_reading_note(
+    owner: Optional[str],
+    identifier: str,
+    note: str,
+) -> Dict[str, Any]:
+    note_text = _text(note, 1500)
+    if not note_text:
+        raise ReadingListError("Reading note text is required.")
+    state = load_reading_list(owner)
+    item = _resolve_item(state["items"], identifier)
+    existing = _text(item.get("notes"), 3000)
+    combined = f"{existing}\n{note_text}".strip() if existing else note_text
+    return update_reading_item(owner, item["id"], {"notes": combined[:3000]})
 
 
 async def manage_reading_list_tool(content: str, owner: Optional[str]) -> Dict[str, Any]:
@@ -227,6 +278,16 @@ async def manage_reading_list_tool(content: str, owner: Optional[str]) -> Dict[s
                 "output": f'Updated "{item["title"]}" on your reading list.',
                 "exit_code": 0,
             }
+        if action == "append_note":
+            identifier = _text(args.get("id") or args.get("title"), 200)
+            if not identifier:
+                raise ReadingListError("A title or id is required.")
+            item = append_reading_note(owner, identifier, args.get("note"))
+            return {
+                "item": item,
+                "output": f'Added a reading note to "{item["title"]}".',
+                "exit_code": 0,
+            }
         if action in {"delete", "remove"}:
             return {
                 "error": (
@@ -235,6 +296,6 @@ async def manage_reading_list_tool(content: str, owner: Optional[str]) -> Dict[s
                 ),
                 "exit_code": 1,
             }
-        return {"error": "Use list, add, or update.", "exit_code": 1}
+        return {"error": "Use list, add, update, or append_note.", "exit_code": 1}
     except ReadingListError as exc:
         return {"error": str(exc), "exit_code": 1}

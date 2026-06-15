@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from services.reading_list import (
     ReadingListError,
     add_reading_item,
+    current_reading_item,
     list_reading_items,
     update_reading_item,
 )
@@ -44,6 +45,11 @@ def setup_reading_list_routes() -> APIRouter:
         owner = get_current_user(request)
         items = list_reading_items(owner)
         return {"version": 1, "items": items}
+
+    @router.get("/current")
+    async def get_current_reading_item(request: Request):
+        owner = get_current_user(request)
+        return {"item": current_reading_item(owner)}
 
     @router.post("")
     async def create_reading_item(request: Request, body: ReadingItemBody):
