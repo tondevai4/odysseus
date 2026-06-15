@@ -31,6 +31,7 @@ import commandCenterModule from './js/commandCenter.js';
 import housingBidsModule from './js/housingBids.js';
 import readingListModule from './js/readingList.js';
 import gymLogModule from './js/gymLog.js';
+import archiveModule from './js/archive.js';
 import brainHealthModule from './js/brainHealth.js';
 // Eagerly bind unified minimize/restore behavior across all tool modals.
 import './js/modalManager.js';
@@ -955,6 +956,13 @@ function initializeEventListeners() {
       else gymLogModule.open();
     });
   }
+  const toolInvestigationArchiveBtn = el('tool-investigation-archive-btn');
+  if (toolInvestigationArchiveBtn) {
+    toolInvestigationArchiveBtn.addEventListener('click', () => {
+      if (archiveModule.isOpen()) archiveModule.close();
+      else archiveModule.open();
+    });
+  }
   // Refresh notes due-reminder badge on load and every 5 minutes
   if (notesModule && notesModule.refreshDueBadge) {
     notesModule.refreshDueBadge();
@@ -1083,6 +1091,7 @@ function initializeEventListeners() {
     '/memory':   () => document.getElementById('tool-memory-btn')?.click(),
     '/gallery':  () => document.getElementById('tool-gallery-btn')?.click(),
     '/tasks':    () => document.getElementById('tool-tasks-btn')?.click(),
+    '/archive-room': () => document.getElementById('tool-investigation-archive-btn')?.click(),
     '/library':  () => sessionModule && sessionModule.openLibrary && sessionModule.openLibrary(),
   };
   const _opener = _routeOpen[urlPath];
@@ -3433,6 +3442,7 @@ function startOdysseusApp() {
     openHousingBids: () => housingBidsModule.open(),
     openReadingList: () => readingListModule.open(),
     openGymLog: () => gymLogModule.open(),
+    openArchive: () => archiveModule.open(),
     openReadingDocument: (item) => readingListModule.openLinkedDocument(item),
     downloadReadingDocument: (item) => readingListModule.downloadLinkedDocument(item),
     openBrainHealth: () => brainHealthModule.open(),
