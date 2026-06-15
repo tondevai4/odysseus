@@ -725,6 +725,9 @@ def setup_chat_routes(
             # tool out of the model's available schema so no delete/update
             # attempt is made before that refusal.
             disabled_tools.add("manage_notes")
+        if _tool_intent and _tool_intent.category == "notes":
+            # Direct note content belongs in Notes, never ambient memory.
+            disabled_tools.add("manage_memory")
         if _tool_intent and _tool_intent.category == "reading":
             # Reading state belongs on the shelf item, never in Notes or
             # ambient memory.
