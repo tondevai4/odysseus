@@ -2016,6 +2016,8 @@ body.bg-pattern-sparkles {
       background: linear-gradient(145deg, rgba(42, 38, 42, 0.82), rgba(16, 15, 18, 0.82));
     }
     .command-card-wide { grid-column: span 3; }
+    .command-card-mission,
+    .command-card-reading { grid-column: span 3; }
     .command-card-topline {
       display: flex;
       justify-content: space-between;
@@ -2066,9 +2068,7 @@ body.bg-pattern-sparkles {
       gap: 10px;
       outline: none;
     }
-    .command-card-reading {
-      min-height: 184px;
-    }
+    .command-card-reading { min-height: 174px; }
     .command-reading-body {
       display: grid;
       gap: 5px;
@@ -2113,9 +2113,58 @@ body.bg-pattern-sparkles {
     .command-reading-actions .command-card-action {
       margin-top: 0;
     }
+    .command-data-body {
+      display: grid;
+      gap: 6px;
+    }
+    .command-summary-row {
+      display: grid;
+      grid-template-columns: minmax(78px, 0.8fr) minmax(0, 1.4fr);
+      align-items: baseline;
+      gap: 10px;
+      font-size: 0.66rem;
+      line-height: 1.35;
+    }
+    .command-summary-row span {
+      color: #85858c;
+    }
+    .command-summary-row strong {
+      min-width: 0;
+      overflow: hidden;
+      color: #d7d7dc;
+      font-weight: 600;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .command-data-empty {
+      color: #9b9ba2 !important;
+    }
+    .command-data-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: auto;
+    }
+    .command-proof-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 11px;
+    }
+    .command-proof-list span {
+      padding: 5px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #aaaab0;
+      font-size: 0.6rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
     .command-routines {
-      margin-top: 14px;
-      padding-top: 14px;
+      margin-top: 12px;
+      padding-top: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.075);
     }
     .command-routines-heading {
@@ -2138,7 +2187,8 @@ body.bg-pattern-sparkles {
     }
     .command-routine {
       min-width: 0;
-      padding: 8px 13px;
+      min-height: 34px;
+      padding: 7px 12px;
       border: 1px solid rgba(255, 255, 255, 0.075);
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.025);
@@ -2227,14 +2277,19 @@ body.bg-pattern-sparkles {
       .command-card,
       .command-card-wide {
         grid-column: auto;
-        min-height: 142px;
+        min-height: 0;
         padding: 14px;
       }
+      .command-card-mission,
+      .command-card-reading { grid-column: auto; }
+      .command-card-topline { margin-bottom: 11px; }
+      .command-proof-list { margin-top: 9px; }
       .command-routines-heading span:last-child { display: none; }
       .command-routines-grid { gap: 7px; }
       .command-routine {
-        flex: 1 1 calc(50% - 7px);
-        padding: 9px 10px;
+        flex: 0 1 auto;
+        min-height: 36px;
+        padding: 8px 11px;
       }
       .chat-container.welcome-active .chat-input-bar {
         margin-bottom:0;
@@ -2246,7 +2301,8 @@ body.bg-pattern-sparkles {
       .command-center-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .command-card,
       .command-card-wide { grid-column: span 1; }
-      .command-card:last-child { grid-column: 1 / -1; }
+      .command-card-mission,
+      .command-card-discipline { grid-column: 1 / -1; }
     }
     @media (prefers-reduced-motion: reduce) {
       .command-card,
