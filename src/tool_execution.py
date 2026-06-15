@@ -815,6 +815,10 @@ async def _execute_tool_block_impl(
     elif tool == "manage_notes":
         desc = "manage_notes"
         result = await do_manage_notes(content, owner=owner)
+    elif tool == "manage_reading_list":
+        from services.reading_list import manage_reading_list_tool
+        desc = "manage_reading_list"
+        result = await manage_reading_list_tool(content, owner=owner)
     elif tool == "manage_calendar":
         desc = "manage_calendar"
         result = await do_manage_calendar(content, owner=owner)

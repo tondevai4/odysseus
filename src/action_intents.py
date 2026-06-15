@@ -87,6 +87,12 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("notes", "set reminder request", rf"{_PLEASE}set\s+(?:a\s+)?reminder\b"),
         ("notes", "assistant reminder request", rf"{_ACTION_QUESTION}set\s+(?:a\s+)?reminder\b"),
 
+        # Reading List mutations. Read-only recommendations remain normal chat
+        # so Vanta Brain can answer without forcing an agent/tool round.
+        ("reading", "add reading-list item", rf"{_PLEASE}(?:add|put)\b.{{0,140}}\b(?:reading\s+list|reading\s+shelf)\b"),
+        ("reading", "update reading-list status", rf"{_PLEASE}mark\b.{{0,140}}\b(?:as\s+)?(?:reading|finished|paused|want(?:ing)?\s+to\s+read)\b"),
+        ("reading", "update reading progress", rf"{_PLEASE}set\b.{{0,140}}\bprogress\b.{{0,140}}\b(?:book|reading|chapter|page|percent)\b"),
+
         # Email actions.
         ("email", "assistant email action request", rf"{_ACTION_QUESTION}(?:send|write|reply|email|message|archive|delete|mark)\b.{{0,120}}\b(?:emails?|mail|messages?|inbox|unread|read)\b"),
         ("email", "send/write/reply email request", rf"{_PLEASE}(?:send|write|reply)\b.{{0,120}}\b(?:emails?|mail|messages?)\b"),

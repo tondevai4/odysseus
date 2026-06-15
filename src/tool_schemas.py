@@ -602,6 +602,55 @@ FUNCTION_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "manage_reading_list",
+            "description": (
+                "List, add, or update the owner's private Reading List. Use add "
+                "for a new title and update for status/progress/notes changes. "
+                "A Library document may be linked with document_id. Never delete "
+                "reading items from chat."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["list", "add", "update"],
+                    },
+                    "id": {"type": "string", "description": "Reading item id for update."},
+                    "title": {
+                        "type": "string",
+                        "description": "Book/document title, or exact title for update.",
+                    },
+                    "author": {"type": "string"},
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "body", "money", "discipline", "work", "fatherhood",
+                            "spiritual", "reference", "other",
+                        ],
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["want_to_read", "reading", "finished", "paused"],
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": ["low", "normal", "high"],
+                    },
+                    "progress": {"type": "string"},
+                    "notes": {"type": "string"},
+                    "document_id": {
+                        "type": "string",
+                        "description": "Owner-owned Library document id to link.",
+                    },
+                },
+                "required": ["action"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "api_call",
             "description": "Call a registered API integration (RSS reader, git forge, bookmark manager, smart home, etc.). Check the system context for available integrations and their endpoints.",
             "parameters": {

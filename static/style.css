@@ -37370,6 +37370,253 @@ body.theme-frosted .modal {
   }
 }
 
+/* Vanta Reading List */
+.reading-list-modal {
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(14px);
+}
+
+.reading-list-content {
+  width: min(920px, calc(100vw - 36px));
+  max-height: min(820px, calc(100dvh - 36px));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(20, 20, 23, 0.98), rgba(5, 5, 7, 0.98));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), 0 0 36px rgba(193, 18, 31, 0.08);
+}
+
+.reading-list-header,
+.reading-list-toolbar,
+.reading-list-card-top,
+.reading-list-actions,
+.reading-list-meta,
+.reading-list-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reading-list-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.reading-list-header h4 {
+  margin: 3px 0 0;
+  color: #f0f0f2;
+}
+
+.reading-list-kicker,
+.reading-list-state-mark {
+  color: #c92a3e;
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.reading-list-toolbar {
+  padding: 13px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.reading-list-toolbar p,
+.reading-list-state p,
+.reading-list-author {
+  margin: 0;
+  color: #8d8d94;
+  font-size: 0.72rem;
+}
+
+.reading-list-body {
+  max-height: calc(100dvh - 180px);
+  padding: 18px 22px 24px;
+  overflow: auto;
+}
+
+.reading-list-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reading-list-card,
+.reading-list-state,
+.reading-list-form {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.reading-list-card {
+  padding: 15px;
+}
+
+.reading-list-card h3,
+.reading-list-state h3 {
+  margin: 4px 0;
+  color: #e8e8eb;
+  font-size: 0.92rem;
+}
+
+.reading-list-priority {
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #a3a3aa;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.58rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.reading-list-priority.priority-high {
+  color: #f08392;
+  background: rgba(193, 18, 31, 0.13);
+}
+
+.reading-list-inline-controls {
+  display: grid;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.reading-list-select,
+.reading-list-progress,
+.reading-list-notes,
+.reading-list-field input,
+.reading-list-field select,
+.reading-list-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  outline: none;
+  color: #ededf0;
+  background: rgba(0, 0, 0, 0.32);
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.reading-list-notes {
+  resize: vertical;
+}
+
+.reading-list-meta {
+  margin-top: 11px;
+  color: #73737a;
+  font-size: 0.62rem;
+}
+
+.reading-list-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.reading-list-primary,
+.reading-list-secondary {
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reading-list-primary {
+  border: 1px solid rgba(218, 42, 65, 0.55);
+  color: #fff;
+  background: linear-gradient(135deg, #8d0d1e, #c1122f);
+}
+
+.reading-list-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  color: #c9c9ce;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.reading-list-state {
+  padding: 36px 22px;
+  text-align: center;
+}
+
+.reading-list-state .reading-list-primary {
+  margin-top: 15px;
+}
+
+.reading-list-form {
+  padding: 16px;
+}
+
+.reading-list-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reading-list-field {
+  display: grid;
+  gap: 6px;
+  color: #c9c9ce;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.reading-list-field.wide {
+  grid-column: 1 / -1;
+}
+
+.reading-list-form-error,
+.reading-list-unavailable {
+  color: #dca653;
+  font-size: 0.68rem;
+}
+
+.reading-list-form-actions {
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+@media (max-width: 768px) {
+  .reading-list-modal {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .reading-list-content {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-width: 1px 0 0;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .reading-list-body {
+    max-height: calc(100dvh - 136px);
+    padding: 14px 14px 28px;
+  }
+
+  .reading-list-grid,
+  .reading-list-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reading-list-field.wide {
+    grid-column: auto;
+  }
+
+  .reading-list-toolbar {
+    align-items: flex-start;
+  }
+}
+
 .brain-health-modal {
   padding: 24px;
 }

@@ -11,7 +11,11 @@ from src.search import comprehensive_web_search, fetch_webpage_content
 from src.prompt_security import UNTRUSTED_CONTEXT_POLICY, untrusted_context_message
 from src.vanta_core import VANTA_CORE_PROMPT
 from src.vanta_routines import resolve_active_vanta_routine
-from src.action_intents import destructive_note_action, note_management_intent
+from src.action_intents import (
+    classify_tool_intent,
+    destructive_note_action,
+    note_management_intent,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -235,6 +239,7 @@ class ChatProcessor:
             })
         routine = resolve_active_vanta_routine(message, session)
         note_intent = note_management_intent(message)
+        reading_action_intent = classify_tool_intent(message).category == "reading"
         destructive_note_verb = destructive_note_action(message) if note_intent else ""
         if routine:
             preface.append({
@@ -263,6 +268,17 @@ class ChatProcessor:
                         "The user requested a Notes action while incognito/private "
                         "mode is active. Do not call any Notes tool. Reply exactly: "
                         "\"Boss, note actions are disabled in incognito/private mode.\""
+                    ),
+                })
+            elif reading_action_intent:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "The user requested a Reading List action while "
+                        "incognito/private mode is active. Do not call any "
+                        "Reading List or Library tool. Reply exactly: "
+                        "\"Boss, reading list actions are disabled in "
+                        "incognito/private mode.\""
                     ),
                 })
         elif destructive_note_verb:
