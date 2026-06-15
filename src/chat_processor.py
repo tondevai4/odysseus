@@ -11,6 +11,7 @@ from src.search import comprehensive_web_search, fetch_webpage_content
 from src.prompt_security import UNTRUSTED_CONTEXT_POLICY, untrusted_context_message
 from src.vanta_core import VANTA_CORE_PROMPT
 from src.vanta_routines import resolve_active_vanta_routine
+from src.action_intents import destructive_note_action, note_management_intent
 
 logger = logging.getLogger(__name__)
 
@@ -233,6 +234,8 @@ class ChatProcessor:
                 )
             })
         routine = resolve_active_vanta_routine(message, session)
+        note_intent = note_management_intent(message)
+        destructive_note_verb = destructive_note_action(message) if note_intent else ""
         if routine:
             preface.append({
                 "role": "system",
@@ -251,6 +254,35 @@ class ChatProcessor:
                     "documents, or personal RAG. If Tony asks to use that private "
                     "context, explain briefly that private retrieval is disabled "
                     "in incognito and can be used after he leaves incognito."
+                ),
+            })
+            if note_intent:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "The user requested a Notes action while incognito/private "
+                        "mode is active. Do not call any Notes tool. Reply exactly: "
+                        "\"Boss, note actions are disabled in incognito/private mode.\""
+                    ),
+                })
+        elif destructive_note_verb:
+            if destructive_note_verb in {"delete", "remove"}:
+                note_reply = (
+                    "Boss, I can’t delete notes from chat. Open Notes and delete it manually."
+                )
+            elif destructive_note_verb == "archive":
+                note_reply = (
+                    "Boss, I can’t archive notes from chat. Open Notes and archive it manually."
+                )
+            else:
+                note_reply = (
+                    "Boss, I can’t overwrite notes from chat. Open Notes and edit it manually."
+                )
+            preface.append({
+                "role": "system",
+                "content": (
+                    "This is a destructive Notes request. Do not call any Notes "
+                    f"tool. Reply exactly: \"{note_reply}\""
                 ),
             })
         if _finance_payment_request(message):
@@ -273,7 +305,7 @@ class ChatProcessor:
         self._last_used_memories = []  # track what was injected
         self._last_brain_sources = []
 
-        if self.brain_service is not None and not incognito:
+        if self.brain_service is not None and not incognito and not note_intent:
             retrieval_query = routine.retrieval_query(message) if routine else message
             brain_result = self.brain_service.retrieve(
                 retrieval_query,
@@ -340,7 +372,7 @@ class ChatProcessor:
                     "Vanta Brain retrieval",
                     brain_result.context_text(),
                 ))
-        elif self.brain_service is None and use_memory and not incognito:
+        elif self.brain_service is None and use_memory and not incognito and not note_intent:
             # Legacy fallback for callers that construct ChatProcessor without
             # the unified Brain service.
             mem_entries = self.memory_manager.load(owner=owner)
@@ -388,7 +420,7 @@ class ChatProcessor:
 
         # Legacy RAG fallback. Production chat resolves Chroma dynamically
         # through VantaBrainService on every retrieval.
-        if self.brain_service is None and use_rag and not incognito:
+        if self.brain_service is None and use_rag and not incognito and not note_intent:
             try:
                 rag_manager = getattr(self.personal_docs_manager, 'rag_manager', None)
                 if rag_manager:

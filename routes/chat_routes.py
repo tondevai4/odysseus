@@ -39,7 +39,10 @@ from routes.chat_helpers import (
     clean_thinking_for_save,
     _enforce_chat_privileges,
 )
-from src.action_intents import classify_tool_intent as _classify_tool_intent
+from src.action_intents import (
+    classify_tool_intent as _classify_tool_intent,
+    destructive_note_action as _destructive_note_action,
+)
 from src.tool_policy import build_effective_tool_policy
 
 logger = logging.getLogger(__name__)
@@ -712,6 +715,15 @@ def setup_chat_routes(
                 "manage_notes",       # private notes
                 "manage_documents",   # private Library documents
             })
+        if (
+            _tool_intent
+            and _tool_intent.category == "notes"
+            and _destructive_note_action(message)
+        ):
+            # Destructive Notes requests are answered as refusals. Keep the
+            # tool out of the model's available schema so no delete/update
+            # attempt is made before that refusal.
+            disabled_tools.add("manage_notes")
 
         # Enforce per-user privileges
         _privs = {}
