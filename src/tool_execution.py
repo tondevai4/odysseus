@@ -43,14 +43,19 @@ def _guard_chat_note_action(content: str) -> Optional[Tuple[str, Dict]]:
     note_action = str(note_args.get("action", "")).replace("-", "_").strip().lower()
     if note_action in {"delete", "remove"}:
         return "manage_notes: BLOCKED", {
-            "error": "Notes cannot be deleted from chat. Open Notes to review and delete them yourself.",
+            "error": "Boss, I can’t delete notes from chat. Open Notes and delete it manually.",
             "exit_code": 1,
         }
-    if note_action in {"update", "replace", "archive"}:
+    if note_action == "archive":
+        return "manage_notes: BLOCKED", {
+            "error": "Boss, I can’t archive notes from chat. Open Notes and archive it manually.",
+            "exit_code": 1,
+        }
+    if note_action in {"update", "replace", "overwrite", "clear", "reset", "rename"}:
         return "manage_notes: CONFIRMATION_REQUIRED", {
             "error": (
-                "Chat will not overwrite, replace, rename, or archive note content. "
-                "Ask to append to a clearly named note, or make the change in Notes."
+                "Boss, I can’t overwrite notes from chat. "
+                "Open Notes and edit it manually."
             ),
             "exit_code": 1,
         }

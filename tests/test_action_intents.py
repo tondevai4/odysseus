@@ -1,4 +1,9 @@
-from src.action_intents import classify_tool_intent, message_needs_tools
+from src.action_intents import (
+    classify_tool_intent,
+    destructive_note_action,
+    message_needs_tools,
+    note_management_intent,
+)
 
 
 def test_calendar_entry_request_promotes_to_agent():
@@ -40,6 +45,11 @@ def test_note_todo_and_reminder_actions_promote_to_agent():
     assert message_needs_tools("Make a checklist note called Tomorrow with gym and housing")
     assert message_needs_tools("Delete the note called Test")
     assert message_needs_tools("Overwrite my note called Test")
+    assert message_needs_tools("Replace everything in Test Note with hello")
+    assert message_needs_tools("Clear my note called Test")
+    assert note_management_intent("Add this to a note called Work Leads")
+    assert destructive_note_action("Replace everything in Test Note with hello") == "replace"
+    assert destructive_note_action("Reset the note called Test") == "reset"
 
 
 def test_email_and_ui_actions_promote_to_agent():

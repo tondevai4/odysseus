@@ -21,6 +21,13 @@ class ToolIntent:
     reason: str = ""
 
 
+_NOTE_DESTRUCTIVE_RE = re.compile(
+    r"\b(delete|remove|archive|overwrite|replace|clear|reset|rename)\b"
+    r".{0,180}\bnotes?\b",
+    re.I,
+)
+
+
 _ACTION_QUESTION = r"\b(?:can|could|would|will)\s+you\s+"
 _ACTION_FOLLOWUP = (
     r"\b(?:you\s+should\s+be\s+able\s+to|"
@@ -74,7 +81,7 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("notes", "note/todo imperative request", rf"{_PLEASE}(?:add|create|make)\s+(?:a\s+|an\s+)?(?:todo|task|reminder|note|checklist)\b"),
         ("notes", "named note creation request", rf"{_PLEASE}(?:make|create)\s+(?:me\s+)?(?:a\s+)?(?:checklist\s+)?note\s+(?:called|named)\b"),
         ("notes", "append to named note request", rf"{_PLEASE}(?:add|append|put)\b.{{0,160}}\bto\s+(?:a\s+|my\s+|the\s+)?note\s+(?:called|named)\b"),
-        ("notes", "protected note mutation request", rf"{_PLEASE}(?:delete|remove|archive|overwrite|replace|rename)\b.{{0,120}}\bnotes?\b"),
+        ("notes", "protected note mutation request", rf"{_PLEASE}(?:delete|remove|archive|overwrite|replace|clear|reset|rename)\b.{{0,180}}\bnotes?\b"),
         ("notes", "take note request", rf"{_PLEASE}(?:take|jot|write\s+down)\s+(?:a\s+|an\s+)?note\b"),
         ("notes", "add item to notes/todo request", rf"{_PLEASE}(?:add|jot|write\s+down)\b.{{0,120}}\b(?:to|in|into)\s+(?:my\s+|the\s+)?(?:todo(?:\s+list)?|task\s+list|notes?|checklist)\b"),
         ("notes", "set reminder request", rf"{_PLEASE}set\s+(?:a\s+)?reminder\b"),
@@ -138,3 +145,14 @@ def message_needs_tools(text: str, patterns: Iterable[Pattern[str]] = _TOOL_INTE
     if patterns is _TOOL_INTENT_PATTERNS:
         return classify_tool_intent(text).needs_tools
     return any(pattern.search(text) for pattern in patterns)
+
+
+def note_management_intent(text: str) -> bool:
+    """Return whether the turn is an actionable Notes request."""
+    return classify_tool_intent(text).category == "notes"
+
+
+def destructive_note_action(text: str) -> str:
+    """Return the destructive Notes verb, or an empty string."""
+    match = _NOTE_DESTRUCTIVE_RE.search(text or "")
+    return match.group(1).lower() if match else ""

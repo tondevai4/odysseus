@@ -1201,6 +1201,7 @@ async def do_manage_notes(content: str, owner: Optional[str] = None) -> Dict:
     """Handle manage_notes tool calls: CRUD on notes and checklists."""
     import uuid as _uuid
     from core.database import SessionLocal, Note
+    from sqlalchemy import func
     from sqlalchemy.orm.attributes import flag_modified
 
     try:
@@ -1242,6 +1243,18 @@ async def do_manage_notes(content: str, owner: Optional[str] = None) -> Dict:
         if owner:
             q = q.filter(Note.owner == owner)
         return q.first()
+
+    def _notes_by_exact_title(title: str):
+        target = (title or "").strip()
+        if not target:
+            return []
+        q = db.query(Note).filter(
+            Note.archived == False,  # noqa: E712
+            func.lower(func.trim(Note.title)) == target.lower(),
+        )
+        if owner is not None:
+            q = q.filter(Note.owner == owner)
+        return q.all()
 
     try:
         if action == "list":
@@ -1296,6 +1309,19 @@ async def do_manage_notes(content: str, owner: Optional[str] = None) -> Dict:
                 items_raw = args.get("items")
             items_json = json.dumps(items_raw) if items_raw is not None else None
             note_type = args.get("note_type", "checklist" if items_raw else "note")
+            if title:
+                existing_titles = _notes_by_exact_title(title)
+                if existing_titles:
+                    return {
+                        "response": (
+                            f'Boss, a note called "{title}" already exists. '
+                            "Append to it, choose a new name, or cancel?"
+                        ),
+                        "duplicate": True,
+                        "requires_user_choice": True,
+                        "note_title": title,
+                        "exit_code": 0,
+                    }
             # Accept natural-language due_date ("tomorrow at 1pm") in
             # addition to ISO. Use the user-tz-aware parser so the LLM's
             # naive times ("today at 9pm") are anchored to the USER's clock,
@@ -1365,13 +1391,7 @@ async def do_manage_notes(content: str, owner: Optional[str] = None) -> Dict:
             if not title:
                 return {"error": "A clear note title is required for append.", "exit_code": 1}
 
-            q = db.query(Note).filter(Note.archived == False)  # noqa: E712
-            if owner is not None:
-                q = q.filter(Note.owner == owner)
-            matches = [
-                note for note in q.limit(100).all()
-                if _norm_note_title(note.title or "") == _norm_note_title(title)
-            ]
+            matches = _notes_by_exact_title(title)
             if not matches:
                 return {"error": f'Note "{title}" was not found.', "exit_code": 1}
             if len(matches) > 1:

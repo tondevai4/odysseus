@@ -123,6 +123,63 @@ def test_chat_injects_one_brain_message_and_incognito_suppresses_retrieval():
     assert brain.calls == 1
 
 
+def test_note_management_turns_suppress_brain_and_add_safety_directives():
+    class _Brain:
+        def __init__(self):
+            self.calls = 0
+
+        def retrieve(self, *args, **kwargs):
+            self.calls += 1
+            return BrainRetrieval(snippets=[
+                BrainSnippet("housing", "h1", "Housing Bid", "Private housing detail", 1.0),
+            ])
+
+    brain = _Brain()
+    processor = ChatProcessor(_MemoryManager(), _PersonalDocs(), brain_service=brain)
+
+    create_preface, _, _ = processor.build_context_preface(
+        "Make me a note called Test saying hello",
+        None,
+    )
+    assert brain.calls == 0
+    assert processor._last_brain_sources == []
+    assert all("Vanta Brain retrieval" not in row.get("content", "") for row in create_preface)
+
+    replace_preface, _, _ = processor.build_context_preface(
+        "Replace everything in Test Note with hello",
+        None,
+    )
+    assert brain.calls == 0
+    assert any(
+        "Boss, I can’t overwrite notes from chat. Open Notes and edit it manually."
+        in row.get("content", "")
+        for row in replace_preface
+    )
+
+    delete_preface, _, _ = processor.build_context_preface(
+        "Delete the note called Test Note",
+        None,
+    )
+    assert any(
+        "Boss, I can’t delete notes from chat. Open Notes and delete it manually."
+        in row.get("content", "")
+        for row in delete_preface
+    )
+
+    private_preface, _, _ = processor.build_context_preface(
+        "Make me a note called Test saying hello",
+        None,
+        incognito=True,
+    )
+    assert any(
+        "Boss, note actions are disabled in incognito/private mode."
+        in row.get("content", "")
+        for row in private_preface
+    )
+    assert brain.calls == 0
+    assert processor._last_brain_sources == []
+
+
 def test_brain_sources_are_saved_in_assistant_metadata():
     class _Session:
         def __init__(self):
