@@ -452,6 +452,7 @@ async function _submitForm(event) {
     _state = await _save(nextState);
     _editingId = null;
     _showForm = false;
+    window.dispatchEvent(new CustomEvent('vanta:housing-bids-updated'));
     uiModule.showToast(existing ? 'Housing bid updated.' : 'Housing bid added.', 'success');
   } catch (error) {
     console.error('Failed to save housing bid:', error);
@@ -481,6 +482,7 @@ async function _deleteEntry(entry) {
 
   try {
     _state = await _save(nextState);
+    window.dispatchEvent(new CustomEvent('vanta:housing-bids-updated'));
     uiModule.showToast('Housing bid deleted.', 'success');
   } catch (error) {
     console.error('Failed to delete housing bid:', error);

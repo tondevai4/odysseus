@@ -3426,6 +3426,10 @@ function startOdysseusApp() {
     openReadingList: () => readingListModule.open(),
     openReadingDocument: (item) => readingListModule.openLinkedDocument(item),
     downloadReadingDocument: (item) => readingListModule.downloadLinkedDocument(item),
+    openFinance: (documentId) => {
+      if (documentId) documentModule.loadDocument(documentId);
+      else documentModule.openLibrary({ tab: 'documents' });
+    },
     openBrainHealth: () => brainHealthModule.open(),
     runRoutine: runCommandRoutine,
   });
