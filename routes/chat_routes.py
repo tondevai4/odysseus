@@ -41,6 +41,7 @@ from routes.chat_helpers import (
 )
 from src.action_intents import (
     classify_tool_intent as _classify_tool_intent,
+    destructive_gym_action as _destructive_gym_action,
     destructive_note_action as _destructive_note_action,
 )
 from src.tool_policy import build_effective_tool_policy
@@ -714,6 +715,7 @@ def setup_chat_routes(
                 "manage_skills",      # skill presets tied to user
                 "manage_notes",       # private notes
                 "manage_reading_list",  # private reading list
+                "manage_gym_log",     # private gym log
                 "manage_documents",   # private Library documents
             })
         if (
@@ -732,6 +734,10 @@ def setup_chat_routes(
             # Reading state belongs on the shelf item, never in Notes or
             # ambient memory.
             disabled_tools.update({"manage_memory", "manage_notes"})
+        if _tool_intent and _tool_intent.category == "gym":
+            disabled_tools.update({"manage_memory", "manage_notes"})
+            if _destructive_gym_action(message):
+                disabled_tools.add("manage_gym_log")
 
         # Enforce per-user privileges
         _privs = {}

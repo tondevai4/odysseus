@@ -698,6 +698,8 @@ from routes.prefs_routes import setup_prefs_routes
 app.include_router(setup_prefs_routes())
 from routes.reading_list_routes import setup_reading_list_routes
 app.include_router(setup_reading_list_routes())
+from routes.gym_log_routes import setup_gym_log_routes
+app.include_router(setup_gym_log_routes())
 
 # Backup (export/import user data)
 from routes.backup_routes import setup_backup_routes

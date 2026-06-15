@@ -333,6 +333,66 @@ def _reading_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, str]]]:
     return True, items
 
 
+def _gym_intent(query: str) -> bool:
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
+    tokens = set(normalized.split())
+    return bool(tokens & {
+        "gym", "workout", "training", "lift", "lifting", "calories", "garmin",
+        "body", "exercise", "fitness",
+    }) or any(phrase in normalized for phrase in (
+        "what should i train",
+        "last workout",
+        "leg press",
+        "heart rate",
+        "total reps",
+        "total sets",
+    ))
+
+
+def _gym_store(owner: Optional[str]) -> tuple[bool, List[Dict[str, Any]]]:
+    value = (_load_for_user(owner) or {}).get("gym-log-v1")
+    recognized = (
+        isinstance(value, dict)
+        and value.get("version") == 1
+        and isinstance(value.get("entries"), list)
+    )
+    if not recognized:
+        return False, []
+    entries = []
+    for row in value["entries"]:
+        if not isinstance(row, dict):
+            continue
+        workout_date = _clean_text(row.get("date"), 10)
+        title = _clean_text(row.get("title"), 160)
+        if not workout_date or not title:
+            continue
+        exercises = []
+        for item in row.get("exercises") or []:
+            if not isinstance(item, dict):
+                continue
+            name = _clean_text(item.get("name"), 100)
+            sets = item.get("sets") if isinstance(item.get("sets"), list) else []
+            if name:
+                exercises.append({"name": name, "sets": sets[:12]})
+        entries.append({
+            "id": _clean_text(row.get("id"), 100),
+            "date": workout_date,
+            "title": title,
+            "duration": _clean_text(row.get("duration"), 30),
+            "total_sets": row.get("total_sets"),
+            "total_reps": row.get("total_reps"),
+            "active_calories": row.get("active_calories"),
+            "avg_hr": row.get("avg_hr"),
+            "max_hr": row.get("max_hr"),
+            "primary_benefit": _clean_text(row.get("primary_benefit"), 160),
+            "notes": _clean_text(row.get("notes"), 400),
+            "win": _clean_text(row.get("win"), 300),
+            "exercises": exercises,
+        })
+    entries.sort(key=lambda row: row["date"], reverse=True)
+    return True, entries
+
+
 class VantaBrainService:
     """Collect small, labelled snippets without mutating source stores."""
 
@@ -932,6 +992,61 @@ class VantaBrainService:
         candidates.sort(key=lambda item: (-item.score, item.label.lower()))
         return candidates[:MAX_SNIPPETS]
 
+    def _gym_candidates(
+        self,
+        query: str,
+        owner: Optional[str],
+        errors: List[Dict[str, str]],
+    ) -> List[BrainSnippet]:
+        if not _gym_intent(query):
+            return []
+        try:
+            recognized, entries = _gym_store(owner)
+        except Exception:
+            logger.warning("Vanta Brain gym-log retrieval failed", exc_info=True)
+            errors.append({"source": "gym", "detail": "Gym log unavailable."})
+            return []
+        if not recognized or not entries:
+            return [BrainSnippet(
+                source="gym",
+                source_id="gym-log-empty",
+                label="Gym Log",
+                text="No gym workouts are saved yet. Log today's proof when ready.",
+                score=3.0,
+                metadata={"status": "empty"},
+            )]
+        candidates = []
+        for entry in entries[:8]:
+            parts = [f'Date: {entry["date"]}', f'Workout: {entry["title"]}']
+            for key, label in (
+                ("duration", "Duration"), ("total_sets", "Total sets"),
+                ("total_reps", "Total reps"), ("active_calories", "Active calories"),
+                ("avg_hr", "Average heart rate"), ("max_hr", "Max heart rate"),
+                ("primary_benefit", "Primary benefit"),
+            ):
+                if entry.get(key) not in (None, ""):
+                    parts.append(f"{label}: {entry[key]}")
+            for exercise in entry["exercises"][:6]:
+                sets = ", ".join(
+                    f'{item.get("weight", "")} x {item.get("reps", "")}'.strip()
+                    for item in exercise["sets"][:8]
+                )
+                parts.append(f'Exercise: {exercise["name"]}' + (f" ({sets})" if sets else ""))
+            if entry["win"]:
+                parts.append(f'Win: {entry["win"]}')
+            if entry["notes"]:
+                parts.append(f'Notes: {entry["notes"]}')
+            text = "\n".join(parts)
+            candidates.append(BrainSnippet(
+                source="gym",
+                source_id=entry["id"],
+                label=f'Workout: {entry["date"]} — {entry["title"]}',
+                text=text,
+                score=2.8 + _keyword_score(query, text),
+                metadata={"date": entry["date"]},
+            ))
+        return candidates
+
     def retrieve(
         self,
         query: str,
@@ -947,6 +1062,8 @@ class VantaBrainService:
 
         if source_scope == "reading":
             candidates.extend(self._reading_candidates(query, owner, result.errors))
+        elif source_scope == "gym":
+            candidates.extend(self._gym_candidates(query, owner, result.errors))
         else:
             if include_memory:
                 memory, result.used_memories = self._memory_candidates(query, owner, result.errors)
@@ -960,6 +1077,7 @@ class VantaBrainService:
             ))
             candidates.extend(self._finance_candidates(query, owner, result.errors))
             candidates.extend(self._reading_candidates(query, owner, result.errors))
+            candidates.extend(self._gym_candidates(query, owner, result.errors))
             if include_rag:
                 rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
                 candidates.extend(rag)

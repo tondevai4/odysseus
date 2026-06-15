@@ -105,6 +105,14 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("reading", "current reading-list lookup", r"\bwhat\s+am\s+i\s+reading\b"),
         ("reading", "reading-list recommendation lookup", r"\bwhat\s+should\s+i\s+read(?:\s+tonight)?\b"),
 
+        # Gym / Body tracker actions and lookups.
+        ("gym", "log workout", rf"{_PLEASE}(?:log|record|create)\b.{{0,100}}\b(?:gym|workout|training)\b"),
+        ("gym", "append workout note", rf"{_PLEASE}add\b.{{0,120}}\bto\s+(?:today'?s?\s+)?(?:gym|workout)\s+log\b"),
+        ("gym", "latest workout lookup", r"\bwhat\s+was\s+my\s+(?:last|latest)\s+workout\b"),
+        ("gym", "next training lookup", r"\bwhat\s+should\s+i\s+train\s+next\b"),
+        ("gym", "exercise progress lookup", r"\bshow\s+my\s+.{1,100}\s+progress\b"),
+        ("gym", "delete workout request", rf"{_PLEASE}(?:delete|remove)\b.{{0,120}}\b(?:gym|workout|training)\s+log\b"),
+
         # Email actions.
         ("email", "assistant email action request", rf"{_ACTION_QUESTION}(?:send|write|reply|email|message|archive|delete|mark)\b.{{0,120}}\b(?:emails?|mail|messages?|inbox|unread|read)\b"),
         ("email", "send/write/reply email request", rf"{_PLEASE}(?:send|write|reply)\b.{{0,120}}\b(?:emails?|mail|messages?)\b"),
@@ -190,6 +198,39 @@ def reading_context_intent(text: str) -> bool:
 def reading_management_intent(text: str) -> bool:
     """Return whether the turn asks to mutate the Reading List."""
     return classify_tool_intent(text).category == "reading"
+
+
+def gym_context_intent(text: str) -> bool:
+    """Return whether a turn is specifically about workouts/body training."""
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
+    tokens = set(normalized.split())
+    if tokens & {
+        "gym", "workout", "training", "lift", "lifting", "garmin",
+        "body", "exercise", "fitness", "calories",
+    }:
+        return True
+    return any(phrase in normalized for phrase in (
+        "what should i train",
+        "last workout",
+        "leg press progress",
+        "heart rate",
+        "active calories",
+        "total reps",
+        "total sets",
+    ))
+
+
+def gym_management_intent(text: str) -> bool:
+    return classify_tool_intent(text).category == "gym"
+
+
+def destructive_gym_action(text: str) -> str:
+    match = re.search(
+        r"\b(delete|remove)\b.{0,140}\b(?:gym|workout|training)\s+logs?\b",
+        text or "",
+        re.I,
+    )
+    return match.group(1).lower() if match else ""
 
 
 def destructive_note_action(text: str) -> str:
