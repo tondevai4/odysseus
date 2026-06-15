@@ -79,6 +79,9 @@
 .gym-log-header, .gym-log-toolbar, .gym-log-card-top, .gym-log-form-actions {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
+.gym-log-toolbar-actions, .gym-live-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
 .gym-log-header, .gym-log-toolbar { padding: 18px 22px; }
 .gym-log-toolbar {
   border-block: 1px solid rgba(255,255,255,.07); color: #9b9ba1;
@@ -105,6 +108,10 @@
 .gym-log-stat strong { color: #f0f0f2; font-size: .94rem; }
 .gym-log-exercises p { margin: 6px 0; color: #c5c5c9; font-size: .82rem; }
 .gym-log-win { color: #e26a7c; }
+.gym-log-benefit {
+  display: inline-flex; margin: 0 0 12px; padding: 5px 9px; border-radius: 999px;
+  color: #ef9caa; background: rgba(196,38,61,.12); font-size: .76rem;
+}
 .gym-log-primary, .gym-log-secondary {
   border: 1px solid rgba(255,255,255,.12); border-radius: 999px;
   padding: 8px 13px; color: #ededf0; background: rgba(255,255,255,.05);
@@ -120,6 +127,63 @@
   width: 100%; border: 1px solid rgba(255,255,255,.1); border-radius: 10px;
   background: rgba(0,0,0,.35); color: #ededf0; padding: 10px 11px; resize: vertical;
 }
+.gym-log-garmin {
+  grid-column: 1 / -1; border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px; background: rgba(0,0,0,.22); padding: 12px;
+}
+.gym-log-garmin summary { color: #d5d5da; cursor: pointer; font-weight: 650; }
+.gym-log-garmin-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px; margin-top: 14px;
+}
+.gym-live-session {
+  width: min(620px, 100%); margin: 0 auto; display: grid; gap: 16px;
+}
+.gym-live-heading h3 { margin: 5px 0 2px; color: #f4f4f6; font-size: 1.25rem; }
+.gym-rest-timer {
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 9px;
+  padding: 10px 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 14px;
+  color: #96969d; background: rgba(255,255,255,.03);
+}
+.gym-rest-timer strong { color: #f0f0f2; font-variant-numeric: tabular-nums; }
+.gym-live-steppers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gym-live-stepper {
+  display: grid; gap: 7px; color: #a7a7ad; font-size: .75rem;
+}
+.gym-live-stepper-controls { display: grid; grid-template-columns: 44px 1fr 44px; gap: 7px; }
+.gym-live-stepper-controls input {
+  min-width: 0; width: 100%; border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; background: rgba(0,0,0,.4); color: #f2f2f4;
+  padding: 12px 6px; text-align: center; font-size: 1rem;
+}
+.gym-live-stepper-controls button { min-height: 46px; font-size: 1.1rem; }
+.gym-live-add { width: 100%; min-height: 50px; font-weight: 700; }
+.gym-live-set-list { display: grid; gap: 10px; }
+.gym-live-exercise {
+  border: 1px solid rgba(255,255,255,.07); border-radius: 14px;
+  background: rgba(255,255,255,.025); overflow: hidden;
+}
+.gym-live-exercise h4 { margin: 0; padding: 11px 13px; color: #dedee2; }
+.gym-live-set-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+  padding: 10px 13px; border-top: 1px solid rgba(255,255,255,.06);
+  color: #98989f; font-size: .82rem;
+}
+.gym-live-set-row strong { color: #ededf0; }
+.gym-live-inline-input {
+  min-width: 0; width: 76px; border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px; padding: 7px; background: rgba(0,0,0,.4);
+  color: #ededf0;
+}
+.gym-live-edit-set {
+  border: 0; background: transparent; color: #d75a6d; cursor: pointer; padding: 4px;
+}
+.gym-live-resume {
+  width: 100%; margin-bottom: 12px; border: 1px solid rgba(196,38,61,.5);
+  border-radius: 14px; padding: 13px; color: #f2f2f4;
+  background: rgba(196,38,61,.13); cursor: pointer; text-align: left;
+}
+.gym-finish-form .gym-log-stats { margin: 0; }
 .gym-log-error { color: #ff7d8e; margin: 0; }
 .gym-log-empty { text-align: center; color: #99999f; }
 @media (max-width: 640px) {
@@ -128,9 +192,17 @@
     width: 100%; max-height: 100dvh; min-height: 100dvh; border-radius: 0;
   }
   .gym-log-header, .gym-log-toolbar, .gym-log-body { padding-inline: 16px; }
-  .gym-log-toolbar { align-items: flex-start; }
+  .gym-log-toolbar { align-items: flex-start; flex-direction: column; }
+  .gym-log-toolbar-actions { width: 100%; }
+  .gym-log-toolbar-actions button { flex: 1; min-height: 44px; }
   .gym-log-form { grid-template-columns: 1fr; }
+  .gym-log-garmin-grid { grid-template-columns: 1fr 1fr; }
   .gym-log-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gym-live-steppers { grid-template-columns: 1fr; }
+  .gym-live-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .gym-live-actions .gym-log-primary { grid-column: 1 / -1; min-height: 48px; }
+  .gym-rest-timer { grid-template-columns: auto 1fr; }
+  .gym-rest-timer button { min-height: 40px; }
 }
 
 :root.light {

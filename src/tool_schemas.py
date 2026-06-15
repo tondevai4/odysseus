@@ -674,36 +674,60 @@ FUNCTION_TOOL_SCHEMAS = [
         "function": {
             "name": "manage_gym_log",
             "description": (
-                "Manage the owner's private Gym / Body tracker. Use add for a "
-                "new workout, list for latest workout or exercise progress, "
-                "update for an existing id/date, and append_note for today's "
-                "workout. Preserve pasted details in raw_log and parse exercises "
-                "when possible. Never delete gym logs from chat."
+                "Manage the owner's private Gym / Body tracker. Supports live "
+                "sessions (start_session, add_set, finish_session), saved workout "
+                "history, exercise progress, notes, and Garmin summary updates. "
+                "Preserve pasted Garmin text in raw_garmin_text. Never delete gym "
+                "logs from chat."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "action": {"type": "string", "enum": ["list", "add", "update", "append_note"]},
+                    "action": {
+                        "type": "string",
+                        "enum": [
+                            "list", "start_session", "add_set", "edit_set",
+                            "delete_last_set", "finish_session",
+                            "add", "update", "update_garmin", "append_note",
+                        ],
+                    },
                     "id": {"type": "string"},
                     "date": {"type": "string", "description": "Workout date as YYYY-MM-DD."},
                     "title": {"type": "string"},
                     "duration": {"type": "string"},
+                    "total_time": {"type": "string"},
                     "work_time": {"type": "string"},
                     "rest_time": {"type": "string"},
                     "avg_hr": {"type": "integer"},
                     "max_hr": {"type": "integer"},
+                    "resting_calories": {"type": "integer"},
                     "active_calories": {"type": "integer"},
                     "total_calories": {"type": "integer"},
+                    "estimated_sweat_loss_ml": {"type": "integer"},
                     "total_reps": {"type": "integer"},
                     "total_sets": {"type": "integer"},
+                    "avg_time_per_set": {"type": "string"},
+                    "total_volume": {"type": "number"},
+                    "intensity_minutes_moderate": {"type": "integer"},
+                    "intensity_minutes_vigorous": {"type": "integer"},
+                    "intensity_minutes_total": {"type": "integer"},
+                    "body_battery_net_impact": {"type": "integer"},
                     "primary_benefit": {"type": "string"},
+                    "muscle_primary": {"type": "string"},
+                    "muscle_secondary": {"type": "string"},
+                    "muscle_untargeted": {"type": "string"},
                     "exercises": {"type": "array", "items": {"type": "object"}},
+                    "exercise": {"type": "string", "description": "Exercise name for add_set or list filtering."},
+                    "weight": {"type": "string", "description": "Set weight, such as 100kg."},
+                    "reps": {"type": "integer"},
+                    "set_index": {"type": "integer"},
                     "notes": {"type": "string"},
                     "note": {"type": "string"},
                     "win": {"type": "string"},
                     "raw_log": {"type": "string"},
+                    "raw_garmin_text": {"type": "string"},
+                    "garmin_text": {"type": "string"},
                     "details": {"type": "string"},
-                    "exercise": {"type": "string", "description": "Filter list results by exercise name."},
                 },
                 "required": ["action"],
             },
