@@ -104,6 +104,7 @@ function init({
   openHousingBids,
   openReadingList,
   openGymLog,
+  openArchive,
   openReadingDocument,
   downloadReadingDocument,
   openBrainHealth,
@@ -138,6 +139,12 @@ function init({
       && typeof openGymLog === 'function'
     ) {
       openGymLog();
+    }
+    if (
+      action.dataset.commandCenterAction === 'archive'
+      && typeof openArchive === 'function'
+    ) {
+      openArchive();
     }
     if (
       action.dataset.commandCenterAction === 'brain-health'

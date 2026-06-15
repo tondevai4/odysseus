@@ -700,6 +700,8 @@ from routes.reading_list_routes import setup_reading_list_routes
 app.include_router(setup_reading_list_routes())
 from routes.gym_log_routes import setup_gym_log_routes
 app.include_router(setup_gym_log_routes())
+from routes.archive_routes import setup_archive_routes
+app.include_router(setup_archive_routes(session_manager))
 
 # Backup (export/import user data)
 from routes.backup_routes import setup_backup_routes
