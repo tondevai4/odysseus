@@ -24,9 +24,8 @@ def _strip_list_prefix(text: str) -> str:
 from services.memory import MemoryManager
 from core.session_manager import SessionManager
 from src.request_models import MemoryAddRequest
-from core.database import SessionLocal
 from src.llm_core import llm_call_async
-from services.memory.memory_extractor import audit_memories
+from services.memory.tidy import apply_local_tidy
 from src.auth_helpers import get_current_user, require_user
 from src.endpoint_resolver import resolve_endpoint
 from src.upload_limits import read_upload_limited, MEMORY_IMPORT_MAX_BYTES
@@ -266,80 +265,24 @@ def setup_memory_routes(memory_manager: MemoryManager, session_manager: SessionM
 
     @router.post("/audit")
     async def api_audit_memories(request: Request, session: str = Form(None)):
-        """Deduplicate and consolidate memories via LLM.
+        """Deduplicate and lightly clean memories without relying on large LLM completions.
 
-        Uses the default model from settings, or falls back to a session's model.
-        Returns before and after memory counts.
+        The previous route could fail when the selected model rejected
+        ``max_tokens=16384``. The visible Brain Tidy path should be reliable, so
+        this endpoint now uses the conservative deterministic tidy backend. It
+        removes empty rows, exact duplicates, and very high-confidence near
+        duplicates while preserving pinned/manual entries.
         """
-        from routes.model_routes import _load_settings, _normalize_base, build_chat_url
-        from core.database import ModelEndpoint
-        import json as _json
-
-        endpoint_url = model = None
-        headers = {}
-
-        # Try default model from settings first
-        settings = _load_settings()
-        ep_id = settings.get("default_endpoint_id", "")
-        default_model = settings.get("default_model", "")
-        if ep_id:
-            db = SessionLocal()
-            try:
-                ep = db.query(ModelEndpoint).filter(
-                    ModelEndpoint.id == ep_id, ModelEndpoint.is_enabled == True
-                ).first()
-                if ep:
-                    base = _normalize_base(ep.base_url)
-                    endpoint_url = build_chat_url(base)
-                    model = default_model
-                    if not model and ep.models:
-                        try:
-                            models = _json.loads(ep.models) if isinstance(ep.models, str) else ep.models
-                            if models:
-                                model = models[0]
-                        except Exception:
-                            pass
-                    if ep.api_key:
-                        headers = {"Authorization": f"Bearer {ep.api_key}"}
-            finally:
-                db.close()
-
-        # Fall back to session model if no default configured
-        if not endpoint_url and session:
-            try:
-                sess = session_manager.get_session(session)
-                _assert_session_owner(sess, _owner(request))
-                endpoint_url = sess.endpoint_url
-                model = sess.model
-                headers = sess.headers
-            except KeyError:
-                pass
-
-        if not endpoint_url or not model:
-            raise HTTPException(400, "No default model configured — set one in Settings")
-
         user = _owner(request)
-        result = await audit_memories(
-            memory_manager,
-            memory_vector,
-            endpoint_url,
-            model,
-            headers,
-            owner=user,
-        )
-
-        if "error" in result and "before" not in result:
-            raise HTTPException(502, f"Audit failed: {result['error']}")
-
+        result = apply_local_tidy(memory_manager, memory_vector, owner=user)
         return {
-            "ok": "error" not in result,
+            "ok": True,
             "before": result.get("before", 0),
             "after": result.get("after", 0),
-            "removed": result.get("before", 0) - result.get("after", 0),
-            # True when the audit skipped the LLM because nothing changed
-            # since the last tidy. Frontend already says "Already clean"
-            # for removed==0, so this is here for future use / debugging.
-            "already_tidy": bool(result.get("already_tidy")),
+            "removed": result.get("removed", 0),
+            "edited": result.get("edited", 0),
+            "already_tidy": not result.get("removed") and not result.get("edited"),
+            "mode": result.get("mode", "local"),
         }
 
     @router.post("/import")
@@ -364,10 +307,10 @@ def setup_memory_routes(memory_manager: MemoryManager, session_manager: SessionM
                 model = sess.model
                 headers = sess.headers
             except KeyError:
-                 raise HTTPException(404, "Session not found — needed for LLM config")
+                raise HTTPException(404, "Session not found — needed for LLM config")
         else:
             endpoint_url, model, headers = resolve_endpoint("utility", owner=_owner(request))
-    
+
         if not endpoint_url or not model:
             raise HTTPException(400, "No LLM model configured. Set a default model in Settings.")
 
