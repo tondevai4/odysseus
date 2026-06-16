@@ -10,6 +10,7 @@ let _idCounter = 0;
 // Dismissed-from-panel IDs persist across reloads so Clear actually sticks.
 // (Items still live on disk and in the Library; this just hides them here.)
 const _DISMISSED_KEY = 'odysseus-research-dismissed';
+const ACTIVE_RECONNECT_MS = 30000;
 function _loadDismissed() {
   try {
     const raw = localStorage.getItem(_DISMISSED_KEY);
@@ -28,25 +29,34 @@ function _markDismissed(ids) {
 
 let _activePollInterval = null;
 
+function _hasLiveJobs() {
+  return _jobs.some(j => j.status === 'running' || j.status === 'queued');
+}
+
 export function init(apiBase) {
   _apiBase = apiBase;
-  _reconnectActive();
-  // Poll for active sessions periodically so research started elsewhere
-  // (e.g. by the agent via trigger_research) gets adopted into the
-  // sidebar — _reconnectActive only ran once at load before, so
-  // agent-started jobs never appeared until a page reload.
+  _reconnectActive({ includeLibrary: true });
+  // Poll less often and avoid background work when the tab is hidden and there
+  // are no live jobs. Agent-started jobs are still adopted immediately via
+  // adoptSession(), so this does not slow active research.
   if (_activePollInterval) clearInterval(_activePollInterval);
-  _activePollInterval = setInterval(() => { _reconnectActive(); }, 12000);
+  _activePollInterval = setInterval(() => {
+    if (document.hidden && !_hasLiveJobs()) return;
+    _reconnectActive({ includeLibrary: false });
+  }, ACTIVE_RECONNECT_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') _reconnectActive({ includeLibrary: false });
+  });
 }
 
 // Allow an immediate adopt when the chat stream signals a new research
-// session (research_started ui_event) — faster than the 12s poll.
+// session (research_started ui_event) — faster than the periodic poll.
 export function adoptSession(sessionId) {
   if (!sessionId || _jobs.some(j => j.id === sessionId)) return;
-  _reconnectActive();
+  _reconnectActive({ includeLibrary: false });
 }
 
-async function _reconnectActive() {
+async function _reconnectActive({ includeLibrary = true } = {}) {
   try {
     // Reconnect to running tasks
     const res = await fetch(`${_apiBase}/api/research/active`, { credentials: 'same-origin' });
@@ -68,26 +78,30 @@ async function _reconnectActive() {
       }
     }
 
-    // Load recent completed research from disk
-    const libRes = await fetch(`${_apiBase}/api/research/library?sort=recent&limit=20`, { credentials: 'same-origin' });
-    if (libRes.ok) {
-      const libData = await libRes.json();
-      const dismissed = _loadDismissed();
-      for (const item of (libData.research || [])) {
-        if (item.status !== 'done') continue;
-        if (dismissed.has(item.id)) continue;
-        if (_jobs.some(j => j.id === item.id)) continue;
-        const elapsed = item.duration ? _parseDuration(item.duration) : 0;
-        _jobs.push({
-          id: item.id, query: item.query, status: 'done',
-          progress: {}, startedAt: (item.started_at || 0) * 1000,
-          elapsed, result: null, sources: null, findings: null,
-          sourceCount: item.source_count || 0,
-          category: item.category || '',
-          errorMsg: null, avgDuration: null, modelName: null,
-          settings: { max_rounds: item.rounds || 8 },
-          _es: null, _timerInterval: null, _fromLibrary: true,
-        });
+    // Load recent completed research from disk only on init or explicit refresh.
+    // The periodic active poll used to hit this every 12s, which made the app
+    // feel noisier than necessary while idle.
+    if (includeLibrary) {
+      const libRes = await fetch(`${_apiBase}/api/research/library?sort=recent&limit=20`, { credentials: 'same-origin' });
+      if (libRes.ok) {
+        const libData = await libRes.json();
+        const dismissed = _loadDismissed();
+        for (const item of (libData.research || [])) {
+          if (item.status !== 'done') continue;
+          if (dismissed.has(item.id)) continue;
+          if (_jobs.some(j => j.id === item.id)) continue;
+          const elapsed = item.duration ? _parseDuration(item.duration) : 0;
+          _jobs.push({
+            id: item.id, query: item.query, status: 'done',
+            progress: {}, startedAt: (item.started_at || 0) * 1000,
+            elapsed, result: null, sources: null, findings: null,
+            sourceCount: item.source_count || 0,
+            category: item.category || '',
+            errorMsg: null, avgDuration: null, modelName: null,
+            settings: { max_rounds: item.rounds || 8 },
+            _es: null, _timerInterval: null, _fromLibrary: true,
+          });
+        }
       }
     }
 
@@ -287,6 +301,11 @@ async function _pollFallback(job) {
   if (job.status !== 'running') return;
   try {
     const res = await fetch(`${_apiBase}/api/research/status/${job.id}`, { credentials: 'same-origin' });
+    if (res.status === 404) {
+      job.errorMsg = 'Research session no longer exists.';
+      _finishJob(job, 'error');
+      return;
+    }
     if (!res.ok) { _finishJob(job, 'error'); return; }
     const d = await res.json();
     job.progress = d.progress || {};
@@ -296,7 +315,7 @@ async function _pollFallback(job) {
       if (d.status === 'done') _fetchResult(job);
       return;
     }
-    setTimeout(() => _pollFallback(job), 2000);
+    setTimeout(() => _pollFallback(job), 3000);
   } catch { _finishJob(job, 'error'); }
 }
 
