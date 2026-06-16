@@ -40,8 +40,13 @@ class ProfileBody(BaseModel):
 class PreferencesBody(BaseModel):
     belief_style: list[str] = Field(default_factory=list)
     tone: str = "grounded_mystic"
+    strictness: str = "direct"
     manifestation_style: list[str] = Field(default_factory=list)
     avoid_tone: list[str] = Field(default_factory=list)
+    vedic_first: bool = True
+    avoid_guaranteed_predictions: bool = True
+    always_include_action_receipt: bool = True
+    include_numerology: bool = True
 
 
 class GratitudeBody(BaseModel):
