@@ -8,7 +8,7 @@
   });
   const homeTaglines = Object.freeze([
     'What needs sorting?',
-    'What\u2019s the move?',
+    'What’s the move?',
     'Signal over noise.',
     'Receipts over speeches.',
     'Faith with action.',
@@ -31,6 +31,15 @@
   window.YVES_LOCAL_GREETING = localGreeting;
   window.VANTA_LOCAL_GREETING = localGreeting;
 
+  function loadBrainTidyPatch() {
+    if (document.getElementById('brain-tidy-patch-js')) return;
+    const script = document.createElement('script');
+    script.id = 'brain-tidy-patch-js';
+    script.src = '/static/js/brainTidyPatch.js';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function applyBranding() {
     document.querySelectorAll('[data-brand-name]').forEach((node) => {
       node.textContent = brand.name;
@@ -52,6 +61,7 @@
     if (currentMeta && currentMeta.textContent.trim() === 'Odysseus Chat') {
       currentMeta.textContent = `${brand.name} Chat`;
     }
+    loadBrainTidyPatch();
   }
 
   if (document.readyState === 'loading') {
