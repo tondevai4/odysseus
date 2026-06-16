@@ -12,6 +12,15 @@ function _label(value) {
   return String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function _ensureThemeStyles() {
+  if (document.getElementById('command-center-theme-css')) return;
+  const link = document.createElement('link');
+  link.id = 'command-center-theme-css';
+  link.rel = 'stylesheet';
+  link.href = '/static/css/command-center-theme.css';
+  document.head.appendChild(link);
+}
+
 async function _loadCurrentReading({ openReadingDocument, downloadReadingDocument } = {}) {
   const body = document.getElementById('command-reading-body');
   const actions = document.getElementById('command-reading-actions');
@@ -115,10 +124,15 @@ async function _loadOracleSummary() {
     if (payload.manifestation_count) parts.push(`${payload.manifestation_count} manifestation${payload.manifestation_count === 1 ? '' : 's'}`);
     if (payload.gratitude_count) parts.push(`${payload.gratitude_count} gratitude entr${payload.gratitude_count === 1 ? 'y' : 'ies'}`);
     if (payload.sign_count) parts.push(`${payload.sign_count} sign${payload.sign_count === 1 ? '' : 's'}`);
+    if (payload.life_path) parts.push(`Life Path ${payload.life_path}`);
+    if (payload.day_number) parts.push(`Day ${payload.day_number}`);
     if (parts.length) {
       _text(body, 'p', 'command-oracle-summary', parts.join(' · '));
     } else {
       _text(body, 'p', 'command-oracle-empty', 'No Oracle profile yet. Open STRNOS Oracle to add signs, gratitude, or numerology.');
+    }
+    if (payload.latest_sign?.value) {
+      _text(body, 'p', 'command-oracle-note', `Latest sign: ${payload.latest_sign.value}`);
     }
     _text(body, 'p', 'command-oracle-note', 'Vedic engine pending. Numerology runs locally.');
   } catch (error) {
@@ -140,6 +154,7 @@ function init({
   runRoutine,
 } = {}) {
   if (_initialized) return;
+  _ensureThemeStyles();
 
   const commandCenter = document.getElementById('command-center');
   if (!commandCenter) return;
