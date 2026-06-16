@@ -79,7 +79,7 @@ def test_vanta_core_is_first_with_no_preset_and_before_preset():
         preset_system_prompt="Speak like a pirate.",
     )
     assert overlaid[0]["content"] == VANTA_CORE_PROMPT
-    assert "subordinate to Vanta Core" in overlaid[1]["content"]
+    assert "subordinate to YVES / STRNOS Core" in overlaid[1]["content"]
     assert overlaid[1]["content"].endswith("Speak like a pirate.")
 
 
@@ -104,7 +104,7 @@ def test_chat_injects_one_brain_message_and_incognito_suppresses_retrieval():
     preface, _, _ = processor.build_context_preface("CSCS", None, use_memory=True, use_rag=True)
     brain_messages = [
         row for row in preface
-        if row.get("role") == "user" and "Vanta Brain retrieval" in row.get("content", "")
+        if row.get("role") == "user" and "YVES Brain retrieval" in row.get("content", "")
     ]
     assert len(brain_messages) == 1
     assert brain.calls == 1
@@ -118,7 +118,7 @@ def test_chat_injects_one_brain_message_and_incognito_suppresses_retrieval():
         incognito=True,
     )
     assert private_preface[0]["content"] == VANTA_CORE_PROMPT
-    assert all("Vanta Brain retrieval" not in row.get("content", "") for row in private_preface)
+    assert all("YVES Brain retrieval" not in row.get("content", "") for row in private_preface)
     assert all("Private memory" not in row.get("content", "") for row in private_preface)
     assert brain.calls == 1
 
@@ -143,7 +143,7 @@ def test_note_management_turns_suppress_brain_and_add_safety_directives():
     )
     assert brain.calls == 0
     assert processor._last_brain_sources == []
-    assert all("Vanta Brain retrieval" not in row.get("content", "") for row in create_preface)
+    assert all("YVES Brain retrieval" not in row.get("content", "") for row in create_preface)
     create_text = "\n".join(row.get("content", "") for row in create_preface)
     assert "current live user message is trusted action input" in create_text
     assert "action=add, note_type=note" in create_text

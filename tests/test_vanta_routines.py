@@ -65,7 +65,7 @@ def test_ordinary_time_words_do_not_trigger_routines():
 
 
 def test_identity_question_does_not_trigger_or_continue_morning_brief():
-    assert "Boss — I’m Vanta." in VANTA_CORE_PROMPT
+    assert "Boss — I’m Yves." in VANTA_CORE_PROMPT
     assert "Do not start a command routine unless" in VANTA_CORE_PROMPT
     assert resolve_vanta_routine("Who are you, and what do you call me?") is None
     session = _Session([
@@ -131,7 +131,7 @@ def test_chat_adds_trusted_routine_and_expands_brain_query():
     assert preface[0]["content"] == VANTA_CORE_PROMPT
     routine_messages = [
         row for row in preface
-        if row["role"] == "system" and "Active Vanta routine" in row["content"]
+        if row["role"] == "system" and "Active YVES routine" in row["content"]
     ]
     assert len(routine_messages) == 1
     assert "energy 1-10" in routine_messages[0]["content"]
@@ -139,7 +139,7 @@ def test_chat_adds_trusted_routine_and_expands_brain_query():
     assert brain.queries[0][1] == "tony"
     assert brain.queries[0][2]["housing_query"] == "Start my Morning Command Brief."
     assert any(
-        row["role"] == "user" and "Vanta Brain retrieval" in row["content"]
+        row["role"] == "user" and "YVES Brain retrieval" in row["content"]
         for row in preface
     )
 
@@ -156,11 +156,11 @@ def test_incognito_keeps_routine_and_core_but_disables_brain():
     )
 
     assert preface[0]["content"] == VANTA_CORE_PROMPT
-    assert any("Active Vanta routine: Urge Reset Mode" in row["content"] for row in preface)
+    assert any("Active YVES routine: Urge Reset Mode" in row["content"] for row in preface)
     assert any("private retrieval is disabled" in row["content"] for row in preface)
     assert not brain.queries
     assert processor._last_brain_sources == []
-    assert all("Vanta Brain retrieval" not in row["content"] for row in preface)
+    assert all("YVES Brain retrieval" not in row["content"] for row in preface)
 
 
 def test_incognito_route_blocks_private_tools_documents_and_source_events():

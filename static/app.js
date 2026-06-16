@@ -33,6 +33,7 @@ import readingListModule from './js/readingList.js';
 import gymLogModule from './js/gymLog.js';
 import archiveModule from './js/archive.js';
 import brainHealthModule from './js/brainHealth.js';
+import oracleModule from './js/oracle.js';
 // Eagerly bind unified minimize/restore behavior across all tool modals.
 import './js/modalManager.js';
 // Desktop window tiling — drag a modal near an edge/corner to snap.
@@ -357,7 +358,7 @@ function initializeEventListeners() {
       e.stopPropagation();
       exportMenu.classList.remove('open');
       const meta = sessionModule.getSessions().find(s => s.id === sessionModule.getCurrentSessionId());
-      const sessionName = meta ? meta.name : 'Vanta Chat';
+      const sessionName = meta ? meta.name : 'YVES Chat';
       const originalTitle = document.title;
       document.title = sessionName;
       const chatHistory = document.getElementById('chat-history');
@@ -963,6 +964,12 @@ function initializeEventListeners() {
       else archiveModule.open();
     });
   }
+  const toolOracleBtn = el('tool-oracle-btn');
+  if (toolOracleBtn) {
+    toolOracleBtn.addEventListener('click', () => {
+      oracleModule.open();
+    });
+  }
   // Refresh notes due-reminder badge on load and every 5 minutes
   if (notesModule && notesModule.refreshDueBadge) {
     notesModule.refreshDueBadge();
@@ -1089,6 +1096,7 @@ function initializeEventListeners() {
       setTimeout(_goFullscreen, 200);
     },
     '/memory':   () => document.getElementById('tool-memory-btn')?.click(),
+    '/oracle':   () => document.getElementById('tool-oracle-btn')?.click(),
     '/gallery':  () => document.getElementById('tool-gallery-btn')?.click(),
     '/tasks':    () => document.getElementById('tool-tasks-btn')?.click(),
     '/archive-room': () => document.getElementById('tool-investigation-archive-btn')?.click(),
@@ -2175,7 +2183,7 @@ function initializeEventListeners() {
       pickerWrap.classList.toggle('picker-auto-hidden', w < PICKER_HIDE_WIDTH);
       // Hide placeholder text
       if (textarea) {
-        textarea.setAttribute('placeholder', w < PLACEHOLDER_HIDE_WIDTH ? '' : 'Message Vanta...');
+        textarea.setAttribute('placeholder', w < PLACEHOLDER_HIDE_WIDTH ? '' : 'Message YVES...');
       }
       // Hide entire bottom toolbar (tools, mode toggle) — only send button remains
       if (inputBottom) {
@@ -3446,6 +3454,7 @@ function startOdysseusApp() {
     openReadingDocument: (item) => readingListModule.openLinkedDocument(item),
     downloadReadingDocument: (item) => readingListModule.downloadLinkedDocument(item),
     openBrainHealth: () => brainHealthModule.open(),
+    openOracle: () => oracleModule.open(),
     runRoutine: runCommandRoutine,
   });
 
@@ -3500,6 +3509,7 @@ function startOdysseusApp() {
     'rail-calendar':  'tool-calendar-btn',
     'rail-notes':     'tool-notes-btn',
     'rail-memory':    'tool-memory-btn',
+    'rail-oracle':    'tool-oracle-btn',
     'rail-theme':     'tool-theme-btn',
     'rail-email':     'email-section-title',
   };

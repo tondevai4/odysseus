@@ -58,7 +58,8 @@ _EXPLANATORY_PREFIX = re.compile(
 
 _PANEL = (
     r"(?:calendar|notes?|inbox|email|mail|documents?|docs|library|gallery|"
-    r"settings|cookbook|sessions?|chats?|skills|memories|memory|brain)"
+    r"settings|cookbook|sessions?|chats?|skills|memories|memory|brain|"
+    r"oracle|strnos\s+oracle)"
 )
 
 _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
@@ -118,6 +119,20 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("gym", "next training lookup", r"\bwhat\s+should\s+i\s+train\s+next\b"),
         ("gym", "exercise progress lookup", r"\bshow\s+my\s+.{1,100}\s+progress\b"),
         ("gym", "delete workout request", rf"{_PLEASE}(?:delete|remove)\b.{{0,120}}\b(?:gym|workout|training)\s+log\b"),
+
+        # STRNOS Oracle actions and private spiritual state. Keep these on the
+        # dedicated Oracle store; do not route them to memory or notes.
+        ("oracle", "log sign", rf"{_PLEASE}(?:log|record|add)\b.{{0,140}}\b(?:sign|angel\s+number|synchronicity|333|111|222|444|555|777|1010|1111|1212)\b"),
+        ("oracle", "saw sign", r"\bi\s+saw\b.{0,120}\b(?:333|111|222|444|555|777|1010|1111|1212|angel\s+number|sign)\b"),
+        ("oracle", "add gratitude", rf"{_PLEASE}(?:add|log|record)\s+gratitude\b"),
+        ("oracle", "add manifestation", rf"{_PLEASE}(?:add|log|record)\s+(?:a\s+)?manifestation\b"),
+        ("oracle", "update manifestation", rf"{_PLEASE}mark\b.{{0,160}}\bmanifestation\b.{{0,80}}\b(?:materialised|materialized|released|paused|active)\b"),
+        ("oracle", "important date", rf"{_PLEASE}(?:add|save|log)\b.{{0,120}}\b(?:important|spiritual|oracle|numerology)\s+date\b"),
+        ("oracle", "numerology calculation", r"\b(?:calculate|check|show|what(?:'s| is))\b.{0,160}\b(?:numerology|personal\s+day|life\s+path)\b"),
+        ("oracle", "daily oracle reading", r"\b(?:daily\s+(?:vedic\s+)?reading|today'?s?\s+oracle|vedic\s+reading|oracle\s+reading)\b"),
+        ("oracle", "cosmic calendar lookup", r"\b(?:mercury\s+retrograde|cosmic\s+calendar)\b"),
+        ("oracle", "birth profile update", rf"{_PLEASE}(?:update|set)\b.{{0,160}}\b(?:birth\s+(?:profile|time|date|city|place)|vedic|lahiri|whole\s+sign)\b"),
+        ("oracle", "oracle state lookup", r"\b(?:what\s+am\s+i\s+manifesting|what\s+signs\s+have\s+i\s+seen|birth\s+profile)\b"),
 
         # Email actions.
         ("email", "assistant email action request", rf"{_ACTION_QUESTION}(?:send|write|reply|email|message|archive|delete|mark)\b.{{0,120}}\b(?:emails?|mail|messages?|inbox|unread|read)\b"),
@@ -241,6 +256,47 @@ def gym_management_intent(text: str) -> bool:
 def destructive_gym_action(text: str) -> str:
     match = re.search(
         r"\b(delete|remove)\b.{0,140}\b(?:gym|workout|training)\s+logs?\b",
+        text or "",
+        re.I,
+    )
+    return match.group(1).lower() if match else ""
+
+
+def oracle_context_intent(text: str) -> bool:
+    """Return whether a turn is specifically about STRNOS Oracle data."""
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (text or "").lower()))
+    tokens = set(normalized.split())
+    if tokens & {
+        "oracle", "astrology", "vedic", "jyotish", "numerology",
+        "manifestation", "manifesting", "gratitude", "prayer", "universe",
+        "divine", "synchronicity", "synchronicities", "sign", "signs", "spiritual",
+    }:
+        return True
+    if re.search(r"\b(?:111|222|333|444|555|777|1010|1111|1212)\b", normalized):
+        return True
+    return any(phrase in normalized for phrase in (
+        "angel number",
+        "mercury retrograde",
+        "birth chart",
+        "birth profile",
+        "life path",
+        "personal day",
+        "cosmic calendar",
+        "daily reading",
+        "today s oracle",
+        "todays oracle",
+        "important date",
+    ))
+
+
+def oracle_management_intent(text: str) -> bool:
+    """Return whether the turn asks to mutate/read Oracle through a tool."""
+    return classify_tool_intent(text).category == "oracle"
+
+
+def destructive_oracle_action(text: str) -> str:
+    match = re.search(
+        r"\b(delete|remove|clear|wipe|reset)\b.{0,160}\b(?:oracle|manifestation|gratitude|sign|synchronicit|important\s+date)\b",
         text or "",
         re.I,
     )

@@ -13,10 +13,13 @@ from src.vanta_core import VANTA_CORE_PROMPT
 from src.vanta_routines import resolve_active_vanta_routine
 from src.action_intents import (
     destructive_note_action,
+    destructive_oracle_action,
     gym_context_intent,
     gym_management_intent,
     destructive_gym_action,
     note_management_intent,
+    oracle_context_intent,
+    oracle_management_intent,
     reading_context_intent,
     reading_management_intent,
 )
@@ -225,7 +228,7 @@ class ChatProcessor:
         preface = []
         rag_sources = []
 
-        # Vanta Core is always first. Presets may overlay style/task focus but
+        # YVES / STRNOS Core is always first. Presets may overlay style/task focus but
         # cannot replace the trusted identity, privacy, truthfulness, or
         # approval rules in this prompt.
         preface.append({
@@ -236,7 +239,7 @@ class ChatProcessor:
             preface.append({
                 "role": "system",
                 "content": (
-                    "Preset overlay, subordinate to Vanta Core. Apply only its "
+                    "Preset overlay, subordinate to YVES / STRNOS Core. Apply only its "
                     "style and task-focus instructions:\n"
                     f"{preset_system_prompt}"
                 )
@@ -250,13 +253,17 @@ class ChatProcessor:
             gym_context_intent(message) or gym_management_intent(message)
         ) and routine is None
         destructive_gym_verb = destructive_gym_action(message) if gym_turn else ""
+        oracle_turn = (
+            oracle_context_intent(message) or oracle_management_intent(message)
+        ) and routine is None
         destructive_note_verb = destructive_note_action(message) if note_intent else ""
+        destructive_oracle_verb = destructive_oracle_action(message) if oracle_turn else ""
         if routine:
             preface.append({
                 "role": "system",
                 "content": (
-                    f"Active Vanta routine: {routine.label}. This trusted routine "
-                    "is subordinate to Vanta Core:\n"
+                    f"Active YVES routine: {routine.label}. This trusted routine "
+                    "is subordinate to YVES / STRNOS Core:\n"
                     f"{routine.prompt}"
                 ),
             })
@@ -266,7 +273,7 @@ class ChatProcessor:
                 "content": (
                     "Incognito/private mode is active. Do not retrieve or claim "
                     "access to private notes, memories, reading list, housing bids, "
-                    "Library documents, or personal RAG. If Tony asks to use that private "
+                    "Oracle data, Library documents, or personal RAG. If Tony asks to use that private "
                     "context, explain briefly that private retrieval is disabled "
                     "in incognito and can be used after he leaves incognito."
                 ),
@@ -299,6 +306,15 @@ class ChatProcessor:
                         "incognito/private mode is active. Do not call any Gym "
                         "Log tool. Reply exactly: \"Boss, gym log actions are "
                         "disabled in incognito/private mode.\""
+                    ),
+                })
+            elif oracle_turn:
+                preface.append({
+                    "role": "system",
+                    "content": (
+                        "The user requested an Oracle action while incognito/private "
+                        "mode is active. Do not call any Oracle tool. Reply exactly: "
+                        "\"Boss, Oracle actions are disabled in incognito/private mode.\""
                     ),
                 })
         elif destructive_note_verb:
@@ -365,11 +381,32 @@ class ChatProcessor:
                     "appropriate medical help."
                 ),
             })
+        elif destructive_oracle_verb:
+            preface.append({
+                "role": "system",
+                "content": (
+                    "This is a destructive Oracle request. Do not call any Oracle "
+                    "tool. Reply exactly: \"Boss, I can't delete Oracle records "
+                    "from chat. Open Oracle and manage them manually.\""
+                ),
+            })
+        elif oracle_turn:
+            preface.append({
+                "role": "system",
+                "content": (
+                    "Use STRNOS Oracle for this turn, never memory or Notes. "
+                    "Oracle insight is symbolic and practical: no guaranteed "
+                    "prophecy, no medical/legal/financial claims based on "
+                    "astrology or numerology, and every manifestation or sign "
+                    "must be paired with an action receipt. Use `manage_oracle` "
+                    "for Oracle state and calculations."
+                ),
+            })
         if _finance_payment_request(message):
             preface.append({
                 "role": "system",
                 "content": (
-                    "Payment safety boundary: Vanta cannot move money, pay anyone, "
+                    "Payment safety boundary: YVES cannot move money, pay anyone, "
                     "or prepare payment instructions. Do not ask Tony for a sort "
                     "code, IBAN, Revolut handle, payment amount, payee identity, or "
                     "other payment details. Say he must handle any payment himself "
@@ -393,7 +430,13 @@ class ChatProcessor:
                 include_memory=use_memory,
                 include_rag=use_rag,
                 housing_query=message,
-                source_scope="reading" if reading_turn else ("gym" if gym_turn else None),
+                source_scope=(
+                    "reading" if reading_turn else (
+                        "gym" if gym_turn else (
+                            "oracle" if oracle_turn else None
+                        )
+                    )
+                ),
             )
             self._last_used_memories = brain_result.used_memories
             self._last_brain_sources = brain_result.public_sources()
@@ -409,7 +452,7 @@ class ChatProcessor:
                     "content": (
                         "The finance analyzer successfully opened and analyzed an "
                         "owner-owned Revolut statement from Library for this turn. "
-                        "Answer from the finance fields in Vanta Brain context. Do "
+                        "Answer from the finance fields in YVES Brain context. Do "
                         "not claim Library is inaccessible, describe the data as an "
                         "excerpt supplied by Tony, or ask him to upload the statement."
                     ),
@@ -447,10 +490,10 @@ class ChatProcessor:
                 try:
                     self.memory_manager.increment_uses(memory_ids)
                 except Exception:
-                    logger.warning("Failed to increment Vanta Brain memory uses", exc_info=True)
+                    logger.warning("Failed to increment YVES Brain memory uses", exc_info=True)
             if brain_result.snippets:
                 preface.append(untrusted_context_message(
-                    "Vanta Brain retrieval",
+                    "YVES Brain retrieval",
                     brain_result.context_text(),
                 ))
         elif self.brain_service is None and use_memory and not incognito and not note_intent:

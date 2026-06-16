@@ -823,6 +823,10 @@ async def _execute_tool_block_impl(
         from services.gym_log import manage_gym_log_tool
         desc = "manage_gym_log"
         result = await manage_gym_log_tool(content, owner=owner)
+    elif tool == "manage_oracle":
+        from services.oracle_service import manage_oracle_tool
+        desc = "manage_oracle"
+        result = await manage_oracle_tool(content, owner=owner)
     elif tool == "manage_calendar":
         desc = "manage_calendar"
         result = await do_manage_calendar(content, owner=owner)

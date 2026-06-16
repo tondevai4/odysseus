@@ -716,6 +716,7 @@ def setup_chat_routes(
                 "manage_notes",       # private notes
                 "manage_reading_list",  # private reading list
                 "manage_gym_log",     # private gym log
+                "manage_oracle",      # private Oracle prefs
                 "manage_documents",   # private Library documents
             })
         if (
@@ -738,6 +739,10 @@ def setup_chat_routes(
             disabled_tools.update({"manage_memory", "manage_notes"})
             if _destructive_gym_action(message):
                 disabled_tools.add("manage_gym_log")
+        if _tool_intent and _tool_intent.category == "oracle":
+            # Oracle state belongs in the STRNOS Oracle prefs store, not
+            # ambient memory or Notes.
+            disabled_tools.update({"manage_memory", "manage_notes"})
 
         # Enforce per-user privileges
         _privs = {}

@@ -1,7 +1,7 @@
 {
-  "name": "Vanta",
-  "short_name": "Vanta",
-  "description": "A private AI command center for a better you every day",
+  "name": "YVES",
+  "short_name": "YVES",
+  "description": "YVES powered by STRNOS (SaturnOS), a private AI command center",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

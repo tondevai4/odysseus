@@ -179,6 +179,9 @@ _TOOL_NAME_MAP = {
     "reading_list": "manage_reading_list",
     "manage_gym_log": "manage_gym_log",
     "gym_log": "manage_gym_log",
+    "manage_oracle": "manage_oracle",
+    "oracle": "manage_oracle",
+    "strnos_oracle": "manage_oracle",
 }
 
 _MISFENCED_WEB_TOOL_NAMES = {

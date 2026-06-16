@@ -945,7 +945,7 @@ export function buildRagSourcesBox(sources) {
   return '<details class="rag-sources"><summary>Sources (' + sources.length + ' documents)</summary>' + items + '</details>';
 }
 
-/** Build the persisted Vanta Brain source box from bounded server metadata. */
+/** Build the persisted YVES Brain source box from bounded server metadata. */
 export function buildBrainSourcesBox(sources) {
   if (!sources || !sources.length) return '';
   var esc = uiModule.esc;
@@ -959,7 +959,7 @@ export function buildBrainSourcesBox(sources) {
       + '</div>';
   }).join('');
   return '<details class="rag-sources brain-sources">'
-    + '<summary>Vanta Brain (' + sources.length + ' sources)</summary>'
+    + '<summary>YVES Brain (' + sources.length + ' sources)</summary>'
     + items
     + '</details>';
 }
