@@ -1,4 +1,4 @@
-"""Owner-scoped STRNOS Oracle preferences and symbolic calculations."""
+"""Owner-scoped STRNOS Oracle preferences and local calculations."""
 
 from __future__ import annotations
 
@@ -12,20 +12,12 @@ from routes.prefs_routes import _load_for_user, _save_for_user
 
 PREF_KEY = "strnos-oracle-v1"
 
-MANIFESTATION_CATEGORIES = {
-    "housing", "money", "apprenticeship", "daughter", "peace",
-    "creativity", "love", "custom",
-}
+MANIFESTATION_CATEGORIES = {"housing", "money", "apprenticeship", "daughter", "peace", "creativity", "love", "custom"}
 MANIFESTATION_STATUSES = {"active", "materialised", "released", "paused"}
 SIGN_TYPES = {"angel_number", "date", "dream", "tarot", "coincidence", "other"}
-IMPORTANT_DATE_TYPES = {
-    "personal", "housing", "money", "relationship", "work", "spiritual", "custom",
-}
+IMPORTANT_DATE_TYPES = {"personal", "housing", "money", "relationship", "work", "spiritual", "custom"}
 
 MERCURY_RETROGRADE_PERIODS = [
-    # Local reference data from public Mercury retrograde date tables, including
-    # Farmers' Almanac 2025-2030 and Britannica's 2026 summary. This is not an
-    # ephemeris engine; the UI labels it as local reference data.
     {"start": "2026-02-26", "end": "2026-03-20", "label": "Mercury retrograde"},
     {"start": "2026-06-29", "end": "2026-07-23", "label": "Mercury retrograde"},
     {"start": "2026-10-24", "end": "2026-11-13", "label": "Mercury retrograde"},
@@ -46,7 +38,7 @@ MERCURY_RETROGRADE_PERIODS = [
 
 
 class OracleError(ValueError):
-    """Safe Oracle validation error for API and tool responses."""
+    """Safe Oracle validation error."""
 
 
 def _now() -> str:
@@ -84,6 +76,8 @@ def _id(value: Any, prefix: str) -> str:
 def _empty_state() -> Dict[str, Any]:
     return {
         "version": 1,
+        "display_name": "",
+        "preferred_names": [],
         "birth_profile": {
             "full_name": "",
             "date_of_birth": "",
@@ -100,9 +94,15 @@ def _empty_state() -> Dict[str, Any]:
         "spiritual_preferences": {
             "belief_style": [],
             "tone": "grounded_mystic",
+            "strictness": "direct",
             "manifestation_style": ["action_receipts"],
             "avoid_tone": ["fluffy", "fake-positive", "generic CoStar-style"],
+            "vedic_first": True,
+            "avoid_guaranteed_predictions": True,
+            "always_include_action_receipt": True,
+            "include_numerology": True,
         },
+        "manifestation_categories": [],
         "saved_readings": [],
         "daily_entries": [],
         "manifestations": [],
@@ -110,7 +110,62 @@ def _empty_state() -> Dict[str, Any]:
         "synchronicities": [],
         "important_dates": [],
         "numerology_calculations": [],
+        "manual_vedic_notes": {},
+        "meta": {},
     }
+
+
+def _owner_seed_state() -> Dict[str, Any]:
+    state = _empty_state()
+    state["display_name"] = "Tony"
+    state["preferred_names"] = ["Boss", "Tony"]
+    state["manifestation_categories"] = ["housing", "money", "apprenticeship", "daughter", "peace", "creativity"]
+    state["meta"] = {"seeded_by": "owner_default_seed", "seeded_scope": "current_authenticated_user", "ephemeris_status": "pending_manual_vedic_notes_only"}
+    state["birth_profile"].update({
+        "full_name": "Tony",
+        "date_of_birth": "2001-07-21",
+        "time_of_birth": "20:00",
+        "birth_city": "Harare",
+        "birth_country": "Zimbabwe",
+        "timezone": "Africa/Harare",
+        "preferred_system": "vedic",
+        "ayanamsa": "lahiri",
+        "house_system": "whole_sign",
+    })
+    state["spiritual_preferences"].update({
+        "belief_style": ["universe", "energy", "astrology", "science", "divine_figure"],
+        "tone": "grounded_mystic",
+        "strictness": "direct",
+        "manifestation_style": ["prayer", "scripting", "visualisation", "law_of_attraction", "angel_numbers", "action_receipts"],
+        "avoid_tone": ["fluffy", "fake-positive", "generic CoStar-style"],
+        "vedic_first": True,
+        "avoid_guaranteed_predictions": True,
+        "always_include_action_receipt": True,
+        "include_numerology": True,
+    })
+    state["important_dates"] = [{
+        "id": "owner-date-2026-07-11",
+        "date": "2026-07-11",
+        "label": "Important intuitive date",
+        "type": "spiritual",
+        "notes": "Owner said 11 July feels important.",
+        "created_at": _now(),
+    }]
+    state["synchronicities"] = [{
+        "id": "owner-sign-333",
+        "date": "2026-06-16",
+        "type": "angel_number",
+        "value": "333",
+        "context": "Owner reported seeing 333.",
+        "meaning": "Symbolically: support, growth, guidance, creative expression.",
+        "action_prompt": "Turn the sign into a receipt: create, bid, apply, train, or document evidence.",
+        "created_at": _now(),
+    }]
+    return state
+
+
+def _is_empty_value(value: Any) -> bool:
+    return value is None or value == "" or (isinstance(value, (list, dict)) and not value)
 
 
 def reduce_number(value: int, *, preserve_master: bool = True) -> int:
@@ -132,11 +187,11 @@ def numerology_for(target_date: str, birth_date: str = "", label: str = "", kind
     universal_day = reduce_number(sum(_digits_from_date(target)))
     date_reduction = universal_day
     life_path = reduce_number(sum(_digits_from_date(birth_date))) if birth_date else None
-    personal_year = None
-    personal_month = None
-    personal_day = None
+    day_number = None
+    personal_year = personal_month = personal_day = None
     if birth_date:
         _, birth_month, birth_day = (int(part) for part in birth_date.split("-"))
+        day_number = f"{birth_day} / {reduce_number(birth_day)}"
         personal_year = reduce_number(birth_month + birth_day + sum(int(ch) for ch in str(year)))
         personal_month = reduce_number(personal_year + month)
         personal_day = reduce_number(personal_month + day)
@@ -148,7 +203,7 @@ def numerology_for(target_date: str, birth_date: str = "", label: str = "", kind
         4: "build structure, receipts, and practical proof",
         5: "adapt, move, and break stale loops",
         6: "handle home, care, duty, and responsibility",
-        7: "study, pray, reflect, and separate signal from noise",
+        7: "study, reflect, and separate signal from noise",
         8: "focus money, power, discipline, and long-term authority",
         9: "release what is done and act from maturity",
         11: "treat intuition as a prompt, then verify with action",
@@ -165,7 +220,10 @@ def numerology_for(target_date: str, birth_date: str = "", label: str = "", kind
         "personal_month": personal_month,
         "personal_day": personal_day,
         "life_path": life_path,
+        "day_number": day_number,
         "interpretation": f"Symbolically, {focus_number} points toward {interpretations.get(focus_number, 'reflection and clean action')}.",
+        "best_use": interpretations.get(focus_number, "reflection and clean action"),
+        "caution": "Do not worship the date. Use the date.",
         "action_suggestion": "Use it as a prompt for one practical action receipt, not a guarantee.",
     }
 
@@ -174,9 +232,12 @@ def _normalize_birth_profile(value: Any) -> Dict[str, str]:
     base = _empty_state()["birth_profile"]
     if not isinstance(value, dict):
         return base
-    merged = {**base}
-    for key in merged:
-        merged[key] = _text(value.get(key), 500)
+    aliases = {"display_name": "full_name", "city": "birth_city", "country": "birth_country"}
+    value = {**value}
+    for old, new in aliases.items():
+        if old in value and new not in value:
+            value[new] = value[old]
+    merged = {key: _text(value.get(key), 500) for key in base}
     merged["preferred_system"] = merged["preferred_system"] or "vedic"
     merged["ayanamsa"] = merged["ayanamsa"] or "lahiri"
     merged["house_system"] = merged["house_system"] or "whole_sign"
@@ -220,10 +281,10 @@ def _normalize_gratitude(value: Any) -> Optional[Dict[str, Any]]:
     return {
         "id": _id(value.get("id"), "gratitude"),
         "date": entry_date,
-        "grateful_for": _list_text(value.get("grateful_for"), limit=3),
-        "thankful_before_materialised": _list_text(value.get("thankful_before_materialised"), limit=3),
-        "scripting": _text(value.get("scripting"), 2000),
-        "signs_seen": _list_text(value.get("signs_seen"), limit=10),
+        "grateful_for": _list_text(value.get("grateful_for") or value.get("already_mine"), limit=3),
+        "thankful_before_materialised": _list_text(value.get("thankful_before_materialised") or value.get("on_its_way"), limit=3),
+        "scripting": _text(value.get("scripting") or value.get("script"), 2000),
+        "signs_seen": _list_text(value.get("signs_seen") or value.get("sign_seen"), limit=10),
         "mood": _text(value.get("mood"), 80),
         "stress": _text(value.get("stress"), 80),
         "action_receipt": _text(value.get("action_receipt"), 1000),
@@ -260,16 +321,9 @@ def _normalize_important_date(value: Any) -> Optional[Dict[str, Any]]:
     except OracleError:
         return None
     label = _text(value.get("label"), 160) or target
-    kind = _text(value.get("type"), 40)
+    kind = _text(value.get("type") or value.get("category"), 40)
     created = _text(value.get("created_at"), 60) or _now()
-    return {
-        "id": _id(value.get("id"), "date"),
-        "date": target,
-        "label": label,
-        "type": kind if kind in IMPORTANT_DATE_TYPES else "custom",
-        "notes": _text(value.get("notes"), 1000),
-        "created_at": created,
-    }
+    return {"id": _id(value.get("id"), "date"), "date": target, "label": label, "type": kind if kind in IMPORTANT_DATE_TYPES else "custom", "notes": _text(value.get("notes"), 1000), "created_at": created}
 
 
 def _normalize_daily(value: Any) -> Optional[Dict[str, Any]]:
@@ -278,55 +332,96 @@ def _normalize_daily(value: Any) -> Optional[Dict[str, Any]]:
     entry_date = _text(value.get("date"), 10)
     if not entry_date:
         return None
-    return {
-        "date": entry_date,
-        "vedic_focus": _text(value.get("vedic_focus"), 500),
-        "numerology_focus": _text(value.get("numerology_focus"), 500),
-        "energy": _text(value.get("energy"), 500),
-        "warning": _text(value.get("warning"), 500),
-        "best_action": _text(value.get("best_action"), 500),
-        "reflection_question": _text(value.get("reflection_question"), 500),
-        "manifestation_prompt": _text(value.get("manifestation_prompt"), 500),
-        "action_receipt_prompt": _text(value.get("action_receipt_prompt"), 500),
-        "created_at": _text(value.get("created_at"), 60) or _now(),
-    }
+    fields = ["title", "vedic_focus", "vedic_status", "numerology_focus", "energy", "emotional_weather", "warning", "shadow_warning", "best_action", "do_not_do", "reflection_question", "manifestation_prompt", "gratitude_prompt", "action_receipt_prompt", "closing_line"]
+    row = {"date": entry_date, "created_at": _text(value.get("created_at"), 60) or _now()}
+    for field in fields:
+        row[field] = _text(value.get(field), 800)
+    return row
 
 
 def normalize_state(value: Any) -> Dict[str, Any]:
     state = _empty_state()
-    if not isinstance(value, dict) or value.get("version") != 1:
+    if not isinstance(value, dict):
         return state
-    state["birth_profile"] = _normalize_birth_profile(value.get("birth_profile"))
-    prefs = value.get("spiritual_preferences") if isinstance(value.get("spiritual_preferences"), dict) else {}
+    raw = dict(value)
+    if raw.get("version") != 1:
+        if any(key in raw for key in ("birth_profile", "spiritual_preferences", "initial_signs", "signs")):
+            raw["version"] = 1
+            if "synchronicities" not in raw and "signs" in raw:
+                raw["synchronicities"] = raw.get("signs")
+        else:
+            return state
+
+    state["display_name"] = _text(raw.get("display_name"), 160)
+    state["preferred_names"] = _list_text(raw.get("preferred_names"), limit=8)
+    state["birth_profile"] = _normalize_birth_profile(raw.get("birth_profile"))
+    prefs = raw.get("spiritual_preferences") if isinstance(raw.get("spiritual_preferences"), dict) else {}
     state["spiritual_preferences"] = {
         "belief_style": _list_text(prefs.get("belief_style"), limit=12),
         "tone": _text(prefs.get("tone"), 80) or "grounded_mystic",
+        "strictness": _text(prefs.get("strictness"), 80) or "direct",
         "manifestation_style": _list_text(prefs.get("manifestation_style"), limit=12),
         "avoid_tone": _list_text(prefs.get("avoid_tone"), limit=12),
+        "vedic_first": bool(prefs.get("vedic_first", True)),
+        "avoid_guaranteed_predictions": bool(prefs.get("avoid_guaranteed_predictions", True)),
+        "always_include_action_receipt": bool(prefs.get("always_include_action_receipt", True)),
+        "include_numerology": bool(prefs.get("include_numerology", True)),
     }
-    for key, normalizer in (
-        ("manifestations", _normalize_manifestation),
-        ("gratitude_entries", _normalize_gratitude),
-        ("synchronicities", _normalize_sign),
-        ("important_dates", _normalize_important_date),
-        ("daily_entries", _normalize_daily),
-    ):
-        rows = value.get(key) if isinstance(value.get(key), list) else []
+    state["manifestation_categories"] = _list_text(raw.get("manifestation_categories"), limit=20)
+    state["manual_vedic_notes"] = raw.get("manual_vedic_notes") if isinstance(raw.get("manual_vedic_notes"), dict) else {}
+    state["meta"] = raw.get("meta") if isinstance(raw.get("meta"), dict) else {}
+    for key, normalizer in (("manifestations", _normalize_manifestation), ("gratitude_entries", _normalize_gratitude), ("synchronicities", _normalize_sign), ("important_dates", _normalize_important_date), ("daily_entries", _normalize_daily)):
+        rows = raw.get(key) if isinstance(raw.get(key), list) else []
         state[key] = [item for item in (normalizer(row) for row in rows) if item]
-    state["saved_readings"] = [
-        item for item in (_normalize_daily(row) for row in value.get("saved_readings", []))
-        if item
-    ] if isinstance(value.get("saved_readings"), list) else []
-    state["numerology_calculations"] = (
-        value.get("numerology_calculations")
-        if isinstance(value.get("numerology_calculations"), list)
-        else []
-    )[:50]
+    state["saved_readings"] = [item for item in (_normalize_daily(row) for row in raw.get("saved_readings", [])) if item] if isinstance(raw.get("saved_readings"), list) else []
+    state["numerology_calculations"] = (raw.get("numerology_calculations") if isinstance(raw.get("numerology_calculations"), list) else [])[:50]
     return state
 
 
+def _has_any_content(state: Dict[str, Any]) -> bool:
+    birth = state.get("birth_profile") or {}
+    return bool(birth.get("date_of_birth") or birth.get("birth_city") or birth.get("full_name") or state.get("manifestations") or state.get("gratitude_entries") or state.get("synchronicities") or state.get("important_dates"))
+
+
+def _merge_missing_seed(state: Dict[str, Any]) -> Dict[str, Any]:
+    seed = _owner_seed_state()
+    if not state.get("display_name"):
+        state["display_name"] = seed["display_name"]
+    if not state.get("preferred_names"):
+        state["preferred_names"] = seed["preferred_names"]
+    if not state.get("manifestation_categories"):
+        state["manifestation_categories"] = seed["manifestation_categories"]
+    if not state.get("meta"):
+        state["meta"] = seed["meta"]
+    for key, value in seed["birth_profile"].items():
+        if not state["birth_profile"].get(key):
+            state["birth_profile"][key] = value
+    for key, value in seed["spiritual_preferences"].items():
+        if not state["spiritual_preferences"].get(key):
+            state["spiritual_preferences"][key] = value
+    if not state.get("important_dates"):
+        state["important_dates"] = seed["important_dates"]
+    if not state.get("synchronicities"):
+        state["synchronicities"] = seed["synchronicities"]
+    return normalize_state(state)
+
+
 def load_oracle(owner: Optional[str]) -> Dict[str, Any]:
-    return normalize_state((_load_for_user(owner) or {}).get(PREF_KEY))
+    prefs = _load_for_user(owner)
+    raw = (prefs or {}).get(PREF_KEY)
+    if _is_empty_value(raw):
+        state = _owner_seed_state()
+        prefs[PREF_KEY] = state
+        _save_for_user(owner, prefs)
+        return state
+    state = normalize_state(raw)
+    if not _has_any_content(state):
+        state = _owner_seed_state()
+    else:
+        state = _merge_missing_seed(state)
+    prefs[PREF_KEY] = state
+    _save_for_user(owner, prefs)
+    return state
 
 
 def save_oracle(owner: Optional[str], state: Dict[str, Any]) -> Dict[str, Any]:
@@ -339,6 +434,8 @@ def save_oracle(owner: Optional[str], state: Dict[str, Any]) -> Dict[str, Any]:
 def update_profile(owner: Optional[str], payload: Dict[str, Any]) -> Dict[str, Any]:
     state = load_oracle(owner)
     state["birth_profile"] = _normalize_birth_profile({**state["birth_profile"], **payload})
+    if state["birth_profile"].get("full_name"):
+        state["display_name"] = state["birth_profile"]["full_name"]
     return save_oracle(owner, state)["birth_profile"]
 
 
@@ -373,10 +470,7 @@ def add_manifestation(owner: Optional[str], payload: Dict[str, Any]) -> Dict[str
 
 def _find_by_id_or_title(rows: List[Dict[str, Any]], identifier: str) -> Dict[str, Any]:
     needle = _text(identifier, 200).casefold()
-    exact = [
-        row for row in rows
-        if row.get("id", "").casefold() == needle or row.get("title", "").casefold() == needle
-    ]
+    exact = [row for row in rows if row.get("id", "").casefold() == needle or row.get("title", "").casefold() == needle]
     if exact:
         return exact[0]
     partial = [row for row in rows if needle and needle in row.get("title", "").casefold()]
@@ -395,17 +489,12 @@ def update_manifestation(owner: Optional[str], identifier: str, changes: Dict[st
     if changes.get("evidence"):
         merged["evidence"] = item["evidence"] + _list_text(changes.get("evidence"), limit=5)
     if changes.get("action_receipt") or changes.get("action_receipts"):
-        merged["action_receipts"] = item["action_receipts"] + _list_text(
-            changes.get("action_receipts") or changes.get("action_receipt"),
-            limit=5,
-        )
+        merged["action_receipts"] = item["action_receipts"] + _list_text(changes.get("action_receipts") or changes.get("action_receipt"), limit=5)
     merged["updated_at"] = _now()
     normalized = _normalize_manifestation(merged)
     if not normalized:
         raise OracleError("Manifestation title or statement is required.")
-    state["manifestations"] = [
-        normalized if row["id"] == item["id"] else row for row in state["manifestations"]
-    ]
+    state["manifestations"] = [normalized if row["id"] == item["id"] else row for row in state["manifestations"]]
     save_oracle(owner, state)
     return normalized
 
@@ -436,13 +525,7 @@ def add_important_date(owner: Optional[str], payload: Dict[str, Any]) -> Dict[st
 
 def calculate_numerology(owner: Optional[str], payload: Dict[str, Any], *, persist: bool = False) -> Dict[str, Any]:
     state = load_oracle(owner)
-    birth = state["birth_profile"].get("date_of_birth") or ""
-    result = numerology_for(
-        payload.get("date") or date.today().isoformat(),
-        birth_date=birth,
-        label=payload.get("label") or "",
-        kind=payload.get("type") or "custom",
-    )
+    result = numerology_for(payload.get("date") or date.today().isoformat(), birth_date=state["birth_profile"].get("date_of_birth") or "", label=payload.get("label") or "", kind=payload.get("type") or "custom")
     if persist:
         state["numerology_calculations"].insert(0, {**result, "created_at": _now()})
         state["numerology_calculations"] = state["numerology_calculations"][:50]
@@ -456,17 +539,25 @@ def daily_reading(owner: Optional[str], target_date: Optional[str] = None, *, sa
     numerology = numerology_for(today, state["birth_profile"].get("date_of_birth") or "")
     active = [row for row in state["manifestations"] if row["status"] == "active"]
     latest_gratitude = state["gratitude_entries"][0] if state["gratitude_entries"] else None
+    latest_sign = state["synchronicities"][0] if state["synchronicities"] else None
     reading = {
         "date": today,
-        "vedic_focus": "Vedic placements calculation engine pending. Use this as grounded spiritual reflection, not precise transit analysis.",
-        "vedic_status": "Vedic placements calculation engine pending. Use this as grounded spiritual reflection, not precise transit analysis.",
+        "title": "Receipt Day, Not Waiting Day",
+        "vedic_focus": "Vedic-first mode is on. Accurate placements are pending, so this stays symbolic until manual notes or an ephemeris engine are added.",
+        "vedic_status": "Placements engine pending. Lahiri / Whole Sign preferences are stored, not faked.",
         "numerology_focus": numerology["interpretation"],
         "energy": "Steady command energy: faith with action, signs without delusion.",
+        "emotional_weather": "Grounded, watchful, slightly electric. Regulate the body before asking the universe for proof.",
         "warning": "Do not wait for a sign to do the obvious next right thing.",
-        "best_action": "Create one action receipt today: body, money/work, home/admin, or learning.",
+        "shadow_warning": "Do not worship the date. Use the date.",
+        "best_action": "Create one action receipt today: body, money/work, home/admin, learning, or family peace.",
+        "do_not_do": "Do not trade action for over-reading signs.",
         "reflection_question": "What would the man who can hold this blessing do before tonight?",
         "manifestation_prompt": active[0]["statement"] if active else "I am becoming the man who can hold what I am calling in.",
+        "gratitude_prompt": "Name three things already yours, then three things you are becoming available for.",
         "action_receipt_prompt": latest_gratitude.get("action_receipt") if latest_gratitude else "Write one receipt proving you moved correctly.",
+        "latest_sign_prompt": latest_sign.get("action_prompt") if latest_sign else "Log any sign only after you decide the grounded action.",
+        "closing_line": "Boss — faith with action. Today’s receipt matters more than today’s mood.",
         "numerology": numerology,
         "created_at": _now(),
     }
@@ -480,28 +571,25 @@ def daily_reading(owner: Optional[str], target_date: Optional[str] = None, *, sa
 def cosmic_calendar(owner: Optional[str], target_date: Optional[str] = None) -> Dict[str, Any]:
     state = load_oracle(owner)
     today = date.fromisoformat(_date_text(target_date or date.today().isoformat()))
-    active = []
-    upcoming = []
+    active, upcoming, all_periods = [], [], []
     for row in MERCURY_RETROGRADE_PERIODS:
-        start = date.fromisoformat(row["start"])
-        end = date.fromisoformat(row["end"])
+        start, end = date.fromisoformat(row["start"]), date.fromisoformat(row["end"])
         item = {**row, "source": "Local reference data"}
+        all_periods.append(item)
         if start <= today <= end:
             active.append(item)
         elif start >= today:
             upcoming.append(item)
     upcoming.sort(key=lambda row: row["start"])
     important = sorted(state["important_dates"], key=lambda row: row["date"])[:20]
-    highlights = [
-        numerology_for(row["date"], state["birth_profile"].get("date_of_birth") or "", row["label"], row["type"])
-        for row in important[:8]
-    ]
+    highlights = [numerology_for(row["date"], state["birth_profile"].get("date_of_birth") or "", row["label"], row["type"]) for row in important[:8]]
     return {
         "date": today.isoformat(),
         "mercury_retrograde_active": bool(active),
         "active_periods": active,
         "next_mercury_retrograde": upcoming[0] if upcoming else None,
         "upcoming_mercury_retrogrades": upcoming[:6],
+        "mercury_retrograde_periods": all_periods,
         "important_dates": important,
         "numerology_highlights": highlights,
         "reference": "local_reference_data",
@@ -518,7 +606,10 @@ def oracle_summary(owner: Optional[str]) -> Dict[str, Any]:
     birth = state["birth_profile"].get("date_of_birth") or ""
     numerology = numerology_for(today, birth) if birth else numerology_for(today)
     return {
+        "display_name": state.get("display_name") or state["birth_profile"].get("full_name"),
         "personal_day": numerology.get("personal_day") or numerology.get("universal_day"),
+        "life_path": numerology.get("life_path"),
+        "day_number": numerology.get("day_number"),
         "latest_sign": latest_sign,
         "active_manifestation_count": len([row for row in state["manifestations"] if row["status"] == "active"]),
         "manifestation_count": len(state["manifestations"]),
