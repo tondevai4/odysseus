@@ -1,0 +1,110 @@
+/* Command Center theme hardening.
+   Loaded by static/js/commandCenter.js. Overrides hardcoded/legacy card styling
+   with app theme variables so cards follow Settings themes.
+*/
+#command-center,
+.command-center,
+.command-center-panel {
+  color: var(--fg);
+}
+#command-center .command-center-grid,
+.command-center-grid {
+  max-width: 100%;
+}
+#command-center .command-card,
+.command-card {
+  color: var(--fg);
+  background:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--brand-color, var(--red)) 10%, transparent), transparent 34%),
+    color-mix(in srgb, var(--panel) 92%, var(--bg));
+  border-color: color-mix(in srgb, var(--border) 82%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg) 7%, transparent), 0 14px 36px rgba(0, 0, 0, 0.16);
+}
+#command-center .command-card:hover,
+.command-card:hover {
+  border-color: color-mix(in srgb, var(--brand-color, var(--red)) 44%, var(--border));
+  background:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--brand-color, var(--red)) 15%, transparent), transparent 34%),
+    color-mix(in srgb, var(--panel) 88%, var(--bg));
+}
+#command-center .command-card-topline,
+.command-card-topline,
+#command-center .command-routines-heading,
+.command-routines-heading {
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+}
+#command-center .command-card-topline span:first-child,
+.command-card-topline span:first-child,
+#command-center .command-reading-title,
+.command-reading-title,
+#command-center .command-oracle-summary,
+.command-oracle-summary {
+  color: var(--brand-color, var(--red));
+}
+#command-center .command-card h3,
+.command-card h3 {
+  color: var(--fg);
+}
+#command-center .command-card p,
+.command-card p,
+#command-center .command-reading-author,
+.command-reading-author,
+#command-center .command-reading-notes,
+.command-reading-notes,
+#command-center .command-oracle-note,
+.command-oracle-note,
+#command-center .command-data-empty,
+.command-data-empty,
+#command-center .command-reading-empty,
+.command-reading-empty {
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+}
+#command-center .command-card-action,
+.command-card-action,
+#command-center .command-routine,
+.command-routine {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--panel) 84%, var(--bg));
+  border-color: color-mix(in srgb, var(--border) 82%, var(--brand-color, var(--red)));
+}
+#command-center .command-card-action:hover,
+.command-card-action:hover,
+#command-center .command-routine:hover,
+.command-routine:hover {
+  color: var(--bg);
+  background: var(--brand-color, var(--red));
+  border-color: var(--brand-color, var(--red));
+}
+#command-center .command-proof-list span,
+.command-proof-list span,
+#command-center .command-reading-meta span,
+.command-reading-meta span,
+#command-center .command-summary-row,
+.command-summary-row {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--brand-color, var(--red)) 10%, var(--panel));
+  border-color: color-mix(in srgb, var(--border) 76%, var(--brand-color, var(--red)));
+}
+#command-center .command-summary-row span,
+.command-summary-row span {
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+}
+#command-center .command-summary-row strong,
+.command-summary-row strong {
+  color: var(--fg);
+}
+#command-center .command-routines,
+.command-routines {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--panel) 90%, var(--bg));
+  border-color: color-mix(in srgb, var(--border) 80%, transparent);
+}
+@media (max-width: 390px) {
+  #command-center .command-card,
+  .command-card,
+  #command-center .command-routines,
+  .command-routines {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
