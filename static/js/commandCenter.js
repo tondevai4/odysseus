@@ -1,4 +1,5 @@
 let _initialized = false;
+let _fitObserver = null;
 
 function _text(parent, tag, className, value) {
   const node = document.createElement(tag);
@@ -19,6 +20,41 @@ function _ensureThemeStyles() {
   link.rel = 'stylesheet';
   link.href = '/static/css/command-center-theme.css';
   document.head.appendChild(link);
+}
+
+function _fitAboveComposer() {
+  const commandCenter = document.getElementById('command-center');
+  if (!commandCenter) return;
+  const inputBar = document.querySelector('.chat-input-bar');
+  const commandRect = commandCenter.getBoundingClientRect();
+  const composerTop = inputBar ? inputBar.getBoundingClientRect().top : window.innerHeight;
+  const reserve = window.innerWidth <= 720 ? 14 : 18;
+  const available = Math.floor(Math.max(260, composerTop - commandRect.top - reserve));
+  commandCenter.style.maxHeight = `${available}px`;
+  commandCenter.style.overflowY = 'auto';
+  commandCenter.style.overflowX = 'hidden';
+}
+
+function _wireComposerFit() {
+  if (_fitObserver) return;
+  const run = () => requestAnimationFrame(_fitAboveComposer);
+  run();
+  setTimeout(run, 80);
+  setTimeout(run, 300);
+  window.addEventListener('resize', run, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', run, { passive: true });
+    window.visualViewport.addEventListener('scroll', run, { passive: true });
+  }
+  const inputBar = document.querySelector('.chat-input-bar');
+  const message = document.getElementById('message');
+  _fitObserver = new MutationObserver(run);
+  if (inputBar) _fitObserver.observe(inputBar, { attributes: true, childList: true, subtree: true });
+  if (message) {
+    message.addEventListener('input', run, { passive: true });
+    message.addEventListener('focus', run, { passive: true });
+    message.addEventListener('blur', run, { passive: true });
+  }
 }
 
 async function _loadCurrentReading({ openReadingDocument, downloadReadingDocument } = {}) {
@@ -64,6 +100,8 @@ async function _loadCurrentReading({ openReadingDocument, downloadReadingDocumen
   } catch (error) {
     body.replaceChildren();
     _text(body, 'p', 'command-reading-empty', 'Reading List is unavailable right now.');
+  } finally {
+    _fitAboveComposer();
   }
 }
 
@@ -105,6 +143,8 @@ async function _loadLatestWorkout() {
     _text(body, 'p', 'command-reading-notes', hint);
   } catch (error) {
     _text(body, 'p', 'command-reading-empty', 'Gym Log is unavailable right now.');
+  } finally {
+    _fitAboveComposer();
   }
 }
 
@@ -138,6 +178,8 @@ async function _loadOracleSummary() {
   } catch (error) {
     body.replaceChildren();
     _text(body, 'p', 'command-oracle-empty', 'STRNOS Oracle is unavailable right now.');
+  } finally {
+    _fitAboveComposer();
   }
 }
 
@@ -158,6 +200,7 @@ function init({
 
   const commandCenter = document.getElementById('command-center');
   if (!commandCenter) return;
+  _wireComposerFit();
 
   commandCenter.addEventListener('click', (event) => {
     const action = event.target.closest('[data-command-center-action]');
