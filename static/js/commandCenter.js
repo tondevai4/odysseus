@@ -99,6 +99,34 @@ async function _loadLatestWorkout() {
   }
 }
 
+async function _loadOracleSummary() {
+  const body = document.getElementById('command-oracle-body');
+  if (!body) return;
+  try {
+    const response = await fetch('/api/oracle/summary', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error('Oracle unavailable');
+    const payload = await response.json();
+    body.replaceChildren();
+    const parts = [];
+    if (payload.birth_profile_saved) parts.push('Birth profile saved');
+    if (payload.manifestation_count) parts.push(`${payload.manifestation_count} manifestation${payload.manifestation_count === 1 ? '' : 's'}`);
+    if (payload.gratitude_count) parts.push(`${payload.gratitude_count} gratitude entr${payload.gratitude_count === 1 ? 'y' : 'ies'}`);
+    if (payload.sign_count) parts.push(`${payload.sign_count} sign${payload.sign_count === 1 ? '' : 's'}`);
+    if (parts.length) {
+      _text(body, 'p', 'command-oracle-summary', parts.join(' · '));
+    } else {
+      _text(body, 'p', 'command-oracle-empty', 'No Oracle profile yet. Open STRNOS Oracle to add signs, gratitude, or numerology.');
+    }
+    _text(body, 'p', 'command-oracle-note', 'Vedic engine pending. Numerology runs locally.');
+  } catch (error) {
+    body.replaceChildren();
+    _text(body, 'p', 'command-oracle-empty', 'STRNOS Oracle is unavailable right now.');
+  }
+}
+
 function init({
   openNotes,
   openHousingBids,
@@ -108,6 +136,7 @@ function init({
   openReadingDocument,
   downloadReadingDocument,
   openBrainHealth,
+  openOracle,
   runRoutine,
 } = {}) {
   if (_initialized) return;
@@ -153,6 +182,12 @@ function init({
       openBrainHealth();
     }
     if (
+      action.dataset.commandCenterAction === 'oracle'
+      && typeof openOracle === 'function'
+    ) {
+      openOracle();
+    }
+    if (
       action.dataset.commandCenterAction === 'routine'
       && action.dataset.routinePrompt
       && typeof runRoutine === 'function'
@@ -168,6 +203,8 @@ function init({
     _loadCurrentReading(readingOptions);
   });
   window.addEventListener('vanta:gym-log-updated', _loadLatestWorkout);
+  _loadOracleSummary();
+  window.addEventListener('strnos:oracle-updated', _loadOracleSummary);
   _initialized = true;
 }
 

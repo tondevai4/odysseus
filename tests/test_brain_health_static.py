@@ -26,6 +26,6 @@ def test_chat_handles_unified_brain_sources():
 
     assert "json.type === 'brain_sources'" in chat
     assert "holder._brainSources" in chat
-    assert "Vanta Brain (" in chat
+    assert "YVES Brain (" in chat
     assert "buildBrainSourcesBox" in renderer
     assert "metadata?.brain_sources?.length" in renderer

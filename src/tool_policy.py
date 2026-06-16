@@ -54,6 +54,7 @@ _COMMON_TOOL_NAMES = {
     "manage_mcp",
     "manage_memory",
     "manage_notes",
+    "manage_oracle",
     "manage_reading_list",
     "manage_gym_log",
     "manage_research",
@@ -223,6 +224,19 @@ def build_effective_tool_policy(
             for tool in ("manage_memory", "manage_notes"):
                 hidden.add(tool)
                 reasons[tool] = "Use manage_gym_log for Gym / Body requests."
+    except Exception:
+        pass
+
+    # STRNOS Oracle state is its own owner-scoped store. Keep spiritual,
+    # manifestation, numerology, and synchronicity commands from leaking into
+    # generic memories or unrelated notes.
+    try:
+        from src.action_intents import oracle_context_intent
+
+        if oracle_context_intent(str(last_user_message or "")):
+            for tool in ("manage_memory", "manage_notes", "manage_reading_list"):
+                hidden.add(tool)
+                reasons[tool] = "Use manage_oracle for STRNOS Oracle requests."
     except Exception:
         pass
 

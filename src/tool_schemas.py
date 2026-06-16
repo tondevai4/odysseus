@@ -655,6 +655,78 @@ FUNCTION_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "manage_oracle",
+            "description": (
+                "Manage the owner's private STRNOS Oracle: birth profile, "
+                "grounded daily readings, numerology, gratitude, manifestations, "
+                "signs/synchronicities, important dates, and cosmic calendar. "
+                "Never delete Oracle records from chat and never make guaranteed "
+                "prophecies."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": [
+                            "profile", "update_profile", "daily",
+                            "add_gratitude", "add_manifestation",
+                            "update_manifestation", "list_manifestations",
+                            "add_sign", "list_signs", "add_important_date",
+                            "numerology", "cosmic_calendar",
+                        ],
+                    },
+                    "id": {"type": "string"},
+                    "title": {"type": "string"},
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "housing", "money", "apprenticeship", "daughter",
+                            "peace", "creativity", "love", "custom",
+                        ],
+                    },
+                    "statement": {"type": "string"},
+                    "status": {
+                        "type": "string",
+                        "enum": ["active", "materialised", "released", "paused"],
+                    },
+                    "target_date": {"type": "string"},
+                    "evidence": {"type": "array", "items": {"type": "string"}},
+                    "action_receipt": {"type": "string"},
+                    "action_receipts": {"type": "array", "items": {"type": "string"}},
+                    "date": {"type": "string", "description": "YYYY-MM-DD date."},
+                    "label": {"type": "string"},
+                    "type": {"type": "string"},
+                    "value": {"type": "string", "description": "Sign value such as 333 or a dream/date."},
+                    "context": {"type": "string"},
+                    "meaning": {"type": "string"},
+                    "action_prompt": {"type": "string"},
+                    "grateful_for": {"type": "array", "items": {"type": "string"}},
+                    "thankful_before_materialised": {"type": "array", "items": {"type": "string"}},
+                    "scripting": {"type": "string"},
+                    "signs_seen": {"type": "array", "items": {"type": "string"}},
+                    "mood": {"type": "string"},
+                    "stress": {"type": "string"},
+                    "notes": {"type": "string"},
+                    "full_name": {"type": "string"},
+                    "date_of_birth": {"type": "string"},
+                    "time_of_birth": {"type": "string"},
+                    "birth_city": {"type": "string"},
+                    "birth_country": {"type": "string"},
+                    "timezone": {"type": "string"},
+                    "preferred_system": {"type": "string"},
+                    "ayanamsa": {"type": "string"},
+                    "house_system": {"type": "string"},
+                    "manual_placements": {"type": "string"},
+                    "save": {"type": "boolean"},
+                },
+                "required": ["action"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "api_call",
             "description": "Call a registered API integration (RSS reader, git forge, bookmark manager, smart home, etc.). Check the system context for available integrations and their endpoints.",
             "parameters": {

@@ -30,7 +30,7 @@ function _createModal() {
     <div class="modal-content brain-health-content">
       <div class="modal-header brain-health-header">
         <div>
-          <span class="brain-health-kicker">Vanta Brain // Read only</span>
+          <span class="brain-health-kicker">YVES Brain // STRNOS // Read only</span>
           <h4 id="brain-health-title">Brain Health</h4>
         </div>
         <button type="button" class="modal-close brain-health-close" aria-label="Close Brain Health">&times;</button>
@@ -41,7 +41,7 @@ function _createModal() {
         <form id="brain-health-preview-form" class="brain-health-preview">
           <label for="brain-health-query">Test retrieval</label>
           <div class="brain-health-query-row">
-            <input id="brain-health-query" type="search" maxlength="1000" placeholder="Ask what Vanta should retrieve..." required>
+            <input id="brain-health-query" type="search" maxlength="1000" placeholder="Ask what YVES should retrieve..." required>
             <button type="submit">Preview</button>
           </div>
           <p>Preview is private, user-scoped, and does not change your data.</p>

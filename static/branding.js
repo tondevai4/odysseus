@@ -1,30 +1,35 @@
 (function () {
   const brand = Object.freeze({
-    name: 'Vanta',
-    wordmark: 'VANTA',
-    tagline: 'A better you every day',
+    name: 'YVES',
+    wordmark: 'YVES',
+    tagline: 'Powered by STRNOS',
+    engine: 'STRNOS',
+    engineExpanded: 'SaturnOS',
   });
   const homeTaglines = Object.freeze([
-    'What are we handling?',
     'What needs sorting?',
     'What\u2019s the move?',
-    'Let\u2019s get one thing done.',
-    'A better you every day.',
-    'No speeches. Evidence.',
+    'Signal over noise.',
+    'Receipts over speeches.',
+    'Faith with action.',
     'Small win. Clean execution.',
     'Correction over self-hate.',
     'Action over rumination.',
+    'SaturnOS online.',
   ]);
 
   window.VANTA_BRAND = brand;
 
   function localGreeting(date) {
     const hour = date.getHours();
-    if (hour >= 5 && hour < 12) return 'Morning, Boss.';
-    if (hour >= 12 && hour < 17) return 'Afternoon, Boss.';
-    if (hour >= 17 && hour < 22) return 'Evening, Boss.';
-    return 'Night, Boss.';
+    if (hour >= 5 && hour < 12) return 'Morning, Boss. Yves is online.';
+    if (hour >= 12 && hour < 17) return 'Afternoon, Boss. Yves is online.';
+    if (hour >= 17 && hour < 22) return 'Evening, Boss. Yves is online.';
+    return 'Night, Boss. Yves is online.';
   }
+
+  window.YVES_LOCAL_GREETING = localGreeting;
+  window.VANTA_LOCAL_GREETING = localGreeting;
 
   function applyBranding() {
     document.querySelectorAll('[data-brand-name]').forEach((node) => {

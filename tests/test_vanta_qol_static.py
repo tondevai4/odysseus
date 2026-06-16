@@ -12,7 +12,8 @@ def test_home_branding_is_time_aware_and_randomised():
     assert "hour >= 17 && hour < 22" in branding
     assert "Night, Boss." in branding
     assert "Math.random()" in branding
-    assert "No speeches. Evidence." in branding
+    assert "Receipts over speeches." in branding
+    assert "SaturnOS online." in branding
 
 
 def test_chat_timestamps_include_local_date_and_time():

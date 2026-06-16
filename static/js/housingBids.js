@@ -165,7 +165,7 @@ function _createModal() {
         <button type="button" class="modal-close housing-bids-close" id="housing-bids-close" aria-label="Close Housing Bids">&times;</button>
       </div>
       <div class="housing-bids-toolbar">
-        <p>Saved to your authenticated Vanta preferences.</p>
+        <p>Saved to your authenticated YVES preferences.</p>
         <button type="button" class="housing-bids-primary-btn" id="housing-bids-add-btn">Add Bid</button>
       </div>
       <div class="housing-bids-body" id="housing-bids-body"></div>

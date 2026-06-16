@@ -2721,13 +2721,13 @@ import { wireArrowUpRecall, getLastUserMessageFromChatHistory } from './composer
         if (markdownModule.renderMermaid) markdownModule.renderMermaid(roundHolder);
 
         uiModule.scrollHistory();
-        // Render unified Vanta Brain sources when available, retaining the
+        // Render unified YVES Brain sources when available, retaining the
         // legacy RAG-only presentation for older servers.
         if (holder._brainSources && holder._brainSources.length) {
           const details = document.createElement('details');
           details.className = 'rag-sources brain-sources';
           const summary = document.createElement('summary');
-          summary.textContent = `Vanta Brain (${holder._brainSources.length} sources)`;
+          summary.textContent = `YVES Brain (${holder._brainSources.length} sources)`;
           details.appendChild(summary);
           holder._brainSources.forEach(src => {
             const item = document.createElement('div');

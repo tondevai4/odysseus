@@ -13,6 +13,8 @@ from typing import Any, Dict, List, Optional
 
 from core.database import Document, Note, SessionLocal
 from routes.prefs_routes import _load_for_user
+from services.oracle_service import PREF_KEY as ORACLE_PREF_KEY
+from services.oracle_service import cosmic_calendar, daily_reading, load_oracle
 from src.rag_singleton import get_rag_manager
 
 logger = logging.getLogger(__name__)
@@ -299,6 +301,30 @@ def _reading_intent(query: str) -> bool:
         "current book",
         "tonight s reading",
         "tonights reading",
+    ))
+
+
+def _oracle_intent(query: str) -> bool:
+    normalized = " ".join(re.findall(r"[a-z0-9]+", (query or "").lower()))
+    tokens = set(normalized.split())
+    if tokens & {
+        "oracle", "strnos", "saturnos", "spiritual", "vedic", "jyotish",
+        "astrology", "birth", "chart", "numerology", "manifestation",
+        "manifest", "gratitude", "synchronicity", "synchronicities",
+        "sign", "signs", "angel", "mercury", "retrograde", "cosmic",
+        "transit", "tarot",
+    }:
+        return True
+    return any(phrase in normalized for phrase in (
+        "daily reading",
+        "birth profile",
+        "life path",
+        "personal day",
+        "important date",
+        "cosmic calendar",
+        "angel number",
+        "law of attraction",
+        "what signs",
     ))
 
 
@@ -1077,6 +1103,197 @@ class VantaBrainService:
             ))
         return candidates
 
+    def _oracle_candidates(
+        self,
+        query: str,
+        owner: Optional[str],
+        errors: List[Dict[str, str]],
+    ) -> List[BrainSnippet]:
+        if not _oracle_intent(query):
+            return []
+        try:
+            state = load_oracle(owner)
+        except Exception:
+            logger.warning("STRNOS Oracle retrieval failed", exc_info=True)
+            errors.append({"source": "oracle", "detail": "Oracle retrieval unavailable."})
+            return []
+
+        profile = state.get("birth_profile") or {}
+        manifests = state.get("manifestations") or []
+        gratitude = state.get("gratitude_entries") or []
+        signs = state.get("synchronicities") or []
+        important_dates = state.get("important_dates") or []
+        calculations = state.get("numerology_calculations") or []
+        snippets: List[BrainSnippet] = []
+
+        if not any((profile.get("date_of_birth"), manifests, gratitude, signs, important_dates, calculations)):
+            return [BrainSnippet(
+                source="oracle",
+                source_id="strnos-oracle-empty",
+                label="STRNOS Oracle",
+                text=(
+                    "STRNOS Oracle is available, but no birth profile, gratitude, "
+                    "manifestations, signs, or important dates are saved yet."
+                ),
+                score=3.0,
+                metadata={"status": "empty"},
+            )]
+
+        reading = daily_reading(owner)
+        snippets.append(BrainSnippet(
+            source="oracle",
+            source_id=f"oracle-daily-{reading.get('date')}",
+            label="STRNOS Oracle: Today's Reading",
+            text=_clean_multiline_text("\n".join([
+                f"Date: {reading.get('date')}",
+                f"Energy: {reading.get('energy')}",
+                f"Best action: {reading.get('best_action')}",
+                f"Reflection: {reading.get('reflection_question')}",
+                f"Manifestation prompt: {reading.get('manifestation_prompt')}",
+                f"Action receipt: {reading.get('action_receipt_prompt')}",
+                f"Vedic/Jyotish status: {reading.get('vedic_status')}",
+            ])),
+            score=3.0 + _keyword_score(query, "daily oracle reading manifestation spiritual"),
+            metadata={"date": reading.get("date")},
+        ))
+
+        if profile.get("date_of_birth") or profile.get("manual_placements") or profile.get("notes"):
+            profile_text = "\n".join(filter(None, [
+                f"Full name: {profile.get('full_name')}" if profile.get("full_name") else "",
+                f"Date of birth: {profile.get('date_of_birth')}" if profile.get("date_of_birth") else "",
+                (
+                    f"Birth location: {profile.get('birth_city')}, {profile.get('birth_country')}"
+                    if profile.get("birth_city") or profile.get("birth_country") else ""
+                ),
+                f"Preferred system: {profile.get('preferred_system')} / {profile.get('ayanamsa')} / {profile.get('house_system')}",
+                "Vedic planetary calculation engine: pending; manual placements only for now.",
+                f"Manual placements: {profile.get('manual_placements')}" if profile.get("manual_placements") else "",
+                f"Notes: {profile.get('notes')}" if profile.get("notes") else "",
+            ]))
+            snippets.append(BrainSnippet(
+                source="oracle",
+                source_id="birth-profile",
+                label="STRNOS Oracle: Birth Profile",
+                text=_clean_multiline_text(profile_text),
+                score=2.8 + _keyword_score(query, profile_text),
+                metadata={"profile_saved": bool(profile.get("date_of_birth"))},
+            ))
+
+        for index, item in enumerate(manifests[:8]):
+            title = _clean_text(item.get("title"), 120) or "Manifestation"
+            text = "\n".join(filter(None, [
+                f"Title: {title}",
+                f"Category: {_clean_text(item.get('category'), 60)}",
+                f"Status: {_clean_text(item.get('status'), 60)}",
+                f"Statement: {_clean_text(item.get('statement'), 400)}",
+                f"Target date: {_clean_text(item.get('target_date'), 40)}" if item.get("target_date") else "",
+                f"Evidence: {'; '.join(item.get('evidence') or [])}",
+                f"Action receipts: {'; '.join(item.get('action_receipts') or [])}",
+                f"Notes: {_clean_text(item.get('notes'), 300)}" if item.get("notes") else "",
+            ]))
+            snippets.append(BrainSnippet(
+                source="oracle",
+                source_id=str(item.get("id") or f"manifestation-{index}"),
+                label=f"Manifestation: {title}",
+                text=_clean_multiline_text(text),
+                score=2.7 + _keyword_score(query, text),
+                metadata={"status": item.get("status"), "category": item.get("category")},
+            ))
+
+        for index, item in enumerate(signs[:6]):
+            value = _clean_text(item.get("value"), 120) or "Sign"
+            text = "\n".join(filter(None, [
+                f"Date: {_clean_text(item.get('date'), 40)}",
+                f"Type: {_clean_text(item.get('type'), 60)}",
+                f"Value: {value}",
+                f"Context: {_clean_text(item.get('context'), 300)}",
+                f"Meaning: {_clean_text(item.get('meaning'), 300)}",
+                f"Action prompt: {_clean_text(item.get('action_prompt'), 300)}",
+            ]))
+            snippets.append(BrainSnippet(
+                source="oracle",
+                source_id=str(item.get("id") or f"sign-{index}"),
+                label=f"Sign: {value}",
+                text=_clean_multiline_text(text),
+                score=2.5 + _keyword_score(query, text),
+            ))
+
+        if gratitude:
+            lines = []
+            for entry in gratitude[:4]:
+                pieces = []
+                if entry.get("grateful_for"):
+                    pieces.append("Gratitude: " + "; ".join(entry["grateful_for"][:3]))
+                if entry.get("thankful_before_materialised"):
+                    pieces.append("Future thanks: " + "; ".join(entry["thankful_before_materialised"][:3]))
+                if entry.get("action_receipt"):
+                    pieces.append("Action receipt: " + _clean_text(entry.get("action_receipt"), 220))
+                if pieces:
+                    lines.append(f"{entry.get('date')}: " + " | ".join(pieces))
+            if lines:
+                snippets.append(BrainSnippet(
+                    source="oracle",
+                    source_id="gratitude-latest",
+                    label="STRNOS Oracle: Gratitude",
+                    text=_clean_multiline_text("\n".join(lines)),
+                    score=2.45 + _keyword_score(query, "gratitude future thanks spiritual"),
+                ))
+
+        if important_dates:
+            lines = [
+                f"{item.get('date')}: {_clean_text(item.get('label'), 120)}"
+                f" ({_clean_text(item.get('type'), 60)})"
+                + (f" - {_clean_text(item.get('notes'), 220)}" if item.get("notes") else "")
+                for item in important_dates[:8]
+            ]
+            snippets.append(BrainSnippet(
+                source="oracle",
+                source_id="important-dates",
+                label="STRNOS Oracle: Important Dates",
+                text=_clean_multiline_text("\n".join(lines)),
+                score=2.35 + _keyword_score(query, "important date numerology calendar"),
+            ))
+
+        if calculations:
+            latest = calculations[0]
+            text = "\n".join(filter(None, [
+                f"Label: {_clean_text(latest.get('label'), 120)}",
+                f"Date: {_clean_text(latest.get('date'), 40)}",
+                f"Universal day: {latest.get('universal_day')}",
+                f"Personal year: {latest.get('personal_year')}",
+                f"Personal month: {latest.get('personal_month')}",
+                f"Personal day: {latest.get('personal_day')}",
+                f"Interpretation: {_clean_text(latest.get('interpretation'), 400)}",
+            ]))
+            snippets.append(BrainSnippet(
+                source="oracle",
+                source_id=str(latest.get("id") or "numerology-latest"),
+                label="Numerology: Latest Calculation",
+                text=_clean_multiline_text(text),
+                score=2.5 + _keyword_score(query, text),
+            ))
+
+        calendar = cosmic_calendar(owner)
+        next_retrograde = calendar.get("next_mercury_retrograde")
+        if next_retrograde:
+            text = (
+                "Local reference data, not a live ephemeris. "
+                f"Next Mercury retrograde: {next_retrograde.get('start')} "
+                f"to {next_retrograde.get('end')}. "
+                "Use it for review, revision, and slower decisions, not guaranteed outcomes."
+            )
+            snippets.append(BrainSnippet(
+                source="oracle",
+                source_id="cosmic-calendar",
+                label="STRNOS Oracle: Cosmic Calendar",
+                text=text,
+                score=2.6 + _keyword_score(query, text),
+                metadata={"reference": "local"},
+            ))
+
+        snippets.sort(key=lambda item: (-item.score, item.label.lower()))
+        return snippets[:MAX_SNIPPETS]
+
     def retrieve(
         self,
         query: str,
@@ -1094,6 +1311,8 @@ class VantaBrainService:
             candidates.extend(self._reading_candidates(query, owner, result.errors))
         elif source_scope == "gym":
             candidates.extend(self._gym_candidates(query, owner, result.errors))
+        elif source_scope == "oracle":
+            candidates.extend(self._oracle_candidates(query, owner, result.errors))
         else:
             if include_memory:
                 memory, result.used_memories = self._memory_candidates(query, owner, result.errors)
@@ -1108,6 +1327,7 @@ class VantaBrainService:
             candidates.extend(self._finance_candidates(query, owner, result.errors))
             candidates.extend(self._reading_candidates(query, owner, result.errors))
             candidates.extend(self._gym_candidates(query, owner, result.errors))
+            candidates.extend(self._oracle_candidates(query, owner, result.errors))
             if include_rag:
                 rag, result.rag_sources = self._rag_candidates(query, owner, result.errors)
                 candidates.extend(rag)
@@ -1252,6 +1472,29 @@ class VantaBrainService:
             reading_schema_recognized = False
             errors.append({"source": "reading", "detail": "Reading-list count unavailable."})
 
+        try:
+            raw_oracle = (_load_for_user(owner) or {}).get(ORACLE_PREF_KEY)
+            oracle_schema_recognized = (
+                isinstance(raw_oracle, dict)
+                and raw_oracle.get("version") == 1
+            )
+            oracle_state = load_oracle(owner)
+            oracle_count = sum(len(oracle_state.get(key) or []) for key in (
+                "manifestations",
+                "gratitude_entries",
+                "synchronicities",
+                "important_dates",
+                "daily_entries",
+                "saved_readings",
+                "numerology_calculations",
+            ))
+            if oracle_state.get("birth_profile", {}).get("date_of_birth"):
+                oracle_count += 1
+        except Exception:
+            oracle_count = 0
+            oracle_schema_recognized = False
+            errors.append({"source": "oracle", "detail": "Oracle count unavailable."})
+
         rag = self._owner_rag_inventory(owner)
         indexed_sources = rag.pop("indexed_sources")
         listed_files = []
@@ -1280,6 +1523,11 @@ class VantaBrainService:
                 "ready": not any(e["source"] == "reading" for e in errors),
                 "count": reading_count,
                 "schema_recognized": reading_schema_recognized,
+            },
+            "oracle": {
+                "ready": not any(e["source"] == "oracle" for e in errors),
+                "count": oracle_count,
+                "schema_recognized": oracle_schema_recognized,
             },
             "rag": {
                 **rag,

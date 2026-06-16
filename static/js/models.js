@@ -576,8 +576,10 @@ export async function refreshModels(force = false) {
       // Configured installs should feel ready, not stuck in onboarding.
       const welcomeSub = document.getElementById('welcome-sub');
       if (welcomeSub) {
-        welcomeSub.textContent = window.VANTA_BRAND?.greeting
-          || 'Morning, Boss. What are we handling today?';
+        welcomeSub.textContent = window.YVES_LOCAL_GREETING?.(new Date())
+          || window.VANTA_LOCAL_GREETING?.(new Date())
+          || window.VANTA_BRAND?.greeting
+          || 'Boss. Yves is online.';
       }
       const welcomeTip = document.getElementById('welcome-tip');
       if (welcomeTip) {

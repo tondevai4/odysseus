@@ -69,6 +69,7 @@ COLLECTION_NAME = "odysseus_tool_index"
 BUILTIN_TOOL_DESCRIPTIONS: Dict[str, str] = {
     "manage_reading_list": "Manage the owner's private Reading List. Add books or linked Library documents, list items, and update exact titles with reading status, progress, priority, or notes. Never delete reading items from chat.",
     "manage_gym_log": "Manage the owner's private Gym / Body tracker. Start a live workout, add sets, finish it, list history or exercise progress, update Garmin metrics, and append notes. Keep pasted workout and Garmin text when parsing is partial. Never use memory or Notes as the main gym store, and never delete gym logs from chat.",
+    "manage_oracle": "Manage the owner's private STRNOS Oracle. Use for grounded daily readings, numerology, gratitude, manifestations, signs, angel numbers, synchronicities, important dates, birth profile, and Mercury retrograde/cosmic calendar. Never use memory or Notes as the Oracle store and never make guaranteed prophecies.",
     "bash": "Run shell commands on the server. Install packages, git operations, builds, system info, process management. Prefer a dedicated tool whenever one fits the job (file read/write/edit, search, listing); use bash only for what no dedicated tool covers. Do not use for web lookup/search; use web_search or web_fetch when web tools are available.",
     "python": "Execute Python code for computation, data processing, math, scripting, and parsing. Not for writing code for the user. Prefer a dedicated tool for reading, writing, or searching files; use python only for what no dedicated tool covers. Do not use for web lookup/search; use web_search or web_fetch when web tools are available.",
     "web_search": "Quick single web lookup for a fact, current event, latest/current information, or doc mid-task. Use this instead of bash/curl/python/requests for web searches. NOT for 'research X' / 'do research on X' requests — those are deep-research jobs (use trigger_research). web_search = one query; trigger_research = a full researched report in the sidebar.",
@@ -362,6 +363,12 @@ class ToolIndex:
                    "heart rate", "garmin", "total reps", "total sets",
                    "train next", "gym log"}):
             {"manage_gym_log"},
+        frozenset({"oracle", "strnos oracle", "vedic", "jyotish", "astrology",
+                   "numerology", "life path", "personal day", "manifestation",
+                   "manifesting", "gratitude", "angel number", "333", "1111",
+                   "synchronicity", "mercury retrograde", "cosmic calendar",
+                   "birth profile", "birth chart", "daily reading"}):
+            {"manage_oracle"},
         # Chat/session management. "rename" alone maps to documents below, so a
         # request like "rename the last 12 sessions/chats" needs these session
         # keywords to surface the right tools (NOT app_api — /api/sessions is
