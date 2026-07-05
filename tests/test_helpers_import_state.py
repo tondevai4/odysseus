@@ -23,7 +23,7 @@ _RESOLVER_NAMES = (
     "src",
     "src.endpoint_resolver",
     "routes",
-    "routes.model_routes",
+    "routes.model.shared",
     "routes.chat_routes",
 )
 
@@ -302,14 +302,14 @@ def test_clear_fake_resolver_evicts_empty_file_resolver():
         fake_src.endpoint_resolver = empty_resolver
         sys.modules["src"] = fake_src
         sys.modules["src.endpoint_resolver"] = empty_resolver
-        model_routes = types.ModuleType("routes.model_routes")
-        sys.modules["routes.model_routes"] = model_routes
+        model_routes = types.ModuleType("routes.model.shared")
+        sys.modules["routes.model.shared"] = model_routes
 
         clear_fake_endpoint_resolver_modules()
 
         assert "src.endpoint_resolver" not in sys.modules
         assert not hasattr(fake_src, "endpoint_resolver")
-        assert "routes.model_routes" not in sys.modules
+        assert "routes.model.shared" not in sys.modules
 
 
 def test_clear_fake_resolver_removes_model_routes_when_resolver_fake():
@@ -323,14 +323,14 @@ def test_clear_fake_resolver_removes_model_routes_when_resolver_fake():
         sys.modules["src.endpoint_resolver"] = fake_resolver
 
         fake_routes = types.ModuleType("routes")
-        model_routes = types.ModuleType("routes.model_routes")
-        fake_routes.model_routes = model_routes
+        model_routes = types.ModuleType("routes.model.shared")
+        fake_routes.model.shared = model_routes
         sys.modules["routes"] = fake_routes
-        sys.modules["routes.model_routes"] = model_routes
+        sys.modules["routes.model.shared"] = model_routes
 
         clear_fake_endpoint_resolver_modules()
 
-        assert "routes.model_routes" not in sys.modules
+        assert "routes.model.shared" not in sys.modules
         assert not hasattr(fake_routes, "model_routes")
 
 
@@ -363,14 +363,14 @@ def test_clear_fake_resolver_keeps_dependents_when_resolver_real():
         sys.modules["src"] = fake_src
         sys.modules["src.endpoint_resolver"] = real_resolver
 
-        model_routes = types.ModuleType("routes.model_routes")
+        model_routes = types.ModuleType("routes.model.shared")
         chat_routes = types.ModuleType("routes.chat_routes")
-        sys.modules["routes.model_routes"] = model_routes
+        sys.modules["routes.model.shared"] = model_routes
         sys.modules["routes.chat_routes"] = chat_routes
 
         clear_fake_endpoint_resolver_modules("routes.chat_routes")
 
-        assert sys.modules["routes.model_routes"] is model_routes
+        assert sys.modules["routes.model.shared"] is model_routes
         assert sys.modules["routes.chat_routes"] is chat_routes
 
 
@@ -379,14 +379,14 @@ def test_clear_fake_resolver_noop_when_nothing_cached():
         sys.modules.pop("src.endpoint_resolver", None)
         fake_src = types.ModuleType("src")  # no endpoint_resolver attr
         sys.modules["src"] = fake_src
-        model_routes = types.ModuleType("routes.model_routes")
-        sys.modules["routes.model_routes"] = model_routes
+        model_routes = types.ModuleType("routes.model.shared")
+        sys.modules["routes.model.shared"] = model_routes
 
         clear_fake_endpoint_resolver_modules()  # must not raise
 
         assert "src.endpoint_resolver" not in sys.modules
         # dependents are left alone when the resolver was never cached
-        assert sys.modules["routes.model_routes"] is model_routes
+        assert sys.modules["routes.model.shared"] is model_routes
 
 
 def test_clear_fake_resolver_keeps_parent_attr_pointing_elsewhere():
@@ -417,10 +417,10 @@ def test_clear_fake_resolver_uses_parent_attr_when_not_in_sys_modules():
         fake_resolver = types.ModuleType("src.endpoint_resolver")
         fake_src.endpoint_resolver = fake_resolver
         sys.modules["src"] = fake_src
-        model_routes = types.ModuleType("routes.model_routes")
-        sys.modules["routes.model_routes"] = model_routes
+        model_routes = types.ModuleType("routes.model.shared")
+        sys.modules["routes.model.shared"] = model_routes
 
         clear_fake_endpoint_resolver_modules()
 
         assert not hasattr(fake_src, "endpoint_resolver")
-        assert "routes.model_routes" not in sys.modules
+        assert "routes.model.shared" not in sys.modules

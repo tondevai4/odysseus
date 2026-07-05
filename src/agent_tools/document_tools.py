@@ -642,3 +642,112 @@ class ManageDocumentTool:
             return {"error": str(e), "exit_code": 1}
         finally:
             db.close()
+
+# ---------------------------------------------------------------------------
+# Tool Schemas
+# ---------------------------------------------------------------------------
+
+CREATE_DOCUMENT_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "create_document",
+            "description": "Create a new document in the editor panel. Use this when the user asks to write, create, build, or generate code, scripts, programs, games, apps, or any substantial content (>15 lines) AND there is no already-open document/email draft that the request refers to. If an email compose draft is open, edit that draft instead of creating another document. NEVER put large code blocks directly in chat — use this tool instead.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Document title"},
+                    "language": {"type": "string", "description": "Programming language or format (e.g. python, javascript, markdown, text)"},
+                    "content": {"type": "string", "description": "The document content"}
+                },
+                "required": ["title", "content"]
+            }
+        }
+    }
+
+UPDATE_DOCUMENT_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "update_document",
+            "description": "Replace the ENTIRE active document. ONLY use for genuine full rewrites (>50% of lines changed). For any smaller change, use edit_document — echoing back the whole file for small edits is wasteful.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "content": {"type": "string", "description": "Complete new document content"}
+                },
+                "required": ["content"]
+            }
+        }
+    }
+
+EDIT_DOCUMENT_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "edit_document",
+            "description": "Edit a document OPEN IN THE EDITOR PANEL (created via create_document) — NOT a file on disk. For files on disk (home folder, project files, anything with a path like ~/x.txt or /path/to/file) use edit_file instead. Targeted find-and-replace with multiple FIND/REPLACE pairs per call; use for any edit smaller than a full rewrite. Do NOT send the whole file back via update_document for small edits.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "edits": {
+                        "type": "array",
+                        "description": "List of find/replace edits (first match only per edit)",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "find": {"type": "string", "description": "Exact text to find in the document"},
+                                "replace": {"type": "string", "description": "Text to replace it with"}
+                            },
+                            "required": ["find", "replace"]
+                        }
+                    }
+                },
+                "required": ["edits"]
+            }
+        }
+    }
+
+SUGGEST_DOCUMENT_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "suggest_document",
+            "description": "Suggest improvements to the active document WITHOUT editing it. Creates inline comment bubbles the user can accept or reject. Use when the user asks for suggestions, review, improvements, or feedback.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "suggestions": {
+                        "type": "array",
+                        "description": "List of suggested changes with reasons",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "find": {"type": "string", "description": "Exact text in the document to suggest changing"},
+                                "replace": {"type": "string", "description": "Suggested replacement text"},
+                                "reason": {"type": "string", "description": "Brief explanation of why this change helps"}
+                            },
+                            "required": ["find", "replace", "reason"]
+                        }
+                    }
+                },
+                "required": ["suggestions"]
+            }
+        }
+    }
+
+MANAGE_DOCUMENTS_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "manage_documents",
+            "description": "Manage documents: list all documents (with optional search/language filter), delete documents, or run tidy cleanup.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["list", "delete", "tidy"]},
+                    "document_id": {"type": "string", "description": "Document ID (for delete)"},
+                    "search": {"type": "string", "description": "Search query (for list)"},
+                    "language": {"type": "string", "description": "Filter by language (for list)"},
+                    "limit": {"type": "integer", "description": "Max results (for list, default 50)"}
+                },
+                "required": ["action"]
+            }
+        }
+    }
+

@@ -99,3 +99,40 @@ class WebFetchTool:
         if len(output) > MAX_OUTPUT_CHARS:
             output = output[:MAX_OUTPUT_CHARS] + "\n\n[...truncated]"
         return {"output": output, "exit_code": 0}
+
+
+# ---------------------------------------------------------------------------
+# Tool Schemas
+# ---------------------------------------------------------------------------
+
+WEB_SEARCH_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Quick single web lookup for a fact or current event mid-task. NOT for 'research X' / 'do research on X' — those are deep-research jobs; use trigger_research instead.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Search query"},
+                    "time_filter": {"type": "string", "enum": ["day", "week", "month", "year"], "description": "Optional freshness filter for news/latest/today queries"}
+                },
+                "required": ["query"]
+            }
+        }
+    }
+
+WEB_FETCH_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "web_fetch",
+            "description": "Fetch and read the text content of a specific URL the user names (e.g. 'check example.com', 'what's on this page <url>'). Use when you already have a concrete URL/domain. NOT for open-ended searches (use web_search) or 'research X' jobs (use trigger_research).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {"type": "string", "description": "The URL or domain to fetch (http/https; a bare domain like example.com is fine)"}
+                },
+                "required": ["url"]
+            }
+        }
+    }
+

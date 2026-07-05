@@ -1,3 +1,12 @@
+[project]
+name = "odysseus"
+version = "2.0.0"
+description = "Self-hosted AI workspace"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+keywords = ["ai", "llm", "self-hosted", "workspace"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
@@ -20,3 +29,25 @@ markers = [
     # duration evidence (see tests/run_focus.py --durations and tests/README.md).
     "slow: opt-in marker for known-slow tests; excluded by the fast lane (not slow)",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "core.*"
+disallow_untyped_defs = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501", "UP007", "UP006"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "src", "routes", "services"]

@@ -271,7 +271,7 @@ def setup_memory_routes(memory_manager: MemoryManager, session_manager: SessionM
         Uses the default model from settings, or falls back to a session's model.
         Returns before and after memory counts.
         """
-        from routes.model_routes import _load_settings, _normalize_base, build_chat_url
+        from routes.model.shared import _load_settings, _normalize_base, build_chat_url
         from core.database import ModelEndpoint
         import json as _json
 

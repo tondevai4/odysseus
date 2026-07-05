@@ -61,7 +61,7 @@ class _FakeDb:
 
 
 def _default_chat_endpoint():
-    from routes.model_routes import setup_model_routes
+    from routes.model import setup_model_routes
 
     router = setup_model_routes(model_discovery=None)
     for route in router.routes:
@@ -91,7 +91,7 @@ def _install_model_route_import_stubs(monkeypatch):
     session_mgr_mod = types.ModuleType("core.session_manager")
     session_mgr_mod.SessionManager = MagicMock()
 
-    monkeypatch.delitem(sys.modules, "routes.model_routes", raising=False)
+    monkeypatch.delitem(sys.modules, "routes.model.shared", raising=False)
     monkeypatch.delitem(sys.modules, "routes.chat_routes", raising=False)
     monkeypatch.delitem(sys.modules, "routes.session_routes", raising=False)
     monkeypatch.setitem(sys.modules, "core", core_mod)
@@ -130,7 +130,7 @@ def _install_core_middleware_stub(monkeypatch):
 
 def test_providers_requires_admin_before_discovery_and_cache(monkeypatch):
     _install_model_route_import_stubs(monkeypatch)
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
 
     class _Discovery:
         def __init__(self):
@@ -166,7 +166,7 @@ def test_providers_requires_admin_before_discovery_and_cache(monkeypatch):
 
 def test_default_chat_does_not_auto_pick_shared_endpoint_for_fresh_user(monkeypatch):
     _install_model_route_import_stubs(monkeypatch)
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
     import routes.prefs_routes as prefs_routes
 
     shared_ep = SimpleNamespace(
@@ -208,7 +208,7 @@ def test_default_chat_does_not_auto_pick_shared_endpoint_for_fresh_user(monkeypa
 
 def test_default_chat_uses_owned_endpoint_as_regular_user_last_resort(monkeypatch):
     _install_model_route_import_stubs(monkeypatch)
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
     import routes.prefs_routes as prefs_routes
 
     owned_ep = SimpleNamespace(
@@ -766,7 +766,7 @@ def test_default_chat_skips_hidden_first_model(monkeypatch):
     """get_default_chat picks first visible model when default_model is empty
     and the first cached model is hidden."""
     _install_model_route_import_stubs(monkeypatch)
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
     import routes.prefs_routes as prefs_routes
 
     ep = SimpleNamespace(
@@ -800,7 +800,7 @@ def test_default_chat_skips_hidden_first_model(monkeypatch):
 def test_default_chat_admin_skips_hidden_first_model(monkeypatch):
     """Admin user with global defaults also skips hidden models in fallback."""
     _install_model_route_import_stubs(monkeypatch)
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
 
     ep = SimpleNamespace(
         id="ep1",
@@ -832,7 +832,7 @@ def test_default_chat_admin_skips_hidden_first_model(monkeypatch):
 def test_default_chat_all_models_hidden_returns_empty_model(monkeypatch):
     """When all cached models are hidden, get_default_chat returns model: ''."""
     _install_model_route_import_stubs(monkeypatch)
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
 
     ep = SimpleNamespace(
         id="ep1",
@@ -863,7 +863,7 @@ def test_default_chat_all_models_hidden_returns_empty_model(monkeypatch):
 
 def test_visible_models_filters_hidden_first(monkeypatch):
     """_visible_models removes hidden models from the list."""
-    from routes.model_routes import _visible_models
+    from routes.model.shared import _visible_models
 
     result = _visible_models(
         '["hidden-model", "visible-model"]',
@@ -874,7 +874,7 @@ def test_visible_models_filters_hidden_first(monkeypatch):
 
 def test_visible_models_all_hidden_returns_empty(monkeypatch):
     """_visible_models returns [] when all models are hidden."""
-    from routes.model_routes import _visible_models
+    from routes.model.shared import _visible_models
 
     result = _visible_models(
         '["hidden-a", "hidden-b"]',
@@ -885,7 +885,7 @@ def test_visible_models_all_hidden_returns_empty(monkeypatch):
 
 def test_visible_models_no_hidden_returns_all(monkeypatch):
     """_visible_models returns full list when no hidden_models."""
-    from routes.model_routes import _visible_models
+    from routes.model.shared import _visible_models
 
     result = _visible_models(
         '["model-a", "model-b"]',
@@ -896,7 +896,7 @@ def test_visible_models_no_hidden_returns_all(monkeypatch):
 
 def test_visible_models_empty_cached_returns_empty(monkeypatch):
     """_visible_models returns [] for empty cached list."""
-    from routes.model_routes import _visible_models
+    from routes.model.shared import _visible_models
 
     result = _visible_models([], None)
     assert result == []

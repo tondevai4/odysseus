@@ -151,3 +151,39 @@ class PythonTool:
             output = (output + "\nSTDERR: " + err).strip() if output else "STDERR: " + err
         output = _truncate(output, MAX_OUTPUT_CHARS)
         return {"output": output or "(no output)", "exit_code": rc or 0}
+
+
+# ---------------------------------------------------------------------------
+# Tool Schemas
+# ---------------------------------------------------------------------------
+
+BASH_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "bash",
+            "description": "Run a shell command (full access). Prefer a dedicated tool whenever one fits the job (reading, writing, editing, searching, or listing files); use bash only for what no dedicated tool covers (installs, git, builds, running programs, system info). Do NOT create or edit files via bash redirects/heredocs/sed -- use the dedicated file tools.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "The shell command to execute"}
+                },
+                "required": ["command"]
+            }
+        }
+    }
+
+PYTHON_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "python",
+            "description": "Execute Python code to compute a result or test something. Prefer a dedicated tool whenever one fits the job (reading, writing, or searching files); use python only for computation, data processing, or scripting no dedicated tool covers.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {"type": "string", "description": "Python code to execute"}
+                },
+                "required": ["code"]
+            }
+        }
+    }
+

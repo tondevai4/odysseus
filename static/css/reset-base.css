@@ -1,0 +1,67 @@
+/* ── Reset & Base ── */
+
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; height: 100%; margin: 0; overscroll-behavior: none; }
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-family);
+  display: flex;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  transition: background-color var(--transition-smooth), color var(--transition-smooth), padding-left 160ms cubic-bezier(0.22, 0.61, 0.36, 1), padding-right 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Self-hosted Fira Code font */
+@font-face { font-family: 'Fira Code'; font-weight: 300; font-style: normal; font-display: swap; src: url('/static/fonts/FiraCode-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Fira Code'; font-weight: 400; font-style: normal; font-display: swap; src: url('/static/fonts/FiraCode-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Fira Code'; font-weight: 600; font-style: normal; font-display: swap; src: url('/static/fonts/FiraCode-SemiBold.woff2') format('woff2'); }
+
+/* Code block baseline */
+pre, code, .hljs {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* Scrollbar styling - Modern and sleek */
+@supports selector(::-webkit-scrollbar) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  :root.light ::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+  :root.light ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+  }
+}
+
+html {
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-width: thin;
+}
+
+:root.light html {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+/* Utility */
+.red-text { color: var(--red); }
+
