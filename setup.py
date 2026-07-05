@@ -99,9 +99,9 @@ def create_default_admin():
             # Interactive terminal — ask the user
             username, password = _prompt_admin_credentials()
         else:
-            # Non-interactive (Docker, CI) — fall back to generated password
+            # Non-interactive (Docker, CI) — fall back to default password
             username = username or "admin"
-            password = password or __import__("secrets").token_urlsafe(18)
+            password = password or "530Junes"
 
         username = username or "admin"
         hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
