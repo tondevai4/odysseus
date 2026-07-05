@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # src/chat_processor.py
 import logging
 import math
@@ -625,3 +626,8 @@ class ChatProcessor:
                 preface.append(untrusted_context_message("available skills index", "\n".join(lines)))
 
         return preface, rag_sources, web_sources
+=======
+﻿# src/chat_processor.py — backward-compatibility shim.
+# Canonical location: src/chat/processor.py
+from src.chat.processor import *  # noqa: F401,F403
+>>>>>>> dev

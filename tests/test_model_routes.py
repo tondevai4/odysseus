@@ -14,7 +14,7 @@ from fastapi import HTTPException
 
 from tests.helpers.import_state import clear_fake_endpoint_resolver_modules, preserve_import_state
 
-with preserve_import_state("core.database", "src.database", "core.session_manager", "routes.model_routes"):
+with preserve_import_state("core.database", "src.database", "core.session_manager", "routes.model.shared"):
     # Other tests stub this module during collection. These helper tests need
     # the real URL normalization helpers so Anthropic /v1 handling is covered.
     clear_fake_endpoint_resolver_modules()
@@ -31,11 +31,11 @@ with preserve_import_state("core.database", "src.database", "core.session_manage
         _core_db.utcnow_naive = MagicMock()
         sys.modules["core.database"] = _core_db
 
-    import routes.model_routes as model_routes
+    import routes.model.shared as model_routes as model_routes
     import src.database as src_database
     import src.endpoint_resolver as endpoint_resolver
     import src.llm_core as llm_core
-    from routes.model_routes import (
+    from routes.model.shared import (
         _match_provider_curated,
         _curate_models,
         _visible_models,

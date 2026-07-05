@@ -1,0 +1,129 @@
+/* ========================================= */
+/* Odysseus V2 — High-End Redesign Overrides */
+/* ========================================= */
+
+/* 1. Global Shell & Canvas */
+body {
+  background: var(--bg);
+  /* Optional: subtle ambient gradient */
+  background-image: radial-gradient(circle at top right, rgba(0, 229, 255, 0.05), transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(255, 42, 95, 0.05), transparent 40%);
+}
+
+/* 2. Glassmorphism Sidebar */
+.sidebar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+  transition: width var(--transition-smooth), transform var(--transition-smooth) !important;
+}
+
+.sidebar .section-title {
+  color: var(--cyan) !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* 3. Main Chat Stage & Topbar */
+.chat-top-bar {
+  background: rgba(11, 15, 25, 0.4) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.chat-meta-overlay {
+  font-family: var(--font-family);
+  font-weight: 600;
+  color: var(--fg) !important;
+  opacity: 0.9;
+}
+
+/* 4. Chat Bubbles (Message Nodes) */
+.msg.user-msg {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(0, 229, 255, 0.02)) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-radius: 16px 16px 4px 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.msg.ai-msg {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px 16px 16px 4px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.msg-content {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* 5. Inputs & Controls */
+.input-wrap, #chat-input-container {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+  margin-bottom: 16px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input-wrap:focus-within {
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2), 0 -4px 24px rgba(0, 0, 0, 0.2);
+}
+
+button {
+  transition: all var(--transition-fast) !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* 6. Modals */
+.modal-content {
+  background: rgba(17, 24, 39, 0.8) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  border-radius: 16px !important;
+}
+
+/* 7. Code Blocks */
+pre, code {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+}
+
+/* 8. Scrollbars (Customized for WebKit) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

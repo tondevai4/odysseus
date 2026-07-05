@@ -396,3 +396,119 @@ class GetWorkspaceTool:
                       "resolve paths from the user or use absolute paths.",
             "exit_code": 0,
         }
+
+
+# ---------------------------------------------------------------------------
+# Tool Schemas
+# ---------------------------------------------------------------------------
+
+READ_FILE_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "description": "Read a file from disk. Optionally read a line range with offset/limit for large files.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "File path to read"},
+                    "offset": {"type": "integer", "description": "1-based line to start reading from (optional)"},
+                    "limit": {"type": "integer", "description": "Max number of lines to read from offset (optional)"}
+                },
+                "required": ["path"]
+            }
+        }
+    }
+
+WRITE_FILE_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": "Write/save a file to disk",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "File path to write to"},
+                    "content": {"type": "string", "description": "File content to write"}
+                },
+                "required": ["path", "content"]
+            }
+        }
+    }
+
+EDIT_FILE_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "edit_file",
+            "description": "Edit a file ON DISK by exact string replacement (home folder, project files, any real path like ~/sweden.txt or /path/to/file). This is the right tool for files on disk — NOT edit_document (that's for editor-panel documents). PREFER this over bash (sed/echo) — it shows a diff. old_string must match the file exactly and be unique (or set replace_all). Use write_file to create a new file.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "File path to edit"},
+                    "old_string": {"type": "string", "description": "Exact text to replace (must match the file, including indentation)"},
+                    "new_string": {"type": "string", "description": "Replacement text"},
+                    "replace_all": {"type": "boolean", "description": "Replace all occurrences instead of requiring a unique match"}
+                },
+                "required": ["path", "old_string", "new_string"]
+            }
+        }
+    }
+
+LS_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "ls",
+            "description": "List the entries of a directory (folders first, then files with sizes). PREFER this over `bash ls` — confined to the allowed roots.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "Directory to list (optional; defaults to the project root)"}
+                },
+                "required": []
+            }
+        }
+    }
+
+GLOB_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "glob",
+            "description": "Find files by glob pattern (recursive), newest first. e.g. '**/*.py'. PREFER this over `bash find/ls` for locating files — confined to the allowed roots.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pattern": {"type": "string", "description": "Glob pattern, e.g. '**/*.ts' or 'src/**/test_*.py'"},
+                    "path": {"type": "string", "description": "Base directory (optional; defaults to the project root)"}
+                },
+                "required": ["pattern"]
+            }
+        }
+    }
+
+GREP_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "grep",
+            "description": "Search file contents for a regular expression across a directory tree (uses ripgrep when available, respecting .gitignore). Returns file:line:match. PREFER this over `bash grep/rg` for code search — confined to the allowed roots, structured output.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pattern": {"type": "string", "description": "Regular expression to search for"},
+                    "path": {"type": "string", "description": "Directory or file to search (optional; defaults to the project root)"},
+                    "glob": {"type": "string", "description": "Only search files matching this glob, e.g. '*.py' (optional)"},
+                    "ignore_case": {"type": "boolean", "description": "Case-insensitive match (optional)"},
+                    "max_results": {"type": "integer", "description": "Max matches to return (optional)"}
+                },
+                "required": ["pattern"]
+            }
+        }
+    }
+
+GET_WORKSPACE_SCHEMA = {
+        "type": "function",
+        "function": {
+            "name": "get_workspace",
+            "description": "Return the absolute path of the active workspace folder the user is working in. File tools are confined to it; the shell starts there but is not sandboxed. Call this first when the user refers to 'the project'/'the code'/'this folder' without a path, instead of asking them. Takes no arguments.",
+            "parameters": {"type": "object", "properties": {}, "required": []}
+        }
+    }
+

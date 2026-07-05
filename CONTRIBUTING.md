@@ -131,3 +131,22 @@ Do not post secrets, API keys, private logs, personal documents, or public IPs i
 
 For security reports, follow [SECURITY.md](SECURITY.md).
 
+## Code Quality Guidelines (V2)
+
+### File Size
+- Soft cap: **500 lines** per file. If a file exceeds this, split it into logical sub-modules.
+- Exception: large data-file-like modules (e.g. schemas, migrations) may be longer.
+
+### Logging Policy
+- `WARNING` — user-visible config issues, degraded-state paths, security-relevant events
+- `INFO` — normal operational milestones (startup, shutdown, job completion)
+- `DEBUG` — internal diagnostic noise, warmup pings, retry details
+- Never log at `ERROR` unless the process should also alert an operator.
+
+### datetime Usage
+- Always use `datetime.now(timezone.utc)` instead of the deprecated `datetime.utcnow()`.
+- For naive DB columns, use `.replace(tzinfo=None)` or the `utcnow_naive()` helper in `core/database.py`.
+
+### Import Order
+- All imports at the top of the file — no mid-function or mid-block imports.
+- Use `isort` / `ruff --select I` to enforce order.

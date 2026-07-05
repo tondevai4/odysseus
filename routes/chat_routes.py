@@ -30,7 +30,7 @@ from core.database import SessionLocal, get_session_mode, set_session_mode
 from core.database import Session as DBSession, ChatMessage as DBChatMessage
 from core.database import Document as DBDocument, ModelEndpoint
 from routes.research_routes import _resolve_research_endpoint
-from routes.model_routes import _visible_models
+from routes.model.shared import _visible_models
 from routes.chat_helpers import (
     resolve_session_auth,
     build_chat_context,

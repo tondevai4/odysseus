@@ -273,6 +273,56 @@ def setup_memory_routes(memory_manager: MemoryManager, session_manager: SessionM
         removes empty rows, exact duplicates, and very high-confidence near
         duplicates while preserving pinned/manual entries.
         """
+<<<<<<< HEAD
+=======
+        from routes.model.shared import _load_settings, _normalize_base, build_chat_url
+        from core.database import ModelEndpoint
+        import json as _json
+
+        endpoint_url = model = None
+        headers = {}
+
+        # Try default model from settings first
+        settings = _load_settings()
+        ep_id = settings.get("default_endpoint_id", "")
+        default_model = settings.get("default_model", "")
+        if ep_id:
+            db = SessionLocal()
+            try:
+                ep = db.query(ModelEndpoint).filter(
+                    ModelEndpoint.id == ep_id, ModelEndpoint.is_enabled == True
+                ).first()
+                if ep:
+                    base = _normalize_base(ep.base_url)
+                    endpoint_url = build_chat_url(base)
+                    model = default_model
+                    if not model and ep.models:
+                        try:
+                            models = _json.loads(ep.models) if isinstance(ep.models, str) else ep.models
+                            if models:
+                                model = models[0]
+                        except Exception:
+                            pass
+                    if ep.api_key:
+                        headers = {"Authorization": f"Bearer {ep.api_key}"}
+            finally:
+                db.close()
+
+        # Fall back to session model if no default configured
+        if not endpoint_url and session:
+            try:
+                sess = session_manager.get_session(session)
+                _assert_session_owner(sess, _owner(request))
+                endpoint_url = sess.endpoint_url
+                model = sess.model
+                headers = sess.headers
+            except KeyError:
+                pass
+
+        if not endpoint_url or not model:
+            raise HTTPException(400, "No default model configured — set one in Settings")
+
+>>>>>>> dev
         user = _owner(request)
         result = apply_local_tidy(memory_manager, memory_vector, owner=user)
         return {

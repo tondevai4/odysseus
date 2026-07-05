@@ -1,0 +1,104 @@
+/* ── Variables ── */
+:root {
+  /* ========================================= */
+  /* Odysseus V2 — High-End Design System      */
+  /* ========================================= */
+
+  /* 1. Core Palette (Sleek Dark Mode) */
+  --bg: #0b0f19;
+  --fg: #f3f4f6;
+  --panel: #111827;
+  --border: rgba(255, 255, 255, 0.08);
+  
+  /* Vibrant Accents */
+  --red: #ff2a5f;      /* Punchy coral red */
+  --green: #10b981;    /* Emerald green */
+  --warn: #f59e0b;     /* Amber */
+  --cyan: #00e5ff;     /* Neon cyan primary */
+  --brand-color: var(--cyan);
+  
+  /* 2. Glassmorphism Tokens */
+  --glass-bg: rgba(17, 24, 39, 0.65);
+  --glass-bg-hover: rgba(17, 24, 39, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-blur: blur(12px);
+
+  /* 3. Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+
+  /* 4. Motion & Animation Tokens */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* 5. Syntax Highlighting */
+  --hl-bg: #1e293b;
+  --hl-fg: #f8fafc;
+  --hl-keyword: #c678dd;
+  --hl-string: #e5c07b;
+  --hl-comment: #94a3b8;
+  --hl-function: #61afef;
+  --hl-number: #d19a66;
+  --hl-builtin: #56b6c2;
+  --hl-variable: #e2e8f0;
+  --hl-params: #cbd5e1;
+
+  /* 6. Semantic Colors */
+  --color-error: #ef4444;
+  --color-error-light: #f87171;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-recording: #ff2a5f;
+  --color-recording-hover: #e11d48;
+  --color-muted: #6b7280;
+  --color-muted-alt: #4b5563;
+  --color-accent: var(--cyan);
+  --color-agent-active: #10b981;
+  --color-brand-blue: #3b82f6;
+  --color-blind-orange: #f59e0b;
+  --color-save-green: var(--color-success);
+  --color-link-hover: #67e8f9;
+  --color-subheader: #9ca3af;
+  
+  /* Select Elements */
+  --select-bg: var(--bg);
+  --select-fg: var(--fg);
+  --select-option-bg: var(--panel);
+  --select-option-fg: var(--fg);
+  --select-option-active-bg: rgba(0, 229, 255, 0.15);
+  
+  /* Specific UI Accents */
+  --accent-warm: #f59e0b;
+}
+
+:root.light {
+  --bg: #f8fafc;
+  --fg: #0f172a;
+  --panel: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+
+  --hl-bg: #f1f5f9;
+  --hl-fg: #0f172a;
+  --hl-keyword: #7928a1;
+  --hl-string: #986801;
+  --hl-comment: #64748b;
+  --hl-function: #005cc5;
+  --hl-number: #986801;
+  --hl-builtin: #0070a0;
+  --hl-variable: #334155;
+  --hl-params: #475569;
+  
+  --select-bg: #f1f5f9;
+  --select-fg: var(--fg);
+  --select-option-bg: var(--panel);
+  --select-option-fg: var(--fg);
+  --select-option-active-bg: rgba(0, 229, 255, 0.1);
+}
