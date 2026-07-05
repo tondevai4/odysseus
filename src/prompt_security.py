@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """Prompt-injection hardening helpers."""
 
 from __future__ import annotations
@@ -84,8 +83,3 @@ def untrusted_context_message(label: str, content: Any) -> Dict[str, Any]:
         ),
         "metadata": {"trusted": False, "source": label},
     }
-=======
-﻿# src/prompt_security.py — backward-compatibility shim.
-# Canonical location: src/agent/prompt_security.py
-from src.agent.prompt_security import *  # noqa: F401,F403
->>>>>>> dev

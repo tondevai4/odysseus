@@ -229,41 +229,6 @@ def _save_for_user(user: Optional[str], prefs: dict):
     all_prefs["_users"][user] = prefs
     _save(all_prefs)
 
-<<<<<<< HEAD
-=======
-
-def _is_empty_oracle_value(value) -> bool:
-    if value is None:
-        return True
-    if value == "":
-        return True
-    if isinstance(value, (list, dict)) and len(value) == 0:
-        return True
-    return False
-
-
-def _seed_oracle_if_empty(user: Optional[str]) -> dict:
-    """Seed Tony/Boss Oracle defaults only for the current owner/user when empty.
-
-    This preserves existing owner edits, keeps the data in the same per-user
-    preferences store as the rest of the app, and avoids any schema migration.
-    The caller must only invoke this from Oracle-specific preference access.
-    """
-    prefs = _load_for_user(user)
-    current = prefs.get(ORACLE_PREF_KEY)
-    if not _is_empty_oracle_value(current):
-        return current
-    seeded = copy.deepcopy(OWNER_ORACLE_SEED)
-    # Keep initial_signs as source data and materialise them into signs so the
-    # dashboard immediately shows 333 on first Oracle open without forcing the
-    # owner to re-enter it.
-    seeded["signs"] = copy.deepcopy(seeded.get("initial_signs") or [])
-    prefs[ORACLE_PREF_KEY] = seeded
-    _save_for_user(user, prefs)
-    return seeded
-
-
->>>>>>> dev
 def setup_prefs_routes():
     router = APIRouter(prefix="/api/prefs", tags=["preferences"])
 
@@ -275,10 +240,7 @@ def setup_prefs_routes():
     @router.get("/{key}")
     async def get_pref(request: Request, key: str):
         user = get_current_user(request)
-<<<<<<< HEAD
         # Seed Oracle defaults on first access
-=======
->>>>>>> dev
         if key == ORACLE_PREF_KEY:
             value = _seed_oracle_if_empty(user)
             return {"key": key, "value": value}
