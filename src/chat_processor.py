@@ -625,3 +625,4 @@ class ChatProcessor:
                 preface.append(untrusted_context_message("available skills index", "\n".join(lines)))
 
         return preface, rag_sources, web_sources
+
