@@ -258,10 +258,19 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px;
+      padding: 12px 16px 16px;
       flex-shrink: 0;
       gap: 8px;
       min-height: 56px;
+      position: relative;
+    }
+    
+    .sidebar-user-bar::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 16px; right: 16px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--border) 40%, transparent), transparent);
     }
 
     .user-bar-left {
@@ -271,13 +280,17 @@
       flex: 1;
       min-width: 0;
       cursor: pointer;
-      padding: 8px 10px;
+      padding: 6px 10px;
       border-radius: 12px;
-      transition: background 0.2s ease;
+      background: color-mix(in srgb, var(--surface-0) 40%, transparent);
+      border: 1px solid transparent;
+      transition: all var(--transition-smooth, 0.2s);
     }
 
     .user-bar-left:hover {
-      background: var(--surface-0);
+      background: var(--glass-bg, rgba(255,255,255,0.05));
+      border-color: color-mix(in srgb, var(--border) 60%, transparent);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-base) 10%, transparent);
     }
 
     .user-bar-avatar {
@@ -390,18 +403,42 @@
     .sidebar-sep {
       display: none;
     }
-    #sidebar-search-btn,
+
+    /* Core Actions - Elevated UI */
+    #sidebar-new-chat-btn,
+    #sidebar-command-center-btn,
+    #sidebar-search-btn {
+      margin: 0 0 4px 0;
+      padding: 10px 10px;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface-0) 50%, transparent);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+      transition: all var(--transition-smooth, 0.2s);
+    }
+    #sidebar-new-chat-btn:hover,
+    #sidebar-command-center-btn:hover,
+    #sidebar-search-btn:hover {
+      background: var(--glass-bg, rgba(255,255,255,0.05));
+      border-color: color-mix(in srgb, var(--border) 80%, transparent);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-base) 10%, transparent);
+      transform: translateY(-1px);
+    }
     #sidebar-new-chat-btn {
-      margin: 0;
-      padding: 8px 8px;
+      color: var(--accent-base, var(--brand-color));
+      font-weight: 600;
     }
+    #sidebar-new-chat-btn svg {
+      stroke-width: 2.5;
+    }
+
     #sessions-section {
-      margin-top: -1px;
+      margin-top: 12px;
     }
-    #tools-section {
-      margin-top: 1px;
+    .section {
+      margin-top: 4px;
     }
-    #tools-section .list-item {
+    .section .list-item {
       padding: 8px 8px;
     }
     .sidebar.right-side .sidebar-header {
