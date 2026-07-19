@@ -1,0 +1,255 @@
+.email-page {
+  display: flex;
+  height: 100%;
+  background-color: var(--bg);
+  overflow: hidden;
+}
+
+.email-sidebar {
+  width: 240px;
+  border-right: 1px solid var(--border);
+  background-color: var(--panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.email-compose-area {
+  padding: 1.5rem 1rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.email-folders {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0.75rem;
+}
+
+.folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all var(--transition-fast);
+}
+
+.folder-btn:hover {
+  background-color: var(--glass-bg-hover);
+  color: var(--fg);
+}
+
+.folder-btn.active {
+  background-color: rgba(0, 229, 255, 0.1);
+  color: var(--brand-color);
+}
+
+.badge {
+  margin-left: auto;
+  background-color: var(--brand-color);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.email-list-area {
+  width: 350px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+}
+
+.email-search {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.email-search .search-icon {
+  position: absolute;
+  left: 1.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+}
+
+.email-search input {
+  width: 100%;
+  padding: 0.6rem 0.6rem 0.6rem 2.2rem;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: inherit;
+}
+
+.email-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.email-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.email-item:hover {
+  background-color: var(--glass-bg-hover);
+}
+
+.email-item.active {
+  background-color: rgba(0, 229, 255, 0.05);
+  border-left: 3px solid var(--brand-color);
+}
+
+.email-item.unread .email-sender {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.email-item.unread .email-subject {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.email-item-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.email-sender {
+  font-size: 0.95rem;
+  color: var(--color-muted-alt);
+}
+
+.email-date {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.email-subject {
+  font-size: 0.95rem;
+  color: var(--color-muted-alt);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-preview-text {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-viewer-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+}
+
+.email-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.email-viewer-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.email-viewer-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.email-viewer-subject {
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.email-viewer-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.email-viewer-sender strong {
+  color: var(--fg);
+}
+
+.email-viewer-body {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  line-height: 1.6;
+  color: var(--fg);
+}
+
+.email-viewer-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1rem;
+}
+
+.secondary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.secondary-btn:hover {
+  background-color: var(--glass-bg-hover);
+}
+
+.email-empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  gap: 1rem;
+}

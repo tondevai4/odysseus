@@ -1,0 +1,105 @@
+.sidebar {
+  width: 260px;
+  background-color: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+  transition: width var(--transition-smooth);
+  backdrop-filter: var(--glass-blur);
+  z-index: 100;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 1.5rem 2.5rem 1.5rem;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--brand-color), var(--brand-color-dark, #0056b3));
+  color: var(--bg);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  font-family: var(--font-family);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.3px;
+  color: var(--fg);
+}
+
+.sidebar-links {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 1rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0.85rem 1.2rem;
+  color: var(--color-muted);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: all var(--transition-fast);
+  font-weight: 500;
+  font-size: 0.95rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background-color: var(--brand-color);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-item:hover {
+  background-color: var(--glass-bg-hover);
+  color: var(--fg);
+  transform: translateX(2px);
+}
+
+.nav-item.active {
+  background-color: rgba(var(--brand-color-rgb, 0, 229, 255), 0.08);
+  color: var(--brand-color);
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  opacity: 1;
+}
+
+.nav-item svg {
+  transition: transform var(--transition-bounce);
+}
+
+.nav-item:hover svg {
+  transform: scale(1.1);
+}
+
+.sidebar-bottom {
+  padding: 0 1rem;
+  margin-top: auto;
+}
