@@ -1,0 +1,163 @@
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg);
+}
+
+.settings-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.settings-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.settings-sidebar {
+  width: 240px;
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+}
+
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.settings-tab:hover {
+  background-color: var(--glass-bg-hover);
+  color: var(--fg);
+}
+
+.settings-tab.active {
+  background-color: var(--panel);
+  color: var(--brand-color);
+  border: 1px solid var(--border);
+}
+
+.settings-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.settings-panel {
+  max-width: 600px;
+}
+
+.settings-panel h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  color: var(--fg);
+}
+
+.settings-desc {
+  color: var(--color-muted);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.settings-group {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.settings-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--brand-color);
+}
+
+.settings-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background-color: var(--panel);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.theme-card:hover {
+  border-color: var(--color-muted);
+}
+
+.theme-card.active {
+  border-color: var(--brand-color);
+  background-color: rgba(0, 229, 255, 0.05);
+}
+
+.theme-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
+.theme-card span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--fg);
+}
