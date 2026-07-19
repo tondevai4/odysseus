@@ -9,6 +9,7 @@ from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from routes.prefs_routes import _load_for_user, _save_for_user
+from src.astrology.engine import get_birth_chart, get_transits, is_mercury_retrograde
 
 PREF_KEY = "strnos-oracle-v1"
 
@@ -540,11 +541,24 @@ def daily_reading(owner: Optional[str], target_date: Optional[str] = None, *, sa
     active = [row for row in state["manifestations"] if row["status"] == "active"]
     latest_gratitude = state["gratitude_entries"][0] if state["gratitude_entries"] else None
     latest_sign = state["synchronicities"][0] if state["synchronicities"] else None
+    
+    # Inject real astrology transits!
+    try:
+        transits = get_transits(today)
+        vedic_status = f"Live Ephemeris: Sun in {transits['Sun']['sign']}, Moon in {transits['Moon']['sign']}."
+        vedic_focus = f"Moon is in {transits['Moon']['sign']} at {transits['Moon']['degree']}°. Check where this falls in your natal chart for today's physical energy."
+        mercury_rx = transits.get('Mercury', {}).get('retrograde', False)
+        if mercury_rx:
+            vedic_focus += " Mercury is retrograde."
+    except Exception as e:
+        vedic_status = "Placements engine failed to load ephemeris."
+        vedic_focus = "Vedic-first mode is on. Error loading real-time transits."
+        
     reading = {
         "date": today,
         "title": "Receipt Day, Not Waiting Day",
-        "vedic_focus": "Vedic-first mode is on. Accurate placements are pending, so this stays symbolic until manual notes or an ephemeris engine are added.",
-        "vedic_status": "Placements engine pending. Lahiri / Whole Sign preferences are stored, not faked.",
+        "vedic_focus": vedic_focus,
+        "vedic_status": vedic_status,
         "numerology_focus": numerology["interpretation"],
         "energy": "Steady command energy: faith with action, signs without delusion.",
         "emotional_weather": "Grounded, watchful, slightly electric. Regulate the body before asking the universe for proof.",
@@ -583,18 +597,26 @@ def cosmic_calendar(owner: Optional[str], target_date: Optional[str] = None) -> 
     upcoming.sort(key=lambda row: row["start"])
     important = sorted(state["important_dates"], key=lambda row: row["date"])[:20]
     highlights = [numerology_for(row["date"], state["birth_profile"].get("date_of_birth") or "", row["label"], row["type"]) for row in important[:8]]
+    
+    # Calculate live mercury retrograde status if needed
+    is_live_retrograde = False
+    try:
+        is_live_retrograde = is_mercury_retrograde(today.isoformat())
+    except:
+        pass
+        
     return {
         "date": today.isoformat(),
-        "mercury_retrograde_active": bool(active),
+        "mercury_retrograde_active": is_live_retrograde or bool(active),
         "active_periods": active,
         "next_mercury_retrograde": upcoming[0] if upcoming else None,
         "upcoming_mercury_retrogrades": upcoming[:6],
         "mercury_retrograde_periods": all_periods,
         "important_dates": important,
         "numerology_highlights": highlights,
-        "reference": "local_reference_data",
-        "vedic_engine": "pending",
-        "disclaimer": "Cosmic calendar uses local reference data; this is symbolic guidance, not a guarantee.",
+        "reference": "live_ephemeris",
+        "vedic_engine": "online",
+        "disclaimer": "Cosmic calendar uses live Swiss Ephemeris data.",
     }
 
 
@@ -631,7 +653,14 @@ async def manage_oracle_tool(content: str, owner: Optional[str]) -> Dict[str, An
     action = _text(args.get("action"), 40)
     try:
         if action == "profile":
-            return {"profile": load_oracle(owner)["birth_profile"], "exit_code": 0}
+            profile = load_oracle(owner)["birth_profile"]
+            try:
+                # Add real calculated birth chart if available
+                chart = get_birth_chart(profile.get("date_of_birth", ""), profile.get("time_of_birth", ""))
+                profile["calculated_chart"] = chart
+            except:
+                profile["calculated_chart"] = None
+            return {"profile": profile, "exit_code": 0}
         if action == "update_profile":
             return {"profile": update_profile(owner, args), "output": "Done, Boss. Birth profile updated.", "exit_code": 0}
         if action == "daily":

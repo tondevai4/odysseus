@@ -64,6 +64,10 @@ from .utils import _mask_secret, _decrypt_secret, _encrypt_secret, _strip_task_s
 router = APIRouter()
 _cookbook_state_path = Path(COOKBOOK_STATE_FILE)
 
+class SetupRequest(BaseModel):
+    host: str
+    ssh_port: str = "22"
+
 async def server_setup(request: Request, req: SetupRequest):
     """Install required dependencies on a remote server via SSH."""
     require_admin(request)

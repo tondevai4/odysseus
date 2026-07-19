@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 agent_loop.py
 
@@ -3033,8 +3032,3 @@ async def stream_agent_loop(
             logger.warning(f"teacher escalation hook failed: {_esc_err}", exc_info=True)
 
     yield "data: [DONE]\n\n"
-=======
-﻿# src/agent_loop.py — backward-compatibility shim.
-# Canonical location: src/agent/loop.py
-from src.agent.loop import *  # noqa: F401,F403
->>>>>>> dev

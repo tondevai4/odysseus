@@ -3,21 +3,69 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>STRNOS Oracle - YVES</title>
+  <title>YVES · STRNOS Oracle</title>
   <link rel="stylesheet" href="/static/css/strnos-oracle.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-  <main id="oracle-root" class="oracle-shell">
-    <section class="oracle-hero">
-      <p class="oracle-kicker">YVES · Powered by STRNOS · SaturnOS</p>
-      <h1>STRNOS Oracle</h1>
-      <p>Signs without delusion. Manifestation with receipts.</p>
-      <p>Yves is listening, Boss.</p>
-    </section>
-    <section id="oracle-app" class="oracle-card">
-      <p>Loading Oracle profile…</p>
+  
+  <!-- Ambient Background -->
+  <div class="strnos-canvas-bg">
+    <div class="strnos-nebula"></div>
+    <div class="strnos-cyan-glow"></div>
+  </div>
+
+  <main class="strnos-dashboard" id="oracle-root">
+    
+    <!-- Sidebar -->
+    <aside class="strnos-sidebar">
+      <div class="strnos-brand">
+        <h1>STRNOS</h1>
+        <p>Phase 3 Oracle</p>
+      </div>
+
+      <nav class="strnos-nav" id="oracle-nav">
+        <button class="strnos-nav-btn active" data-view="dashboard">
+          <i data-lucide="compass"></i> Cosmic Dashboard
+        </button>
+        <button class="strnos-nav-btn" data-view="chart">
+          <i data-lucide="star"></i> Natal Chart
+        </button>
+        <button class="strnos-nav-btn" data-view="transits">
+          <i data-lucide="orbit"></i> Current Transits
+        </button>
+        <button class="strnos-nav-btn" data-view="manifest">
+          <i data-lucide="sparkles"></i> Manifestations
+        </button>
+        <button class="strnos-nav-btn" data-view="signs">
+          <i data-lucide="eye"></i> Synchronicities
+        </button>
+      </nav>
+
+      <div class="strnos-user-card">
+        <div class="strnos-avatar">T</div>
+        <div class="strnos-user-info">
+          <h4 id="user-name">TJ</h4>
+          <p id="user-sun-sign">Loading sign...</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="strnos-main" id="oracle-app">
+      <!-- Loading State -->
+      <div class="strnos-loader" id="oracle-loader">
+        <div class="strnos-spinner"></div>
+        <p>Aligning the stars...</p>
+      </div>
+      
+      <!-- Views will be injected here by JS -->
     </section>
   </main>
+
+  <script>
+    lucide.createIcons();
+  </script>
   <script src="/static/js/strnos-oracle.js" type="module"></script>
 </body>
 </html>

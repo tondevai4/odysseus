@@ -64,6 +64,14 @@ from .utils import _mask_secret, _decrypt_secret, _encrypt_secret, _strip_task_s
 router = APIRouter()
 _cookbook_state_path = Path(COOKBOOK_STATE_FILE)
 
+from pydantic import BaseModel
+
+class KillPidRequest(BaseModel):
+    host: str
+    pid: int
+    signal: str = "TERM"
+    ssh_port: str = "22"
+
 async def kill_pid(request: Request, req: KillPidRequest):
     """Kill a PID that's holding GPU memory.
 
