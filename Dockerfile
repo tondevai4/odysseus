@@ -32,6 +32,9 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy app code
 COPY . .
 
+# Build React frontend
+RUN cd frontend && npm install && npm run build
+
 # Create data directory (mount a volume here for persistence)
 RUN mkdir -p data logs services/cache/search
 
