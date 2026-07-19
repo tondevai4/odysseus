@@ -197,10 +197,10 @@
       }
     }
     .sidebar {
-      width: 240px;
-      background: var(--sidebar-bg, var(--panel));
-      border-right: 1px solid var(--border);
-      transition: width 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+      width: 260px;
+      background: var(--glass-bg, var(--panel));
+      border-right: none;
+      transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease, padding 0.4s ease;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
@@ -208,9 +208,9 @@
       min-height: 0;
       margin: 0;
       padding: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid color-mix(in srgb, var(--fg) 11%, transparent);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(16px);
+      border: none;
       position: relative;
     }
     .sidebar-resize-handle {
@@ -258,52 +258,54 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 12px;
+      padding: 16px;
       flex-shrink: 0;
-      gap: 4px;
-      min-height: 48px;
+      gap: 8px;
+      min-height: 56px;
     }
 
     .user-bar-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       flex: 1;
       min-width: 0;
       cursor: pointer;
-      padding: 6px 8px;
-      border-radius: 8px;
-      transition: background 0.15s;
+      padding: 8px 10px;
+      border-radius: 12px;
+      transition: background 0.2s ease;
     }
 
     .user-bar-left:hover {
-      background: color-mix(in srgb, var(--fg) 6%, transparent);
+      background: var(--surface-0);
     }
 
     .user-bar-avatar {
-      width: 24px;
-      height: 24px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: color-mix(in srgb, var(--fg) 12%, transparent);
+      background: var(--accent-base, color-mix(in srgb, var(--fg) 12%, transparent));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--fg);
-      opacity: 0.7;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--bg);
+      opacity: 0.9;
       flex-shrink: 0;
       text-transform: uppercase;
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--accent-base) 40%, transparent);
     }
 
     .user-bar-name {
-      font-size: 9.75px;
-      font-weight: 500;
+      font-size: 14px;
+      font-weight: 600;
       color: var(--fg);
-      opacity: 0.8;
+      opacity: 0.9;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      letter-spacing: 0.2px;
     }
 
     .user-bar-actions {
@@ -341,15 +343,15 @@
       display: flex;
       align-items: center;
       justify-content: flex-end; /* right-align when sidebar is on left */
-      gap: 8px;
-      padding: 15px 10px 0 40px; /* top padding aligns logo with fixed hamburger */
+      gap: 12px;
+      padding: var(--space-4, 20px) 16px 0 48px;
       flex-shrink: 0;
-      min-height: 40px;
+      min-height: 48px;
       border: none !important;
       box-shadow: none !important;
       position: relative;
       z-index: 3;
-      background: var(--sidebar-bg, var(--panel));
+      background: transparent;
     }
     .sidebar-hamburger {
       display: none !important; /* external #hamburger-btn is the only toggle */
@@ -374,10 +376,11 @@
       min-height: 24px;
     }
     .sidebar-brand-title {
-      font-size: 1rem;
-      font-weight: 600;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
       line-height: 1.35;
-      color: var(--brand-color, var(--red));
+      color: var(--accent-base, var(--brand-color, var(--red)));
       white-space: nowrap;
       user-select: none;
       position: relative;
@@ -420,33 +423,39 @@
     .hamburger-btn {
       position: fixed;
       top: 12px;
-      left: 9px;
+      left: 12px;
       right: auto;
       z-index: 210;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       align-items: center;
       justify-content: center;
-      background: none;
+      background: var(--surface-0, transparent);
       border: none;
+      border-radius: 8px;
       color: var(--hamburger-color, var(--fg));
       cursor: pointer;
-      opacity: 0.5;
+      opacity: 0.7;
       -webkit-tap-highlight-color: transparent;
       outline: none;
-      transition: opacity 0.15s;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       padding: 0;
       display: flex;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      backdrop-filter: blur(8px);
     }
     body.hamburger-right .hamburger-btn {
       left: auto;
-      right: 9px;
+      right: 12px;
     }
     .mobile-new-chat-btn {
       display: none;
     }
     .hamburger-btn:hover {
       opacity: 1;
+      transform: scale(1.05);
+      background: color-mix(in srgb, var(--accent-base) 10%, var(--surface-0));
+      color: var(--accent-base);
     }
     /* Icon rail — mini sidebar that replaces the wide .sidebar when it's
        hidden (mutually exclusive — see sidebar-layout.js:57). Fullscreen
@@ -454,21 +463,23 @@
        so the rail stays visible without needing a z-index hack (which
        used to cover the fixed-position hamburger button). */
     .icon-rail {
-      width: 48px;
+      width: 56px;
       flex-shrink: 0;
-      background: var(--panel);
-      border-right: 1px solid var(--border);
+      background: var(--glass-bg, var(--panel));
+      border-right: none;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 48px 4px 8px 4px;
-      gap: 4px;
+      gap: 8px;
       margin: 0;
       position: relative;
       box-sizing: border-box;
       /* Allow hover labels (e.g. the rail-new-chat "New" tooltip) to extend
          outside the 48px column. overflow:hidden was clipping them. */
       overflow: visible;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(16px);
     }
     .rail-resize-handle {
       position: absolute;
@@ -503,19 +514,19 @@
     }
     .icon-rail-btn {
       position: relative;
-      width: 34px;
-      height: 34px;
+      width: 44px;
+      height: 44px;
       border: none;
       background: transparent;
-      color: var(--accent, var(--red));
-      font-size: 16px;
-      border-radius: 6px;
+      color: var(--accent-base, var(--red));
+      font-size: 20px;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.5;
-      transition: opacity 0.08s, background 0.08s;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
     .rail-notes-badge {
       position: absolute;
@@ -566,8 +577,17 @@
       color: var(--red);
       font-weight: 600;
     }
-    .icon-rail-btn:hover { opacity: 1; background: color-mix(in srgb, var(--accent) 12%, transparent); }
-    .icon-rail-btn.active-section { opacity: 1; background: color-mix(in srgb, var(--color-accent) 15%, transparent); }
+    .icon-rail-btn:hover { 
+      opacity: 1; 
+      background: color-mix(in srgb, var(--accent-base) 15%, transparent); 
+      box-shadow: 0 0 12px color-mix(in srgb, var(--accent-base) 40%, transparent);
+      transform: translateY(-2px);
+    }
+    .icon-rail-btn.active-section { 
+      opacity: 1; 
+      background: color-mix(in srgb, var(--accent-base) 20%, transparent); 
+      box-shadow: 0 0 16px color-mix(in srgb, var(--accent-base) 50%, transparent);
+    }
     /* Unified "minimized" indicator for any rail/sidebar button whose modal is held open */
     .rail-minimized { position: relative; }
     .rail-minimized::after {
@@ -660,20 +680,23 @@
     }
     .minimized-dock-chip {
       pointer-events: auto;
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 8px 6px 10px;
-      background: var(--panel, var(--bg));
-      border: 1px solid var(--border);
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px 8px 14px;
+      background: var(--glass-bg, var(--panel));
+      border: 1px solid color-mix(in srgb, var(--accent-base) 20%, transparent);
       border-radius: 999px;
-      color: var(--fg); font-family: inherit; font-size: 12px;
+      color: var(--fg); font-family: inherit; font-size: 13px; font-weight: 500;
       cursor: grab; touch-action: none; user-select: none;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, border-color 0.15s;
-      animation: dock-chip-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      box-shadow: var(--shadow-lg), 0 0 12px color-mix(in srgb, var(--accent-base) 15%, transparent);
+      backdrop-filter: blur(16px);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      animation: dock-chip-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
     }
     .minimized-dock-chip:hover {
-      background: color-mix(in srgb, var(--accent, var(--red)) 12%, var(--panel, var(--bg)));
-      border-color: color-mix(in srgb, var(--accent, var(--red)) 40%, var(--border));
+      background: color-mix(in srgb, var(--accent-base) 15%, var(--glass-bg));
+      border-color: var(--accent-base);
+      box-shadow: var(--shadow-lg), 0 0 20px color-mix(in srgb, var(--accent-base) 30%, transparent);
+      transform: translateY(-2px);
     }
     .minimized-dock-chip:active { cursor: grabbing; }
     .minimized-dock-chip.dragging {
@@ -940,5 +963,21 @@
       border-radius: 50%;
       background: var(--accent, var(--red));
       opacity: 0.7;
+    }
+
+    /* ===== Chat Input Bar (Tony Stark Redesign) ===== */
+    .chat-input-bar {
+      background: var(--glass-bg, var(--panel)) !important;
+      border-radius: 28px !important;
+      padding: 16px 20px !important;
+      box-shadow: var(--shadow-lg), 0 0 15px color-mix(in srgb, var(--accent-base) 10%, transparent) !important;
+      backdrop-filter: blur(16px) !important;
+      border: 1px solid color-mix(in srgb, var(--accent-base) 20%, transparent) !important;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    .chat-input-bar:focus-within {
+      box-shadow: var(--shadow-lg), 0 0 25px color-mix(in srgb, var(--accent-base) 35%, transparent) !important;
+      border-color: color-mix(in srgb, var(--accent-base) 50%, transparent) !important;
+      transform: translateY(-2px);
     }
     

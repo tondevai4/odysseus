@@ -6,8 +6,15 @@
   gap: 2px;
 }
 .compare-search-result {
-  padding: 6px 0;
+  padding: 8px 12px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--glass-bg, transparent);
+  transition: var(--transition-smooth, all 0.2s);
+}
+.compare-search-result:hover {
+  background: color-mix(in srgb, var(--surface-1) 50%, transparent);
+  box-shadow: inset 0 0 10px var(--accent-glow, transparent);
 }
 .compare-search-result:last-child {
   border-bottom: none;

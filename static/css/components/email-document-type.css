@@ -6,7 +6,9 @@
   gap: 6px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface-0, var(--bg));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   flex-shrink: 0;
 }
 .email-field {

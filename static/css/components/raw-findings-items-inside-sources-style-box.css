@@ -4,17 +4,26 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  background: var(--glass-bg);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.finding-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 .finding-item .source-link {
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 .finding-summary {
   padding: 6px 8px 8px;
-  font-size: 0.82em;
-  line-height: 1.5;
-  color: var(--fg-dim, var(--fg));
-  opacity: 0.85;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 6%, transparent);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg);
+  font-weight: 400;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   margin-bottom: 4px;
   white-space: pre-wrap;
   word-break: break-word;

@@ -37,10 +37,12 @@
 .schedule-send-datetime {
   font-size: 13px;
   padding: 8px 10px;
-  background: var(--bg);
+  background: var(--surface-0, var(--bg));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--fg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-lg, 6px);
   outline: none;
   font-family: inherit;
   width: 100%;

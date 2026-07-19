@@ -6,6 +6,9 @@
     gap: 2px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   }
   /* The toolbar's padding-left is forced to 0 by the hamburger rules, so give
      the Edit/Preview toggle its own left margin to clear the screen edge +
@@ -20,6 +23,18 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-lg);
+  }
+  .doc-md-toolbar button:hover {
+    background: color-mix(in srgb, var(--accent-base) 10%, transparent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent-base) 40%, transparent);
+    color: var(--accent-base);
+  }
+  .doc-md-toolbar button.active {
+    background: color-mix(in srgb, var(--accent-base) 20%, transparent);
+    color: var(--accent-base);
+    box-shadow: inset 0 0 4px color-mix(in srgb, var(--accent-base) 50%, transparent);
   }
   .md-toolbar-sep {
     height: 18px;

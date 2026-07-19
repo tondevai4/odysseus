@@ -1,25 +1,45 @@
 /* Command Center theme hardening. Loaded by commandCenter.js. */
 :root {
-  --command-accent: var(--section-accent, var(--brand-color, var(--red)));
-  --command-shell-bg: color-mix(in srgb, var(--sidebar-bg, var(--panel)) 72%, var(--bg));
-  --command-card-bg: color-mix(in srgb, var(--panel) 88%, var(--sidebar-bg, var(--bg)));
+  --command-accent: var(--accent-base, var(--brand-color, var(--red)));
+  --command-shell-bg: var(--glass-bg, rgba(20, 20, 22, 0.65));
+  --command-card-bg: var(--surface-1, rgba(30, 30, 32, 0.8));
 }
 #welcome-screen { padding-bottom: 170px; }
 #command-center,
 .command-center,
 .command-center-panel {
   color: var(--fg);
-  background: linear-gradient(145deg, var(--command-shell-bg), color-mix(in srgb, var(--bg) 92%, var(--panel)));
-  border-color: color-mix(in srgb, var(--border) 82%, var(--command-accent));
+  background: var(--command-shell-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--command-accent));
+  border-radius: var(--radius-2xl, 24px);
   max-height: calc(100vh - 210px);
   overflow: auto;
   margin-bottom: 150px;
   scrollbar-width: thin;
+  box-shadow: var(--shadow-xl, 0 20px 40px rgba(0,0,0,0.4));
 }
+
 #command-center .command-center-header,
-.command-center-header,
+.command-center-header {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--fg) 0%, color-mix(in srgb, var(--fg) 60%, transparent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: var(--space-4, 1rem);
+}
+
 #command-center .command-card h3,
-.command-card h3 { color: var(--fg); }
+.command-card h3 { 
+  color: var(--fg); 
+  font-weight: 700;
+}
+
 #command-center .command-center-kicker,
 .command-center-kicker,
 #command-center .command-card-topline span:first-child,
@@ -28,31 +48,66 @@
 .command-reading-title,
 #command-center .command-oracle-summary,
 .command-oracle-summary { color: var(--command-accent); }
+
 #command-center .command-center-status,
 .command-center-status {
   color: color-mix(in srgb, var(--fg) 72%, transparent);
-  background: color-mix(in srgb, var(--panel) 72%, transparent);
-  border-color: color-mix(in srgb, var(--border) 78%, transparent);
+  background: var(--glass-bg, color-mix(in srgb, var(--panel) 72%, transparent));
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
 }
 #command-center .command-center-status-dot,
 .command-center-status-dot {
   background: var(--command-accent);
   box-shadow: 0 0 12px color-mix(in srgb, var(--command-accent) 70%, transparent);
+  border-radius: 50%;
 }
+
 #command-center .command-center-grid,
-.command-center-grid { max-width: 100%; }
+.command-center-grid { 
+  max-width: 100%; 
+  display: grid;
+  gap: var(--space-5, 2rem) var(--space-6, 2.5rem);
+}
+
 #command-center .command-card,
 .command-card {
   color: var(--fg);
   background: var(--command-card-bg);
-  border-color: color-mix(in srgb, var(--border) 82%, var(--command-accent));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg) 7%, transparent), 0 14px 34px rgba(0, 0, 0, 0.14);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--command-accent));
+  border-radius: var(--radius-2xl, 20px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-xl, 0 14px 34px rgba(0, 0, 0, 0.2));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+  position: relative;
+  overflow: hidden;
 }
+
+#command-center .command-card::before,
+.command-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -150%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.7s ease;
+}
+
 #command-center .command-card:hover,
 .command-card:hover {
-  border-color: color-mix(in srgb, var(--command-accent) 52%, var(--border));
-  background: color-mix(in srgb, var(--command-card-bg) 92%, var(--command-accent));
+  transform: translateY(-8px) scale(1.02);
+  border-color: color-mix(in srgb, var(--command-accent) 60%, var(--border));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 24px 48px rgba(0, 0, 0, 0.3), 0 0 20px color-mix(in srgb, var(--command-accent) 20%, transparent);
 }
+
+#command-center .command-card:hover::before,
+.command-card:hover::before {
+  left: 200%;
+}
+
 #command-center .command-card-topline,
 .command-card-topline,
 #command-center .command-routines-heading,
@@ -69,22 +124,66 @@
 .command-data-empty,
 #command-center .command-reading-empty,
 .command-reading-empty { color: color-mix(in srgb, var(--fg) 72%, transparent); }
+
 #command-center .command-card-action,
-.command-card-action,
+.command-card-action {
+  color: var(--fg);
+  background: var(--glass-bg, color-mix(in srgb, var(--panel) 84%, var(--bg)));
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--command-accent));
+  border-radius: 9999px; /* Pill buttons */
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#command-center .command-card-action::after,
+.command-card-action::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, var(--command-accent), color-mix(in srgb, var(--command-accent) 60%, #fff));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+#command-center .command-card-action:hover,
+.command-card-action:hover {
+  color: var(--bg);
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--command-accent) 40%, transparent);
+}
+
+#command-center .command-card-action:hover::after,
+.command-card-action:hover::after {
+  opacity: 1;
+}
+
 #command-center .command-routine,
 .command-routine {
   color: var(--fg);
-  background: color-mix(in srgb, var(--panel) 84%, var(--bg));
-  border-color: color-mix(in srgb, var(--border) 82%, var(--command-accent));
+  background: var(--glass-bg, color-mix(in srgb, var(--panel) 84%, var(--bg)));
+  border: 1px solid color-mix(in srgb, var(--border) 82%, var(--command-accent));
+  border-radius: 12px; /* Chip style */
+  padding: 0.4rem 1rem;
+  transition: all 0.3s ease;
 }
-#command-center .command-card-action:hover,
-.command-card-action:hover,
+
 #command-center .command-routine:hover,
-.command-routine:hover {
+.command-routine:hover,
+#command-center .command-routine.active,
+.command-routine.active {
   color: var(--bg);
   background: var(--command-accent);
   border-color: var(--command-accent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--command-accent) 60%, transparent);
+  transform: translateY(-2px) scale(1.05);
 }
+
 #command-center .command-proof-list span,
 .command-proof-list span,
 #command-center .command-reading-meta span,
@@ -94,22 +193,29 @@
   color: var(--fg);
   background: color-mix(in srgb, var(--command-accent) 10%, var(--panel));
   border-color: color-mix(in srgb, var(--border) 76%, var(--command-accent));
+  border-radius: 8px;
 }
 #command-center .command-summary-row span,
 .command-summary-row span { color: color-mix(in srgb, var(--fg) 70%, transparent); }
 #command-center .command-summary-row strong,
 .command-summary-row strong { color: var(--fg); }
+
 #command-center .command-routines,
 .command-routines {
   color: var(--fg);
-  background: color-mix(in srgb, var(--panel) 90%, var(--bg));
-  border-color: color-mix(in srgb, var(--border) 80%, transparent);
+  background: var(--glass-bg, color-mix(in srgb, var(--panel) 90%, var(--bg)));
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: var(--radius-2xl, 20px);
+  backdrop-filter: blur(12px);
+  padding: var(--space-4, 1.5rem);
 }
+
 @media (max-width: 720px) {
   #command-center,
   .command-center,
   .command-center-panel { max-height: calc(100vh - 180px); margin-bottom: 130px; }
 }
+
 @media (max-width: 390px) {
   #welcome-screen { padding-bottom: 140px; }
   #command-center,

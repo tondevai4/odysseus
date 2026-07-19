@@ -31,17 +31,18 @@
       top: 10px;
       left: 0;
       right: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid color-mix(in srgb, var(--accent-base) 20%, var(--border));
+      border-radius: var(--radius-lg);
       padding: 12px;
       margin: 10px;
       z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-md), 0 0 0 1px color-mix(in srgb, var(--accent-base) 10%, transparent) inset;
+      transition: all 0.4s var(--ease-spring);
     }
     
     #recording-indicator.hidden {
@@ -116,26 +117,28 @@ pre { background: var(--code-bg, var(--hl-bg, #282c34)) !important; }
     .search-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: color-mix(in srgb, var(--glass-bg) 60%, transparent);
       display: flex;
       align-items: flex-start;
       justify-content: center;
       padding-top: 15vh;
       z-index: 300;
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(12px);
     }
     .search-overlay.hidden { display: none; }
     .search-popup {
       width: 520px;
       max-width: 90vw;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px color-mix(in srgb, var(--fg) 6%, transparent);
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid color-mix(in srgb, var(--accent-base) 20%, var(--border));
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md), 0 0 0 1px color-mix(in srgb, var(--accent-base) 10%, transparent) inset;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       max-height: 60vh;
+      transition: all 0.4s var(--ease-spring);
     }
     .search-popup input#search-input {
       width: 100%;
@@ -179,7 +182,9 @@ pre { background: var(--code-bg, var(--hl-bg, #282c34)) !important; }
     }
     .search-result-item:hover,
     .search-result-item.selected {
-      background: color-mix(in srgb, var(--red) 10%, transparent);
+      background: color-mix(in srgb, var(--accent-base) 10%, transparent);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .search-result-role {
       font-size: 10px;
@@ -203,21 +208,21 @@ pre { background: var(--code-bg, var(--hl-bg, #282c34)) !important; }
       white-space: nowrap;
     }
     mark.search-highlight {
-      /* Was orange-on-orange (0.35 alpha bg + orange text) — too low-contrast
-         to read. Solid accent fill with bg-colored text reads clearly. */
-      background: var(--accent, #e8a830);
+      background: var(--accent-base);
       color: var(--bg, #1a1a1a);
-      border-radius: 2px;
-      padding: 0 2px;
+      border-radius: 4px;
+      padding: 0 4px;
       font-weight: 600;
+      box-shadow: 0 0 8px color-mix(in srgb, var(--accent-base) 40%, transparent);
     }
     /* Document library search-term highlight — clear, high-contrast. */
     mark.doclib-search-hl {
-      background: var(--accent, #e8a830);
+      background: var(--accent-base);
       color: var(--bg, #1a1a1a);
-      border-radius: 2px;
-      padding: 0 2px;
+      border-radius: 4px;
+      padding: 0 4px;
       font-weight: 600;
+      box-shadow: 0 0 8px color-mix(in srgb, var(--accent-base) 40%, transparent);
     }
     .search-empty {
       text-align: center;
@@ -243,12 +248,12 @@ pre { background: var(--code-bg, var(--hl-bg, #282c34)) !important; }
       gap: 6px; margin-bottom: 12px;
     }
     .theme-swatch {
-      border: 2px solid var(--border); border-radius: 8px; cursor: pointer;
+      border: 2px solid var(--border); border-radius: var(--radius-lg); cursor: pointer;
       padding: 5px; text-align: center; font-size: 0.65rem; color: var(--fg);
-      transition: border-color 0.15s, transform 0.15s;
+      transition: border-color 0.4s var(--ease-spring), transform 0.4s var(--ease-spring), box-shadow 0.4s var(--ease-spring);
     }
-    .theme-swatch:hover { transform: scale(1.06); }
-    .theme-swatch.active { border-color: var(--red); box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 33%, transparent); }
+    .theme-swatch:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .theme-swatch.active { border-color: var(--accent-base); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-base) 33%, transparent), 0 4px 12px color-mix(in srgb, var(--accent-base) 20%, transparent); }
     .theme-swatch-colors {
       display: flex; justify-content: center; margin-bottom: 3px;
     }
@@ -307,19 +312,20 @@ pre { background: var(--code-bg, var(--hl-bg, #282c34)) !important; }
       padding: 0;
       border: none;
       border-radius: 50%;
-      background: var(--accent, var(--red, #d92534));
+      background: var(--accent-base);
       color: #fff;
       cursor: pointer;
       z-index: 2;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-      transition: transform 0.12s, background 0.12s;
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--accent-base) 30%, transparent);
+      transition: transform 0.4s var(--ease-spring), background 0.4s var(--ease-spring);
     }
     .theme-delete-btn:hover {
-      background: color-mix(in srgb, var(--accent, var(--red)) 80%, white);
+      background: color-mix(in srgb, var(--accent-base) 80%, white);
       transform: scale(1.12);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-base) 50%, transparent);
     }
     .theme-delete-btn:active { transform: scale(0.95); }
     .theme-delete-btn svg {

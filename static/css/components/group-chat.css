@@ -2,47 +2,60 @@
 
 .msg-group .role {
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.msg-group .avatar {
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 #group-toggle-btn.active,
 .overflow-menu-item#overflow-group-btn.active {
-  color: var(--red);
-  background: color-mix(in srgb, var(--red) 12%, transparent);
+  color: var(--accent-base);
+  background: color-mix(in srgb, var(--accent-base) 12%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-base) 20%, transparent);
 }
 /* Group model picker — match app theme */
 #group-model-picker .modal-content {
-  background: var(--bg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 #group-model-picker .modal-header {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 #group-model-picker .memory-item {
-  border-radius: 6px;
-  transition: background 0.1s;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
 }
 #group-model-picker .memory-item:hover {
-  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  background: var(--surface-0);
 }
 #group-model-picker input[type="checkbox"] {
-  accent-color: var(--accent, var(--red));
+  accent-color: var(--accent-base);
 }
 #group-model-picker input[type="radio"] {
-  accent-color: var(--accent, var(--red));
+  accent-color: var(--accent-base);
 }
 #group-model-picker .btn-primary {
-  background: var(--accent, var(--red));
+  background: var(--accent-base);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  transition: all var(--transition-fast);
 }
 #group-model-picker .btn-primary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 #group-model-picker .btn-primary:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(1.2);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-base) 40%, transparent);
 }
 

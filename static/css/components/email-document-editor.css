@@ -2,7 +2,7 @@
 
 .doc-email-header {
   display: flex; flex-direction: column; gap: 6px; padding: 10px 12px;
-  border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0;
+  border-bottom: 1px solid var(--border); background: var(--surface-0, var(--bg)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); flex-shrink: 0;
 }
 .doc-email-fields {
   display: flex;
@@ -91,7 +91,7 @@
 
 .doc-email-actions {
   display: flex; gap: 8px; justify-content: flex-end; padding: 10px 14px;
-  border-top: 1px solid var(--border); background: var(--bg); flex-shrink: 0;
+  border-top: 1px solid var(--border); background: var(--surface-0, var(--bg)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); flex-shrink: 0;
   align-items: center;
 }
 /* Documents footer — X + Undo stay on the LEFT, Copy/Export group pushed
@@ -112,7 +112,7 @@
   font-size: 14px;
   line-height: 1.6;
   color: var(--fg);
-  background: var(--bg);
+  background: var(--surface-0, var(--bg));
   outline: none;
   white-space: pre-wrap;
   word-wrap: break-word;

@@ -65,8 +65,8 @@
   cursor: pointer;
   padding: 4px;
   line-height: 0;
-  border-radius: 4px;
-  transition: background .15s, opacity .15s;
+  border-radius: var(--radius-lg, 4px);
+  transition: all var(--transition-fast, 0.15s) ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -80,7 +80,10 @@
   margin-top: -6px;
 }
 .archive-menu-btn:hover {
-  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  background: var(--glass-bg, color-mix(in srgb, var(--fg) 10%, transparent));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   opacity: 1;
+  transform: scale(1.05);
 }
 

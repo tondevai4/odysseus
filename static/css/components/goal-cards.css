@@ -4,7 +4,11 @@
    marked with a small Goal pill in the corner + a slightly warmer accent
    so users can spot it at a glance among regular todos. */
 .note-card-goal {
-  border-left: 3px solid color-mix(in srgb, var(--accent-warm) 80%, transparent);
+  border-left: 4px solid color-mix(in srgb, var(--accent-warm) 80%, transparent);
+  background: var(--glass-bg, rgba(20,20,20,0.4));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md, 0 8px 32px rgba(0,0,0,0.1)), 0 0 15px color-mix(in srgb, var(--accent-warm) 20%, transparent);
 }
 .note-goal-pill {
   position: absolute;

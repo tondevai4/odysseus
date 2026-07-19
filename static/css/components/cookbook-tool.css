@@ -1,3 +1,17 @@
 /* ── Cookbook Tool ── */
 
+.cookbook-container {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.1));
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-fast, 0.2s) ease;
+}
 
+.cookbook-container:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}

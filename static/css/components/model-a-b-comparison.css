@@ -190,11 +190,18 @@
     }
     .compare-probe-row {
       display: flex; align-items: center; gap: 6px; padding: 6px 10px;
-      border-radius: 6px; background: color-mix(in srgb, var(--fg) 4%, transparent);
-      font-size: 12px; transition: background 0.2s; overflow: hidden;
+      border-radius: var(--radius-lg, 8px); background: color-mix(in srgb, var(--surface-1) 40%, transparent);
+      font-size: 12px; transition: var(--transition-smooth); overflow: hidden;
+      border: 1px solid transparent;
+    }
+    .compare-probe-row:hover {
+      background: var(--glass-bg);
+      border-color: var(--accent-base);
+      box-shadow: 0 0 10px var(--accent-glow);
     }
     .compare-probe-row.fail {
-      background: color-mix(in srgb, var(--color-error, #f44) 8%, transparent);
+      background: color-mix(in srgb, var(--color-error, #f44) 15%, transparent);
+      border-color: color-mix(in srgb, var(--color-error, #f44) 40%, transparent);
     }
     .compare-probe-spinner {
       width: 24px; text-align: center; font-size: 10px; flex-shrink: 0;
@@ -275,22 +282,27 @@
     .compare-pane {
       display: flex;
       flex-direction: column;
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+      border-radius: var(--radius-lg, 12px);
+      box-shadow: var(--shadow-md);
       overflow: hidden;
       min-height: 0;
       min-width: 0;
+      transition: var(--transition-smooth);
     }
     .compare-pane .pane-header {
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 10px;
-      background: color-mix(in srgb, var(--fg) 4%, transparent);
-      border-bottom: 1px solid var(--border);
-      font-size: 0.82em;
-      font-weight: 600;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--surface-1) 80%, transparent), color-mix(in srgb, var(--surface-0) 60%, transparent));
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+      font-size: 0.85em;
+      font-weight: 700;
       color: var(--fg);
+      text-shadow: 0 0 4px var(--accent-glow, transparent);
       transition: background 0.4s;
       flex-shrink: 0;
       overflow: hidden;

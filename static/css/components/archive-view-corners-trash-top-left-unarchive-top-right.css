@@ -9,7 +9,9 @@
   top: 6px;
   width: 28px;
   height: 28px;
-  background: var(--panel);
+  background: var(--surface-0, var(--panel));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
   border-radius: 50%;
   cursor: pointer;
@@ -20,7 +22,7 @@
   color: var(--fg);
   visibility: hidden;
   touch-action: manipulation;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: all var(--transition-fast, 0.15s) ease;
   z-index: 2;
 }
 .note-card-corner-trash svg,

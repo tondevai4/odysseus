@@ -2,21 +2,43 @@
 
 .contacts-add-row {
   display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 16px;
   align-items: center;
+  background: var(--surface-0, rgba(255, 255, 255, 0.03));
+  padding: 12px 16px;
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 .contacts-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
   max-height: 360px;
   overflow-y: auto;
+  padding-right: 4px;
 }
 .contact-row {
-  padding: 6px 4px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 35%, transparent);
+  padding: 12px 16px;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.05));
+  transition: transform var(--transition-fast, 0.2s) ease, box-shadow var(--transition-fast, 0.2s) ease;
 }
-.contact-row:last-child { border-bottom: none; }
-.contact-row-edit { margin-top: 4px; }
-
+.contact-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  background: var(--surface-0, rgba(255, 255, 255, 0.08));
+}
+.contact-row:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.contact-row-edit { 
+  margin-top: 12px; 
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
+}

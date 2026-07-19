@@ -1,8 +1,8 @@
 /* ── Processing pulse animation (reused by session-star) ── */
 
 @keyframes research-pulse {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
+  0%, 100% { opacity: 0.4; transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
+  50% { opacity: 1; transform: scale(1.05); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-base) 40%, transparent); }
 }
 .ai-spinner {
   color: var(--red);
@@ -47,7 +47,7 @@
 }
 @keyframes stream-complete-pulse {
   0%, 100% { box-shadow: none; }
-  50% { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  50% { box-shadow: inset 0 0 0 2px var(--accent-base, var(--accent)), 0 0 12px color-mix(in srgb, var(--accent-base) 20%, transparent); }
 }
 
 /* ===== SLASH COMMAND RESPONSES ===== */
@@ -221,14 +221,14 @@
   z-index: 1;
 }
 .agent-thread-node.running .agent-thread-dot {
-  background: var(--red);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent);
-  animation: thread-pulse 1.5s ease-in-out infinite;
+  background: var(--accent-base, var(--red));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-base, var(--red)) 25%, transparent);
+  animation: thread-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   top: 10px;
 }
 @keyframes thread-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 20%, transparent); }
-  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--red) 10%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-base, var(--red)) 20%, transparent); transform: scale(1); }
+  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent-base, var(--red)) 30%, transparent); transform: scale(1.15); }
 }
 .agent-thread-node.error .agent-thread-dot {
   background: var(--color-error);
@@ -465,6 +465,14 @@
 .agent-thinking-dots .ai-spinner {
   font-size: 12px;
   letter-spacing: 0.5px;
+  animation: thinking-shimmer 2s infinite linear;
+  background: linear-gradient(90deg, var(--text-base, var(--fg)) 0%, var(--accent-base, var(--red)) 50%, var(--text-base, var(--fg)) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+@keyframes thinking-shimmer {
+  to { background-position: 200% center; }
 }
 
 .agent-tool-output[open] {

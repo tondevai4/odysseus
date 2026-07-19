@@ -175,23 +175,52 @@ button.hamburger {
 
 /* Inline code */
 .msg code:not(pre code) {
-  color: var(--hl-string, #98c379);
-  background: color-mix(in srgb, var(--fg) 6%, transparent);
-  padding: 1px 5px;
-  border-radius: 4px;
+  color: var(--accent-base, var(--hl-string, #98c379));
+  background: var(--accent-subtle, color-mix(in srgb, var(--fg) 6%, transparent));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 2px 6px;
+  border-radius: 999px; /* glass pill */
   font-size: 0.9em;
+  border: 1px solid color-mix(in srgb, var(--accent-base) 15%, transparent);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
+  transition: var(--transition-smooth, all 0.2s ease);
 }
 
 /* Blockquotes */
 .msg blockquote {
-  border-left: 3px solid var(--hl-function, #5b8def);
-  padding: 4px 12px;
+  position: relative;
+  border-left: none;
+  padding: var(--space-4, 8px) 16px;
   margin: 0.5em 0;
-  color: color-mix(in srgb, var(--fg) 75%, transparent);
-  background: color-mix(in srgb, var(--fg) 3%, transparent);
-  border-radius: 0 6px 6px 0;
+  color: color-mix(in srgb, var(--text-base, var(--fg)) 85%, transparent);
+  background: var(--glass-bg, color-mix(in srgb, var(--fg) 3%, transparent));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg, 8px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.05));
+  overflow: hidden;
 }
-.msg blockquote p { margin: 0.3em 0; }
+.msg blockquote::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent-base), color-mix(in srgb, var(--accent-base) 20%, transparent));
+}
+.msg blockquote p { margin: var(--space-4, 0.4em) 0; }
+
+/* Token materialization */
+@keyframes token-materialize {
+  0% { opacity: 0; transform: translateY(4px) scale(0.98); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.msg.streaming .token {
+  animation: token-materialize var(--transition-smooth, 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)) forwards;
+  display: inline-block;
+}
 
 /* Horizontal rules */
 .msg hr {

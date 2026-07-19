@@ -1,29 +1,71 @@
-/* ── Background Patterns ── */
+/* ── Background Patterns (Tony Stark Tier) ── */
 
+:root {
+  --bg-effect-intensity: 1;
+}
 
-:root { --bg-effect-intensity: 1; }
+/* Base Deep Space Texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
 
-/* Canvas-based effects — single source of truth for intensity */
+:root.light body::before {
+  opacity: 0.15;
+}
+
+/* Ambient Breathing */
+@keyframes ambient-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: -10%; /* Oversize to prevent clipping on scale */
+  z-index: -1;
+  background-image: var(--bg-gradient);
+  animation: ambient-breathe 20s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Canvas-based effects */
 #synapse-canvas, #rain-canvas, #constellations-canvas,
 #perlin-flow-canvas, #petals-canvas, #sparkles-canvas,
 #embers-canvas {
-  opacity: var(--bg-effect-intensity, 1);
+  opacity: calc(var(--bg-effect-intensity, 1) * 0.7); /* Softened */
+  mix-blend-mode: screen;
+}
+:root.light #synapse-canvas, :root.light #rain-canvas, 
+:root.light #constellations-canvas, :root.light #perlin-flow-canvas, 
+:root.light #petals-canvas, :root.light #sparkles-canvas,
+:root.light #embers-canvas {
+  mix-blend-mode: multiply;
 }
 
 body.bg-pattern-dots {
-  background-image: radial-gradient(color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
-  background-size: 20px 20px; background-attachment: fixed;
+  background-image: radial-gradient(color-mix(in srgb, var(--accent-base) calc(6% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
+  background-size: 24px 24px; 
+  background-attachment: fixed;
 }
+
 body.bg-pattern-synapse {
-  /* CSS grid as base, canvas pulses overlay */
-  background-image: linear-gradient(color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(3.5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(3.5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
-  background-size: 24px 24px; background-attachment: fixed;
+  background-image: 
+    linear-gradient(color-mix(in srgb, var(--accent-base) calc(4% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-base) calc(4% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
+  background-size: 32px 32px; 
+  background-attachment: fixed;
 }
+
 body.bg-pattern-perlin-flow,
 body.bg-pattern-petals,
 body.bg-pattern-sparkles {
   /* canvas-only backgrounds */
 }
-
-

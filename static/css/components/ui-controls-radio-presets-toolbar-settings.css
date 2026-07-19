@@ -7,41 +7,56 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: color-mix(in srgb, var(--fg) 6%, transparent);
+      padding: 10px 14px;
+      border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+      border-radius: var(--radius-lg);
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.4s var(--ease-spring);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
     
     .radio-option:hover {
-      background: color-mix(in srgb, var(--fg) 9%, transparent);
-      border-color: var(--fg);
+      background: var(--surface-0);
+      border-color: color-mix(in srgb, var(--accent-base) 30%, transparent);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     }
     
     .radio-option input[type="radio"] {
       appearance: none;
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border: 2px solid var(--border);
       border-radius: 50%;
       outline: none;
       margin: 0;
-      background: var(--bg);
-      transition: all 0.2s ease;
+      background: rgba(0, 0, 0, 0.2);
+      transition: all 0.4s var(--ease-spring);
       position: relative;
       flex-shrink: 0;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
     .radio-option input[type="radio"]:checked {
-      border-color: var(--red);
-      background: var(--red);
+      border-color: var(--accent-base);
+      background: var(--accent-base);
+      box-shadow: 0 0 12px var(--accent-base), inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
-    .radio-option input[type="radio"]:focus {
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 30%, transparent);
+    .radio-option input[type="radio"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #fff;
     }
     
     .radio-label {
@@ -55,36 +70,31 @@
       height: 27.2px; /* 15% smaller than 32px */
       padding: 0 8.5px; /* 15% smaller than 10px */
       margin-left: 4px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg);
+      border: 1px solid color-mix(in srgb, var(--accent-base) 20%, transparent);
+      border-radius: var(--radius-lg);
+      background: var(--glass-bg);
+      backdrop-filter: blur(8px);
       color: var(--fg);
       font-family: 'Fira Code', monospace;
       font-size: 10.2px; /* 15% smaller than 12px */
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.4s var(--ease-spring);
+      box-shadow: var(--shadow-md);
     }
     
     .preset-btn:hover {
-      background: var(--panel);
-      border-color: var(--fg);
+      background: var(--surface-0);
+      border-color: color-mix(in srgb, var(--accent-base) 50%, transparent);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-base) 20%, transparent);
     }
     
     .preset-btn.active {
-      background: var(--panel);
-      border-color: var(--fg);
-      box-shadow: 0 0 0 1px var(--fg), 0 0 8px color-mix(in srgb, var(--fg) 16%, transparent);
+      background: color-mix(in srgb, var(--accent-base) 15%, var(--glass-bg));
+      border-color: var(--accent-base);
+      box-shadow: 0 0 0 1px var(--accent-base), 0 0 15px color-mix(in srgb, var(--accent-base) 40%, transparent);
+      text-shadow: 0 0 8px color-mix(in srgb, var(--accent-base) 50%, transparent);
       font-weight: 600;
-    }
-    
-    /* All preset buttons use the same blue color */
-    .preset-btn {
-      border-color: var(--red); /* Blue color */
-    }
-    
-    .preset-btn.active {
-      border-color: var(--red); /* Blue color when active */
-      box-shadow: 0 0 0 1px var(--red), 0 0 8px color-mix(in srgb, var(--red) 30%, transparent);
     }
     
     /* Custom preset modal: the base .preset-modal-content sets overflow:hidden
@@ -95,6 +105,11 @@
        changes, so the body can't collapse. */
     #custom-preset-modal .preset-modal-content {
       overflow-y: auto !important;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid color-mix(in srgb, var(--accent-base) 20%, var(--border));
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md), 0 0 0 1px color-mix(in srgb, var(--accent-base) 10%, transparent) inset;
     }
     #custom-preset-modal .modal-body label {
       font-size: 13px;
@@ -113,14 +128,14 @@
     }
     #custom-preset-modal .modal-body textarea,
     #custom-preset-modal .modal-body input[type="text"] {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      background: var(--surface-0);
+      border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+      border-radius: var(--radius-lg);
       color: var(--fg);
       padding: 8px 10px;
       font-size: 13px;
       font-family: inherit;
-      transition: border-color 0.15s;
+      transition: all 0.4s var(--ease-spring);
     }
     #custom-preset-modal .modal-body textarea {
       resize: vertical;
@@ -128,7 +143,9 @@
     #custom-preset-modal .modal-body textarea:focus,
     #custom-preset-modal .modal-body input[type="text"]:focus {
       outline: none;
-      border-color: var(--red);
+      border-color: var(--accent-base);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-base) 20%, transparent);
+      background: var(--glass-bg);
     }
 
     #custom-preset-modal .modal-footer {
@@ -137,22 +154,25 @@
       gap: 8px;
       margin-top: 12px;
       padding-top: 10px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
     }
 
     #custom-preset-modal .modal-footer button {
       padding: 7px 14px;
-      border-radius: 6px;
+      border-radius: var(--radius-lg);
       font-size: 12px;
       font-weight: 500;
-      border: 1px solid var(--border);
-      background: none;
+      border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+      background: var(--glass-bg);
+      backdrop-filter: blur(8px);
       color: var(--fg);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.4s var(--ease-spring);
     }
     #custom-preset-modal .modal-footer button:hover {
-      background: color-mix(in srgb, var(--fg) 8%, transparent);
+      background: var(--surface-0);
+      border-color: var(--accent-base);
+      transform: translateY(-1px);
     }
 
     #custom-preset-modal .modal-footer button#save-custom-preset {
@@ -160,12 +180,15 @@
          and --accent is undefined, so the canonical accent expression is
          var(--accent, var(--red)). The old bare var(--accent) resolved to nothing
          which, with color:var(--bg), made the button invisible. */
-      background: var(--accent, var(--red));
+      background: var(--accent-base);
       color: var(--bg);
-      border-color: var(--accent, var(--red));
+      border-color: var(--accent-base);
+      box-shadow: 0 0 15px color-mix(in srgb, var(--accent-base) 40%, transparent);
     }
     #custom-preset-modal .modal-footer button#save-custom-preset:hover {
-      opacity: 0.85;
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-base) 60%, transparent);
     }
     /* Toolbar visibility tab */
     .toolbar-hint {

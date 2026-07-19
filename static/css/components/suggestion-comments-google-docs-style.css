@@ -12,13 +12,14 @@
 .doc-suggestion-card {
   position: fixed;
   width: 250px;
-  background: var(--panel);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
+  background: var(--surface-0);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--accent-base);
+  border-radius: var(--radius-lg);
   padding: 12px 12px 10px;
-  font-size: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-  animation: suggestion-enter 0.25s ease-out;
+  font-size: 13px;
+  box-shadow: var(--shadow-lg), 0 0 12px color-mix(in srgb, var(--accent-base) 30%, transparent);
+  animation: suggestion-enter var(--transition-fast) ease-out;
   z-index: 250;
   overflow: visible;
 }

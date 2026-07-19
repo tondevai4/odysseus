@@ -15,61 +15,48 @@
     .section-header-flex::after { content: none; }
     .section-header-flex h4::before { content: none; }
 
-    /* Section title text — same font as .list-item .grow */
+    /* Section title text */
     .section-header-flex h4,
     .section-header-flex .section-title {
       flex: 1; cursor: pointer; user-select: none;
       display: flex; align-items: center; gap: 6px;
       margin: 0; padding: 0; border: none;
-      font-size: 10px; font-weight: 400; font-family: inherit;
-      /* 1.3 (not 1) so Fira Code's tall glyph box isn't vertically clipped in
-         Chromium/Edge — mirrors the .list-item fix. The title is flex-centred
-         in a fixed-height (29px) header, so this adds headroom without reflow. */
-      line-height: 1.3; letter-spacing: 0; text-transform: none;
-      color: var(--fg);
+      font-size: 12px; font-weight: 600; font-family: inherit;
+      line-height: 1.3; letter-spacing: 0.05em; text-transform: uppercase;
+      color: color-mix(in srgb, var(--fg) 50%, transparent);
     }
     .section-icon,
     .sidebar-action-icon {
       flex-shrink: 0;
-      stroke: var(--accent, var(--red));
+      stroke: var(--accent-base);
       position: relative;
       left: -1px;
-      color: var(--accent, var(--red));
+      color: var(--accent-base);
     }
-    /* Shared notification dot for sidebar section titles. Single source of
-       truth so chats / email / assistant / future-section dots all sit at
-       the same offset from their label. */
+    /* Shared notification dot */
     .sidebar-notif-dot {
       display: inline-block;
-      width: 6px;
-      height: 6px;
-      /* Push to the right edge of the flex section-title so chats / email
-         / assistant dots all line up vertically in the same column
-         instead of trailing right after each (differently-sized) label. */
+      width: 8px;
+      height: 8px;
       margin-left: auto;
       border-radius: 50%;
-      background: var(--accent, var(--red));
+      background: var(--accent-base);
       flex-shrink: 0;
       vertical-align: middle;
+      box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-base) 40%, transparent);
     }
-    /* The email notification gets a soft breathing glow so new-mail catches
-       the eye without being shouty. Vertical alignment stays with the
-       inherited .sidebar-notif-dot rule so it lines up with chats/assistant. */
     #email-unread-dot.sidebar-notif-dot {
-      animation: email-notif-breathe 2.2s ease-in-out infinite;
-      /* Nudge in from the far-right edge so it doesn't crowd the corner. */
-      margin-right: 4px;
-      /* Tiny vertical nudge to center with the email label. */
+      animation: email-notif-breathe 3s ease-in-out infinite;
+      margin-right: var(--space-4, 4px);
       position: relative;
-      top: 0.1px;
     }
     @keyframes email-notif-breathe {
       0%, 100% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent, var(--red)) 60%, transparent);
-        opacity: 0.85;
+        box-shadow: 0 0 4px 1px color-mix(in srgb, var(--accent-base) 40%, transparent);
+        opacity: 0.7;
       }
       50% {
-        box-shadow: 0 0 6px 2px color-mix(in srgb, var(--accent, var(--red)) 55%, transparent);
+        box-shadow: 0 0 12px 3px color-mix(in srgb, var(--accent-base) 80%, transparent);
         opacity: 1;
       }
     }
@@ -147,64 +134,29 @@
     .section.collapsed .section-header-btn { display: none; }
     .section.collapsed { cursor: pointer; }
 
-    /* Domino expand: every time a section goes from .collapsed → open
-       (toggleCollapse in section-management.js adds .section-just-expanded
-       for ~700ms), the .list-item children cascade in one after another,
-       same feel as the chat input's tools menu. Each row springs in
-       from a tiny offset below + scaled-down, staggered by nth-child. */
+    /* Fluid spring expand */
     .section.section-just-expanded :is(.list-item, .models-row) {
-      animation: section-domino-in 0.36s cubic-bezier(0.22, 1.61, 0.36, 1) backwards;
+      animation: section-spring-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
     }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(1)  { animation-delay: 0.04s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(2)  { animation-delay: 0.08s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(3)  { animation-delay: 0.12s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(4)  { animation-delay: 0.16s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(5)  { animation-delay: 0.20s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(6)  { animation-delay: 0.24s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(7)  { animation-delay: 0.28s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(8)  { animation-delay: 0.32s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(9)  { animation-delay: 0.36s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(10) { animation-delay: 0.40s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(11) { animation-delay: 0.44s; }
-    .section.section-just-expanded :is(.list-item, .models-row):nth-child(12) { animation-delay: 0.48s; }
-    @keyframes section-domino-in {
-      0%   { opacity: 0; transform: translateY(8px) translateX(-4px) scale(0.92); }
-      60%  { opacity: 1; }
-      100% { opacity: 1; transform: translateY(0)   translateX(0)    scale(1); }
+    @keyframes section-spring-in {
+      0%   { opacity: 0; transform: translateY(-10px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* Domino collapse: when toggleCollapse goes open → closed, JS adds
-       .section-just-collapsing for ~530ms before flipping in .collapsed.
-       During that window the items fade/slide DOWN one after another so
-       you see them peel off instead of vanishing as a block. Uses
-       nth-last-child so the BOTTOM item leaves first and the cascade
-       rolls upward — mirrors the "stacked deck" feeling of the open
-       animation reversed. */
+    /* Fluid spring collapse */
     .section.section-just-collapsing :is(.list-item, .models-row) {
-      animation: section-domino-out 0.22s ease-in forwards;
+      animation: section-spring-out 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
     }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(1)  { animation-delay: 0.00s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(2)  { animation-delay: 0.025s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(3)  { animation-delay: 0.05s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(4)  { animation-delay: 0.075s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(5)  { animation-delay: 0.10s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(6)  { animation-delay: 0.125s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(7)  { animation-delay: 0.15s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(8)  { animation-delay: 0.175s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(9)  { animation-delay: 0.20s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(10) { animation-delay: 0.225s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(11) { animation-delay: 0.25s; }
-    .section.section-just-collapsing :is(.list-item, .models-row):nth-last-child(12) { animation-delay: 0.275s; }
-    @keyframes section-domino-out {
-      0%   { opacity: 1; transform: translateY(0)   translateX(0)   scale(1); }
-      100% { opacity: 0; transform: translateY(6px) translateX(-3px) scale(0.94); }
+    @keyframes section-spring-out {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-10px) scale(0.98); }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .row { display:flex; gap:6px; align-items:center; }
     .list-item:hover,
     .models-row:hover {
-      background: color-mix(in srgb, var(--red) 8%, transparent);
-      border-color: var(--red);
+      background: var(--glass-bg);
+      border-radius: var(--radius-pill);
     }
     /* Disabled tool — dimmed to signal its feature is turned off globally */
     .list-item.tool-disabled {
@@ -307,17 +259,15 @@
       opacity: 1;
     }
     .list-item.active-session {
-      background: color-mix(in srgb, var(--red) 10%, transparent);
-      border-color: var(--red);
-      border-left-color: var(--red);
+      background: var(--glass-bg);
+      border-radius: var(--radius-pill);
     }
     .list-item .provider-logo { opacity: 0.4 !important; }
     .list-item:has(.session-star.processing) .provider-logo { opacity: 1 !important; }
     .list-item.stream-complete .provider-logo { opacity: 1 !important; }
     .list-item.active {
-      background: color-mix(in srgb, var(--red) 10%, transparent);
-      border-color: var(--red);
-      border-left-color: var(--red);
+      background: var(--glass-bg);
+      border-radius: var(--radius-pill);
     }
     /* Only show the red focus ring for keyboard navigation (Tab). Mouse
        clicks shouldn't leave a sticky red outline on a sidebar item. */
@@ -354,9 +304,9 @@
     .models-row.dragging,
     .session-folder.dragging {
       opacity: 0.95;
-      box-shadow: 0 8px 24px color-mix(in srgb, var(--red) 30%, transparent);
-      border-color: var(--red);
-      background: var(--panel);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-base) 30%, transparent);
+      border-color: var(--accent-base);
+      background: var(--surface-0);
       cursor: grabbing;
     }
     .list-item.dragging .item-drag-handle,

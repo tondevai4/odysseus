@@ -8,10 +8,10 @@
 }
 .email-list { overflow-y: auto; max-height: 400px; }
 .email-item {
-  display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px;
-  cursor: pointer; border-bottom: 1px solid var(--border); position: relative; transition: background 0.1s;
+  display: flex; align-items: flex-start; gap: var(--space-2, 8px); padding: var(--space-2, 8px) var(--space-3, 12px);
+  cursor: pointer; border-bottom: 1px solid var(--border); position: relative; transition: all var(--transition-fast, 0.15s) ease;
 }
-.email-item:hover { background: var(--hover-bg, rgba(255,255,255,0.03)); }
+.email-item:hover { background: var(--glass-bg, rgba(255,255,255,0.03)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: var(--shadow-sm, 0 4px 12px rgba(0,0,0,0.05)); border-radius: var(--radius-md, 8px); }
 .email-item:hover .email-menu-btn { opacity: 0.5; }
 .email-item-spam { opacity: 0.4; }
 .email-item-spam:hover { opacity: 0.75; }
@@ -196,9 +196,7 @@
     transform: scale(1);
   }
   50% {
-    /* currentColor here is unreliable (background, not color) — use a
-       subtle white-tinted halo so the glow shows on any sender hue. */
-    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.18);
+    box-shadow: var(--accent-glow, 0 0 12px 4px rgba(255, 255, 255, 0.3));
     opacity: 1;
     transform: scale(1.15);
   }
@@ -213,7 +211,9 @@
   gap: 12px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface-0, var(--bg));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   flex-shrink: 0;
 }
 .email-reader-header > .email-reader-meta {

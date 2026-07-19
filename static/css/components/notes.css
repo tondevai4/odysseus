@@ -215,4 +215,21 @@ body.notes-drag-mode .note-card-pin svg {
   body.notes-drag-mode .note-card::after { animation: none; }
 }
 
-
+.note-card {
+  /* Same tint that .doclib-card uses so a default (uncolored) note
+     visually separates from the panel background it sits on. */
+  background: var(--glass-bg, rgba(20, 20, 20, 0.4));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-md, 0 8px 32px rgba(0,0,0,0.1));
+  /* Extra right padding so the corner buttons (pin / edit / copy / done)
+     never collide with the title, and a min-height so an empty/short
+     note is still tall enough to fit that row of corner controls. */
+  padding: 10px 14px;
+  padding-right: 30px;
+  min-height: 64px;
+  cursor: default;
+  transition: var(--transition-smooth, all 0.3s ease);
+}

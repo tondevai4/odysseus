@@ -4,7 +4,9 @@
   position: fixed;
   inset: 0;
   z-index: 10500;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   display: flex;
   flex-direction: column;
   opacity: 0;

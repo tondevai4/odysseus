@@ -5,11 +5,20 @@
   background: color-mix(in srgb, var(--red) 5%, transparent);
 }
 .research-timer {
-  font-size: 0.8em;
-  opacity: 0.6;
-  margin-top: 4px;
-  font-family: monospace;
-  color: var(--fg-dim, var(--fg));
+  font-size: 0.85em;
+  padding: 4px 8px;
+  border-radius: var(--radius-lg, 6px);
+  background: var(--glass-bg, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--fg))) 20%, transparent);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.1));
+  color: var(--accent-base, var(--accent, var(--fg)));
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-weight: 600;
+  margin-top: 6px;
+  display: inline-block;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent-base, var(--accent, var(--fg))) 50%, transparent);
 }
 
 /* ── Research synapse visualization ───────────────────────────────

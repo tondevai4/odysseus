@@ -1,15 +1,19 @@
 /* ── Inline action panel (expands below a model row) ── */
 
 .hwfit-action-panel {
-  border: 1px solid var(--border); border-left: 3px solid var(--red);
-  border-radius: 0 6px 6px 6px; background: var(--panel);
-  padding: 10px 12px; margin: 2px 0 6px; font-size: 11px;
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border-left: 3px solid var(--accent-base, var(--red));
+  border-radius: 0 0 var(--radius-lg, 12px) var(--radius-lg, 12px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  padding: 12px 16px; margin: 2px 0 6px; font-size: 11px;
   display: flex; flex-direction: column; gap: 8px;
-  animation: hwfit-panel-in 0.15s ease-out;
+  animation: hwfit-panel-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: var(--shadow-md);
 }
 @keyframes hwfit-panel-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .hwfit-panel-header {
   display: flex; align-items: center; gap: 8px; min-width: 0;

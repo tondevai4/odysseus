@@ -26,33 +26,55 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  background: var(--panel, var(--bg));
-  border: 1px solid var(--border);
-  border-left: 3px solid color-mix(in srgb, var(--accent-warm) 70%, transparent);
-  border-radius: 8px;
-  transition: opacity 0.2s, transform 0.2s;
+  padding: 12px 14px;
+  background: var(--glass-bg, rgba(20, 20, 20, 0.4));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  border-left: 4px solid color-mix(in srgb, var(--accent-warm) 80%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-md, 0 8px 32px rgba(0,0,0,0.1));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.notes-today-row:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 15px color-mix(in srgb, var(--accent-base, var(--accent-warm)) 30%, transparent);
 }
 .notes-today-row.done {
-  opacity: 0.35;
+  opacity: 0.4;
   transform: scale(0.98);
+  filter: grayscale(100%);
 }
 .notes-today-row .note-check-dot {
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: 2px solid color-mix(in srgb, var(--fg) 40%, transparent);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.notes-today-row .note-check-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-warm);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .notes-today-row .note-check-dot:hover {
   border-color: var(--accent-warm);
-  background: color-mix(in srgb, var(--accent-warm) 20%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-warm) 50%, transparent);
 }
 .notes-today-row.done .note-check-dot {
-  background: var(--accent-warm);
   border-color: var(--accent-warm);
+  box-shadow: 0 0 15px var(--accent-warm);
+}
+.notes-today-row.done .note-check-dot::after {
+  transform: scale(1);
 }
 .notes-today-text {
   flex: 1;
@@ -79,10 +101,14 @@
 }
 .notes-today-progress {
   flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 600;
-  opacity: 0.6;
+  font-size: 11px;
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(90deg, var(--accent-base, var(--accent-warm)), #ff8a00);
+  background-clip: text;
+  -webkit-background-clip: text;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 10px color-mix(in srgb, var(--accent-base, var(--accent-warm)) 30%, transparent);
 }
 .notes-empty {
   text-align: center;
@@ -182,8 +208,9 @@
 }
 .note-pin-btn:hover .note-pin-dot { border-color: var(--fg); }
 .note-pin-btn.active .note-pin-dot {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-base, var(--accent));
+  border-color: var(--accent-base, var(--accent));
+  box-shadow: 0 0 10px var(--accent-base, var(--accent)), 0 0 20px var(--accent-base, var(--accent));
 }
 .note-x-btn {
   background: none;

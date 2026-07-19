@@ -15,17 +15,21 @@
 /* Activity log — compact by default. Click the row to expand body+actions. */
 .task-log-row {
   --cat-hue: 220;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px 10px;
-  margin-bottom: 3px;
-  background: color-mix(in srgb, var(--fg) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 8%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  padding: 6px 12px;
+  margin-bottom: 4px;
+  background: var(--glass-bg, rgba(20, 20, 20, 0.3));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   position: relative;
   cursor: pointer;
-  transition: padding .12s ease;
+  transition: var(--transition-smooth, all 0.3s ease);
 }
 .task-log-row:hover {
-  background: color-mix(in srgb, var(--fg) 4%, transparent);
+  background: var(--glass-bg, rgba(20, 20, 20, 0.5));
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 10px color-mix(in srgb, var(--accent-base, var(--fg)) 10%, transparent);
+  transform: translateY(-1px);
 }
 .task-log-row.expanded { padding: 8px 10px 6px; }
 .task-log-row-head {
@@ -424,14 +428,22 @@ a.chat-link[href^="#research-"] {
 }
 
 .task-card {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  padding: 10px 14px;
   margin-bottom: 0;
-  background: color-mix(in srgb, var(--fg) 2%, transparent);
+  background: var(--glass-bg, rgba(20, 20, 20, 0.4));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md, 0 8px 32px rgba(0,0,0,0.1));
+  transition: var(--transition-smooth, all 0.3s ease);
   min-height: 47px;
   box-sizing: border-box;
   align-items: center;
+}
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 15px color-mix(in srgb, var(--accent-base, var(--accent, var(--red))) 30%, transparent);
 }
 /* When expanded, height grows to fit the detail panel. */
 .task-card.expanded { align-items: flex-start; }

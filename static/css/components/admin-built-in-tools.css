@@ -1,14 +1,20 @@
 /* ── Admin: Built-in tools ── */
 
 .admin-tool-category {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 6px;
+  background: var(--glass-bg, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 8px);
+  margin-bottom: var(--space-4, 8px);
   overflow: hidden;
-  transition: border-color 0.15s;
+  transition: var(--transition-smooth, all 0.3s ease);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.05));
 }
 .admin-tool-category:hover {
-  border-color: color-mix(in srgb, var(--fg) 20%, var(--border));
+  border-color: var(--accent-base, var(--accent, var(--border)));
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0,0,0,0.1));
+  transform: translateY(-1px);
 }
 .admin-tool-cat-header {
   font-size: 12px;

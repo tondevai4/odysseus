@@ -324,11 +324,14 @@ body.gallery-selecting .gallery-dl-btn,
 .gallery-card {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: var(--radius-lg, 6px);
   overflow: hidden;
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  background: var(--glass-bg, rgba(255,255,255,0.02));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--transition-fast, 0.15s), box-shadow var(--transition-fast, 0.15s), transform var(--transition-fast, 0.15s);
 }
 /* Upload-affordance tile pinned to the top-left of the Photos grid. Matches
    the Upload album tile in the Albums tab — dashed border, centered icon. */
@@ -476,15 +479,17 @@ body.gallery-selecting .gallery-dl-btn,
 /* Quick full-size lightbox shown when the user taps a chat photo thumbnail. */
 .attach-lightbox {
   position: fixed; inset: 0; z-index: 9998;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--surface-0, rgba(0, 0, 0, 0.85));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex; align-items: center; justify-content: center;
-  padding: 16px; cursor: zoom-out;
-  animation: attach-lightbox-fade 0.12s ease-out;
+  padding: var(--space-4, 16px); cursor: zoom-out;
+  animation: attach-lightbox-fade var(--transition-fast, 0.12s) ease-out;
 }
 .attach-lightbox img {
   max-width: 100%; max-height: 100%;
-  border-radius: 6px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-lg, 6px);
+  box-shadow: var(--shadow-md, 0 8px 32px rgba(0, 0, 0, 0.5));
   object-fit: contain;
 }
 .attach-lightbox-err {
@@ -520,8 +525,8 @@ body.gallery-selecting .gallery-dl-btn,
 }
 .gallery-card:hover {
   border-color: var(--red);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--red) 15%, transparent);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1));
+  transform: translateY(-2px);
 }
 .gallery-select-dot {
   position: absolute; top: 6px; left: 6px; z-index: 2;
@@ -592,6 +597,10 @@ body.gallery-selecting .gallery-dl-btn,
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform var(--transition-fast, 0.2s) ease;
+}
+.gallery-card:hover img {
+  transform: scale(1.05);
 }
 .gallery-card-info {
   position: absolute;

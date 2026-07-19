@@ -4,14 +4,21 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88em;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 .scoreboard-table th {
   text-align: left;
-  padding: 6px 10px;
-  border-bottom: 1px solid var(--border);
-  font-weight: 600;
+  padding: 10px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--surface-1) 80%, transparent), color-mix(in srgb, var(--surface-0) 60%, transparent));
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  font-weight: 700;
   font-size: 0.85em;
-  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  color: var(--fg);
+  text-shadow: 0 0 4px var(--accent-glow, transparent);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -35,7 +42,11 @@
   font-weight: 600;
   color: var(--red);
 }
+.scoreboard-table tbody tr {
+  transition: var(--transition-smooth);
+}
 .scoreboard-table tbody tr:hover {
-  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  background: color-mix(in srgb, var(--surface-1) 40%, transparent);
+  box-shadow: inset 0 0 10px var(--accent-glow, transparent);
 }
 

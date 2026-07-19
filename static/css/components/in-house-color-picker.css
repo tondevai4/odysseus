@@ -16,11 +16,13 @@ input.cp-swatch-input::selection { background: transparent; }
   position: fixed; z-index: 10000;
   display: none;
   width: 240px;
-  background: var(--panel, #1a1a1a);
-  border: 1px solid var(--border, #333);
-  border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  background: var(--glass-bg, var(--panel, #1a1a1a));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 30%, var(--border, #333));
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4, 12px);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.5));
   font-family: inherit; color: var(--fg, #eee); font-size: 12px;
   user-select: none;
 }
@@ -109,14 +111,19 @@ input.cp-swatch-input::selection { background: transparent; }
   display: flex; flex-wrap: wrap; gap: 4px;
 }
 .cp-swatch {
-  width: 20px; height: 20px;
+  width: 22px; height: 22px;
   border-radius: 50%;
-  border: 1px solid var(--border, #333);
+  border: 1px solid color-mix(in srgb, var(--fg) 20%, var(--border, #333));
   cursor: pointer;
   padding: 0;
-  transition: transform 0.08s;
+  transition: var(--transition-smooth, all 0.2s ease);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.2));
 }
-.cp-swatch:hover { transform: scale(1.15); }
+.cp-swatch:hover {
+  transform: scale(1.15) translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-base, var(--accent, #fff)) 50%, transparent);
+  border-color: var(--accent-base, var(--accent, #fff));
+}
 .cp-recent-empty {
   font-size: 11px; opacity: 0.4; padding: 2px 0;
 }

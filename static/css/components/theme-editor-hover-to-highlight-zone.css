@@ -136,18 +136,38 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
 
 /* Cards */
 .admin-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
 }
 /* When the integrations editor opens, the inner admin-card should match the
    listed integration cards (subtle tint, same border) instead of reverting
    to the solid-panel admin-card surface used elsewhere. */
 #unified-intg-form .admin-card,
 #integrations-form .admin-card {
-  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
 }
 .admin-card h2 {
   font-size: 14px;
@@ -190,8 +210,8 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
 }
 .admin-switch {
   position: relative;
-  width: 30px;
-  height: 16px;
+  width: 36px;
+  height: 20px;
   flex-shrink: 0;
   display: inline-block;
 }
@@ -203,10 +223,23 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
 .admin-slider {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--fg) 50%, transparent);
-  border-radius: 8px;
+  background: color-mix(in srgb, var(--fg) 20%, transparent);
+  border-radius: 20px;
   cursor: pointer;
-  transition: background 0.08s;
+  transition: var(--transition-smooth, background 0.3s);
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+}
+.admin-slider::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 1px;
+  width: 16px;
+  height: 16px;
+  background: var(--panel);
+  border-radius: 50%;
+  transition: var(--transition-smooth, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.2));
 }
 .admin-slider::before {
   content: '';
@@ -221,7 +254,21 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
   box-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
 .admin-switch input:checked + .admin-slider {
-  background: var(--red);
+  background: var(--accent-base, var(--red));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-base, var(--red)) 60%, transparent);
+  border-color: transparent;
+}
+.admin-slider::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 1px;
+  width: 16px;
+  height: 16px;
+  background: var(--panel);
+  border-radius: 50%;
+  transition: var(--transition-smooth, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.2));
 }
 .admin-switch input:checked + .admin-slider::before {
   transform: translateX(14px);
@@ -232,10 +279,19 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
   display: flex;
   flex-direction: column;
   padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--glass-bg, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 8px);
   margin-bottom: 6px;
-  transition: border-color 0.15s;
+  transition: var(--transition-smooth, all 0.3s ease);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.05));
+}
+.admin-user-row:hover {
+  border-color: var(--accent-base, var(--accent, var(--border)));
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.1));
+  transform: translateY(-1px);
 }
 .admin-user-row:hover {
   border-color: color-mix(in srgb, var(--fg) 20%, var(--border));
@@ -1271,7 +1327,21 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
 .email-lib-fab { display: none; }
 @media (max-width: 768px) {
   /* The absolute FAB anchors to the email panel card. */
-  #email-lib-modal .admin-card { position: relative; }
+  #email-lib-modal .admin-card {
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
+}
   /* Hide the toolbar "New" button — the FAB is the mobile entry point. */
   #email-lib-compose-btn { display: none; }
 
@@ -1435,10 +1505,19 @@ body:has(.doc-version-panel:not(.hidden)) .hamburger-btn {
 #doclib-modal.doclib-fullscreen .admin-card,
 #doclib-modal.modal-right-docked .admin-card,
 #doclib-modal.modal-left-docked .admin-card {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
 }
 #doclib-modal.doclib-fullscreen .doclib-grid:not(:has(.doclib-card-expanded)),
 #doclib-modal.modal-right-docked .doclib-grid:not(:has(.doclib-card-expanded)),
@@ -1708,7 +1787,21 @@ body.right-dock-active:not(.email-doc-split-active) .doc-editor-pane {
 #email-lib-modal.email-reading .admin-card > *:not(.doclib-grid):not(.hwfit-cached-list) {
   display: none !important;
 }
-#email-lib-modal.email-reading .admin-card { gap: 0 !important; }
+#email-lib-modal.email-reading .admin-card {
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
+}
 /* Override for chat-rows + research-rows: those expand inline with a
    bounded preview (max-height: 60vh), so the grid must stay clipped
    and scrollable. Without this scoping the overflow:visible above lets
@@ -1827,7 +1920,19 @@ body.right-dock-active:not(.email-doc-split-active) .doc-editor-pane {
    clipped the cards off the bottom with no scrollbar. Make the list
    itself the scroll surface so the rest of the card stays put. */
 .cookbook-group[data-backend-group="Serve"] > .admin-card {
-  min-height: 0;
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
 }
 .cookbook-group[data-backend-group="Serve"] > .admin-card > #hwfit-cached-list,
 .cookbook-group[data-backend-group="Serve"] > .admin-card > .hwfit-cached-list {
@@ -1958,8 +2063,19 @@ body:not(.email-doc-split-active) #email-lib-modal.email-lib-fullscreen:not(.mod
   overflow: hidden !important;
 }
 #email-lib-modal.email-lib-fullscreen .modal-body > .admin-card {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
 }
 #email-lib-modal.email-lib-fullscreen .doclib-grid {
   flex: 1 1 auto !important;
@@ -1983,11 +2099,20 @@ body:not(.email-doc-split-active) #email-lib-modal.email-lib-fullscreen:not(.mod
      min-height:0 lets each layer pass its constraints down. */
   #email-lib-modal .modal-body,
   #email-lib-modal .admin-card {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    max-height: none !important;
-  }
+  background: var(--glass-bg, var(--panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  margin-bottom: var(--space-4, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.admin-card:hover {
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 40%, var(--border));
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0,0,0,0.2));
+}
   #email-lib-modal .doclib-grid {
     flex: 1 1 auto !important;
     min-height: 0 !important;

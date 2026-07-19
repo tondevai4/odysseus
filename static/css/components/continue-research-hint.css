@@ -7,10 +7,22 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.78em;
-  color: var(--fg-dim, var(--fg));
-  opacity: 0.5;
-  padding: 4px 0;
+  font-size: 0.85em;
+  color: var(--accent-base, var(--accent, var(--fg)));
+  opacity: 0.9;
+  padding: 6px 12px;
+  background: var(--glass-bg, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 20%, transparent);
+  border-radius: var(--radius-lg, 8px);
+  box-shadow: var(--shadow-sm, 0 4px 12px rgba(0,0,0,0.1));
+  transition: var(--transition-smooth, all 0.3s ease);
+}
+.continue-research-hint:hover {
+  background: color-mix(in srgb, var(--accent-base, var(--accent, var(--fg))) 10%, var(--glass-bg, transparent));
+  box-shadow: var(--shadow-md, 0 6px 16px rgba(0,0,0,0.2));
+  transform: translateY(-1px);
 }
 .continue-research-hint svg {
   flex-shrink: 0;

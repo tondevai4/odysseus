@@ -1,104 +1,180 @@
 /* ── Variables ── */
 :root {
   /* ========================================= */
-  /* Odysseus V2 — High-End Design System      */
+  /* YVES V3 — TONY STARK TIER DESIGN DNA      */
   /* ========================================= */
 
-  /* 1. Core Palette (Sleek Dark Mode) */
-  --bg: #0b0f19;
-  --fg: #f3f4f6;
-  --panel: #111827;
-  --border: rgba(255, 255, 255, 0.08);
+  /* 1. Core Palette (Deep Space / HUD) */
+  --bg: #0d1117;
+  --bg-gradient: radial-gradient(circle at top right, rgba(124, 58, 237, 0.05), transparent 40%),
+                 radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.05), transparent 40%);
+  --fg: #e2e8f0;
+  --fg-muted: #94a3b8;
+  --fg-subtle: #64748b;
   
-  /* Vibrant Accents */
-  --red: #ff2a5f;      /* Punchy coral red */
-  --green: #10b981;    /* Emerald green */
-  --warn: #f59e0b;     /* Amber */
-  --cyan: #00e5ff;     /* Neon cyan primary */
-  --brand-color: var(--cyan);
+  /* 2. Surface Elevation System */
+  --surface-0: rgba(13, 17, 23, 0.4);
+  --surface-1: rgba(22, 27, 34, 0.6);
+  --surface-2: rgba(30, 41, 59, 0.7);
+  --surface-3: rgba(51, 65, 85, 0.8);
+  --panel: var(--surface-1);
   
-  /* 2. Glassmorphism Tokens */
-  --glass-bg: rgba(17, 24, 39, 0.65);
-  --glass-bg-hover: rgba(17, 24, 39, 0.85);
+  /* 3. Luminous Borders */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-glow: rgba(124, 58, 237, 0.15);
+  --border-active: rgba(124, 58, 237, 0.4);
+  
+  /* 4. Single Refined Accent (Shifting Violet/Indigo) */
+  --accent-base: #8b5cf6;
+  --red: var(--accent-base); /* Maintaining backward compatibility with --red */
+  --brand-color: var(--accent-base);
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --accent-subtle: rgba(139, 92, 246, 0.1);
+  --accent-surface: rgba(139, 92, 246, 0.05);
+  
+  /* Semantic Colors (Softened) */
+  --green: #10b981;    /* Success */
+  --warn: #fbbf24;     /* Warning */
+  --cyan: #38bdf8;     /* Info/Secondary */
+  
+  /* 5. Next-Gen Glassmorphism Tokens */
+  --glass-bg: rgba(22, 27, 34, 0.4);
+  --glass-bg-hover: rgba(30, 41, 59, 0.5);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-blur: blur(12px);
+  --glass-shadow: 0 16px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --glass-blur: blur(24px) saturate(180%);
+  
+  /* 6. Precision Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-base: 0.875rem;/* 14px */
+  --text-md: 1rem;      /* 16px */
+  --text-lg: 1.125rem;  /* 18px */
+  --text-xl: 1.25rem;   /* 20px */
+  --text-2xl: 1.5rem;   /* 24px */
+  
+  /* 7. Spacing & Rhythm (Golden Ratio Inspired) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  
+  /* 8. Radii (Squircle feel) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-pill: 9999px;
 
-  /* 3. Typography */
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Fira Code', monospace;
+  /* 9. Fluid Motion & Animation Tokens */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --transition-fast: 150ms var(--ease-out-expo);
+  --transition-smooth: 300ms var(--ease-in-out-quart);
+  --transition-bounce: 500ms var(--ease-spring);
 
-  /* 4. Motion & Animation Tokens */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 10. Ambient Shadow Elevation */
+  --shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-glow: 0 0 20px var(--accent-glow);
 
-  /* 5. Syntax Highlighting */
-  --hl-bg: #1e293b;
-  --hl-fg: #f8fafc;
+  /* 11. Syntax Highlighting (Refined Dark Theme) */
+  --hl-bg: var(--surface-0);
+  --hl-fg: #e2e8f0;
   --hl-keyword: #c678dd;
-  --hl-string: #e5c07b;
-  --hl-comment: #94a3b8;
+  --hl-string: #98c379;
+  --hl-comment: #64748b;
   --hl-function: #61afef;
   --hl-number: #d19a66;
   --hl-builtin: #56b6c2;
   --hl-variable: #e2e8f0;
   --hl-params: #cbd5e1;
 
-  /* 6. Semantic Colors */
+  /* 12. Legacy Semantic Variables (Mapped to new system) */
   --color-error: #ef4444;
   --color-error-light: #f87171;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #dc2626;
-  --color-recording: #ff2a5f;
-  --color-recording-hover: #e11d48;
-  --color-muted: #6b7280;
-  --color-muted-alt: #4b5563;
-  --color-accent: var(--cyan);
-  --color-agent-active: #10b981;
+  --color-success: var(--green);
+  --color-warning: var(--warn);
+  --color-danger: #ef4444;
+  --color-recording: var(--color-error);
+  --color-recording-hover: #dc2626;
+  --color-muted: var(--fg-muted);
+  --color-muted-alt: var(--fg-subtle);
+  --color-accent: var(--accent-base);
+  --color-agent-active: var(--accent-base);
   --color-brand-blue: #3b82f6;
-  --color-blind-orange: #f59e0b;
-  --color-save-green: var(--color-success);
-  --color-link-hover: #67e8f9;
-  --color-subheader: #9ca3af;
+  --color-blind-orange: var(--warn);
+  --color-save-green: var(--green);
+  --color-link-hover: #a78bfa;
+  --color-subheader: var(--fg-muted);
   
   /* Select Elements */
-  --select-bg: var(--bg);
+  --select-bg: var(--surface-1);
   --select-fg: var(--fg);
-  --select-option-bg: var(--panel);
+  --select-option-bg: var(--surface-2);
   --select-option-fg: var(--fg);
-  --select-option-active-bg: rgba(0, 229, 255, 0.15);
+  --select-option-active-bg: var(--accent-subtle);
   
   /* Specific UI Accents */
   --accent-warm: #f59e0b;
 }
 
 :root.light {
+  /* Light Mode - Premium Clean */
   --bg: #f8fafc;
+  --bg-gradient: radial-gradient(circle at top right, rgba(139, 92, 246, 0.03), transparent 40%),
+                 radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.03), transparent 40%);
   --fg: #0f172a;
-  --panel: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --fg-muted: #64748b;
+  --fg-subtle: #94a3b8;
+  
+  --surface-0: rgba(255, 255, 255, 0.6);
+  --surface-1: rgba(255, 255, 255, 0.8);
+  --surface-2: #ffffff;
+  --surface-3: #f1f5f9;
+  --panel: var(--surface-2);
+  
+  --border: rgba(0, 0, 0, 0.06);
+  --border-glow: rgba(139, 92, 246, 0.1);
+  --border-active: rgba(139, 92, 246, 0.3);
   
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-bg-hover: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(0, 0, 0, 0.05);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  --glass-shadow: 0 16px 32px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  
+  --shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.02);
 
   --hl-bg: #f1f5f9;
   --hl-fg: #0f172a;
   --hl-keyword: #7928a1;
-  --hl-string: #986801;
+  --hl-string: #0f766e;
   --hl-comment: #64748b;
   --hl-function: #005cc5;
-  --hl-number: #986801;
-  --hl-builtin: #0070a0;
+  --hl-number: #b45309;
+  --hl-builtin: #0284c7;
   --hl-variable: #334155;
   --hl-params: #475569;
   
-  --select-bg: #f1f5f9;
+  --select-bg: var(--surface-3);
   --select-fg: var(--fg);
-  --select-option-bg: var(--panel);
+  --select-option-bg: var(--surface-2);
   --select-option-fg: var(--fg);
-  --select-option-active-bg: rgba(0, 229, 255, 0.1);
+  --select-option-active-bg: var(--accent-subtle);
 }

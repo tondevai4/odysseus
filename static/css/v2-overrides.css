@@ -1,13 +1,12 @@
 /* ========================================= */
-/* Odysseus V2 — High-End Redesign Overrides */
+/* YVES V3 — TONY STARK TIER OVERRIDES       */
 /* ========================================= */
 
 /* 1. Global Shell & Canvas */
 body {
   background: var(--bg);
-  /* Optional: subtle ambient gradient */
-  background-image: radial-gradient(circle at top right, rgba(0, 229, 255, 0.05), transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(255, 42, 95, 0.05), transparent 40%);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
 }
 
 /* 2. Glassmorphism Sidebar */
@@ -15,40 +14,43 @@ body {
   background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border-right: 1px solid var(--glass-border) !important;
-  box-shadow: var(--glass-shadow);
+  border-right: 1px solid transparent !important;
+  box-shadow: 1px 0 0 var(--border), var(--shadow-xl);
   transition: width var(--transition-smooth), transform var(--transition-smooth) !important;
 }
 
 .sidebar .section-title {
-  color: var(--cyan) !important;
+  color: var(--accent-base) !important;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  opacity: 0.8;
+  opacity: 0.9;
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* 3. Main Chat Stage & Topbar */
 .chat-top-bar {
-  background: rgba(11, 15, 25, 0.4) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--glass-border);
+  background: linear-gradient(to bottom, var(--surface-0), transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .chat-meta-overlay {
   font-family: var(--font-family);
   font-weight: 600;
   color: var(--fg) !important;
-  opacity: 0.9;
+  opacity: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* 4. Chat Bubbles (Message Nodes) */
 .msg.user-msg {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(0, 229, 255, 0.02)) !important;
-  border: 1px solid rgba(0, 229, 255, 0.2) !important;
-  border-radius: 16px 16px 4px 16px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-1)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-xl) var(--radius-xl) var(--radius-sm) var(--radius-xl) !important;
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .msg.ai-msg {
@@ -56,30 +58,31 @@ body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border) !important;
-  border-radius: 16px 16px 16px 4px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-xl) var(--radius-xl) var(--radius-xl) var(--radius-sm) !important;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .msg-content {
-  font-size: 0.95rem;
+  font-size: var(--text-base);
   line-height: 1.6;
 }
 
 /* 5. Inputs & Controls */
-.input-wrap, #chat-input-container {
+.input-wrap, .chat-input-bar {
   background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
-  margin-bottom: 16px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  border-radius: var(--radius-2xl) !important;
+  box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  margin-bottom: var(--space-4);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
-.input-wrap:focus-within {
-  border-color: var(--cyan) !important;
-  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2), 0 -4px 24px rgba(0, 0, 0, 0.2);
+.input-wrap:focus-within, .chat-input-bar:focus-within {
+  border-color: var(--border-active) !important;
+  box-shadow: var(--shadow-glow), var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 button {
@@ -88,42 +91,34 @@ button {
 
 button:hover {
   transform: translateY(-1px);
-  filter: brightness(1.1);
+  filter: brightness(1.15);
 }
 
 button:active {
-  transform: translateY(1px);
+  transform: translateY(1px) scale(0.98);
 }
 
-/* 6. Modals */
+/* 6. Modals (Spatial Computing Quality) */
 .modal-content {
-  background: rgba(17, 24, 39, 0.8) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(13, 17, 23, 0.65) !important;
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
   border: 1px solid var(--glass-border) !important;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
-  border-radius: 16px !important;
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-2xl) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border) !important;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* 7. Code Blocks */
 pre, code {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 8px !important;
+  background: var(--surface-0) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 8. Scrollbars (Customized for WebKit) */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+/* Removed duplicate scrollbar styles (handled in reset-base.css) */

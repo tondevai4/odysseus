@@ -108,13 +108,16 @@
 
 /* Cards — match admin-card */
 .cookbook-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4, 16px);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  transition: var(--transition-smooth);
 }
 .cookbook-card-header {
   display: flex;
@@ -269,11 +272,13 @@
   gap: 6px;
   padding: 6px 8px;
   margin: 2px 0;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--fg) 3%, transparent);
+  border-radius: var(--radius-lg, 8px);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
   cursor: default;
   font-size: 12px;
+  transition: var(--transition-smooth);
 }
 .hwfit-cached-item .hwfit-serve-panel {
   flex-basis: 100%;
@@ -334,6 +339,8 @@
 .hwfit-cached-ready {
   background: color-mix(in srgb, var(--color-success, #4caf50) 20%, transparent);
   color: var(--color-success, #4caf50);
+  border: 1px solid color-mix(in srgb, var(--color-success, #4caf50) 40%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-success, #4caf50) 40%, transparent);
 }
 .hwfit-cached-dl {
   background: color-mix(in srgb, var(--color-warning, #f0ad4e) 20%, transparent);
@@ -412,11 +419,11 @@
 @keyframes cookbook-notif-pulse {
   0%, 100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--notif-glow, var(--accent, var(--red))) 60%, transparent);
+    box-shadow: 0 0 8px var(--accent-glow, var(--accent, var(--red)));
   }
   50% {
     opacity: 0.85;
-    box-shadow: 0 0 6px 2px color-mix(in srgb, var(--notif-glow, var(--accent, var(--red))) 55%, transparent);
+    box-shadow: 0 0 16px 4px var(--accent-glow, var(--accent, var(--red)));
   }
 }
 .cookbook-clear-btn {
@@ -512,9 +519,11 @@
                         flush with the cap-height of the title text */
 }
 .cookbook-serve-running-pill {
-  color: var(--accent, var(--red));
-  background: color-mix(in srgb, var(--accent, var(--red)) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent, var(--red)) 35%, transparent);
+  color: var(--fg);
+  background: color-mix(in srgb, var(--accent-base, var(--red)) 20%, transparent);
+  border: 1px solid var(--accent-base, var(--red));
+  box-shadow: 0 0 8px var(--accent-glow, var(--red));
+  text-shadow: 0 0 4px var(--accent-glow, var(--red));
 }
 .cookbook-serve-downloading-pill {
   color: var(--accent, var(--red));
@@ -2167,11 +2176,11 @@
   padding: 0;
   -webkit-appearance: none;
   appearance: none;
-  background: linear-gradient(to right, var(--accent, var(--red)) 0%, var(--accent, var(--red)) 50%, color-mix(in srgb, var(--fg) 12%, transparent) 50%);
+  background: linear-gradient(to right, var(--accent-base, var(--red)) 0%, var(--accent-glow, #ff7e67) 50%, color-mix(in srgb, var(--surface-1) 80%, transparent) 50%);
   border-radius: 4px;
   outline: none;
   cursor: pointer;
-  transition: opacity 0.1s;
+  transition: var(--transition-smooth);
 }
 .cookbook-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -2202,7 +2211,7 @@
   cursor: pointer;
 }
 .cookbook-slider::-moz-range-progress {
-  background: var(--accent, var(--red));
+  background: linear-gradient(90deg, var(--accent-base, var(--red)), var(--accent-glow, #ff7e67));
   height: 6px;
   border-radius: 4px;
 }

@@ -8,11 +8,25 @@
 /* Nested turns indent slightly + get their own card outline so the
    reply hierarchy is obvious at a glance. */
 .email-thread-turn-body .email-thread-turn {
-  margin: 8px 0 4px;
-  margin-left: 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--fg) 2%, transparent);
+  margin: var(--space-4, 8px) 0 4px;
+  margin-left: 12px;
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--accent-base) 10%, transparent);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--glass-bg, color-mix(in srgb, var(--surface-0, var(--fg)) 2%, transparent));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.05));
+}
+.email-thread-turn-body .email-thread-turn::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent-base), color-mix(in srgb, var(--accent-subtle) 30%, transparent));
+  border-radius: 2px;
 }
 .email-thread-turn-body .email-thread-turn .email-fold-summary {
   padding: 5px 10px;
@@ -33,11 +47,12 @@
    inherited from rich-mail HTML. Subtle left border + neutral bg. */
 .email-quote-fold blockquote {
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--space-4, 8px) 12px;
   border: 0;
-  border-left: 2px solid var(--border);
+  border-left: 2px solid transparent;
+  border-image: linear-gradient(to bottom, var(--accent-base), var(--accent-subtle)) 1;
   border-radius: 0 !important;
-  background: transparent !important;
+  background: var(--glass-bg, transparent) !important;
   color: inherit;
 }
 /* "From … · Date …" chip appended to the summary line */

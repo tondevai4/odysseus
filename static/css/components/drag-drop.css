@@ -5,28 +5,42 @@
 
     /* Drag and drop styling */
     .section[dnd-active="true"] {
-      background: color-mix(in srgb, var(--red) 10%, transparent) !important;
-      border-color: var(--red) !important;
+      background: color-mix(in srgb, var(--accent-base) 10%, var(--glass-bg)) !important;
+      backdrop-filter: blur(12px);
+      border-color: var(--accent-base) !important;
+      box-shadow: 0 0 15px color-mix(in srgb, var(--accent-base) 20%, transparent) inset;
     }
     
     .section[dnd-over="true"] {
-      background: color-mix(in srgb, var(--red) 20%, transparent) !important;
-      border-color: var(--red) !important;
+      background: color-mix(in srgb, var(--accent-base) 20%, var(--glass-bg)) !important;
+      backdrop-filter: blur(16px);
+      border-color: var(--accent-base) !important;
       transform: scale(1.02);
+      box-shadow: 0 0 30px color-mix(in srgb, var(--accent-base) 40%, transparent);
+      animation: dnd-pulse 1.5s var(--ease-spring) infinite alternate;
+    }
+
+    @keyframes dnd-pulse {
+      from { box-shadow: 0 0 20px color-mix(in srgb, var(--accent-base) 30%, transparent); }
+      to { box-shadow: 0 0 40px color-mix(in srgb, var(--accent-base) 60%, transparent); }
     }
     
     .drag-handle {
       cursor: grab;
-      opacity: 0.5;
+      opacity: 0.6;
       padding: 0 6px;
       user-select: none;
+      transition: all var(--transition-smooth);
     }
     
     .drag-handle:hover {
-      opacity: 0.8;
+      opacity: 1;
+      color: var(--accent-base);
+      text-shadow: 0 0 8px color-mix(in srgb, var(--accent-base) 50%, transparent);
     }
     
     .drag-handle:active {
       cursor: grabbing;
+      transform: scale(0.9);
     }
     

@@ -762,10 +762,16 @@
 }
 .hwfit-row {
   display: flex; align-items: center; gap: 6px; padding: 5px 8px;
-  border-radius: 6px; cursor: pointer; font-size: 11px;
-  transition: background 0.1s;
+  border-radius: var(--radius-lg, 8px); cursor: pointer; font-size: 11px;
+  transition: var(--transition-smooth);
+  background: transparent;
+  border: 1px solid transparent;
 }
-.hwfit-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.hwfit-row:hover {
+  background: var(--glass-bg);
+  border-color: color-mix(in srgb, var(--accent-base) 40%, transparent);
+  box-shadow: 0 0 12px var(--accent-glow, transparent);
+}
 /* Already-downloaded rows: dim slightly so attention falls on undownloaded
    options. The green dot stays bright as the "this is local" cue. */
 .hwfit-row:has(.hwfit-dl-dot) { opacity: 0.55; }

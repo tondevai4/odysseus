@@ -17,23 +17,27 @@
 }
 .settings-select {
   flex: 1;
-  /* Allow the select to shrink below its longest option's width inside a flex
-     row — without this a long model name (e.g. the Vision picker) overflowed
-     the card off-screen on mobile. */
   min-width: 0;
   max-width: 100%;
-  padding: 5px 8px;
+  padding: 8px 12px;
   font-family: inherit;
   font-size: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  background: var(--glass-bg, var(--bg));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 30%, var(--border));
+  border-radius: var(--radius-lg, 8px);
   color: var(--fg);
-  transition: border-color 0.15s;
+  transition: var(--transition-smooth, all 0.3s ease);
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
   outline: none;
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.1));
+}
+.settings-select:hover {
+  background: color-mix(in srgb, var(--glass-bg, var(--bg)) 80%, transparent);
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 50%, var(--border));
 }
 input.settings-select::-webkit-outer-spin-button,
 input.settings-select::-webkit-inner-spin-button {
@@ -43,7 +47,8 @@ input.settings-select::-webkit-inner-spin-button {
 input.settings-select::placeholder { color: color-mix(in srgb, var(--fg) 35%, transparent); }
 .settings-select:focus {
   outline: none;
-  border-color: var(--red);
+  border-color: var(--accent-base, var(--accent, var(--red)));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-base, var(--accent, var(--red))) 20%, transparent), var(--shadow-sm, 0 0 0 0 transparent);
 }
 
 /* Default-chat fallback chain editor. Each row mirrors the primary
@@ -67,7 +72,30 @@ input.settings-select::placeholder { color: color-mix(in srgb, var(--fg) 35%, tr
   min-width: 14px;
   text-align: right;
 }
-.settings-fallback-row .settings-select { flex: 1; min-width: 0; }
+.settings-fallback-row .settings-select {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  background: var(--glass-bg, var(--bg));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 30%, var(--border));
+  border-radius: var(--radius-lg, 8px);
+  color: var(--fg);
+  transition: var(--transition-smooth, all 0.3s ease);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  outline: none;
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.1));
+}
+.settings-select:hover {
+  background: color-mix(in srgb, var(--glass-bg, var(--bg)) 80%, transparent);
+  border-color: color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 50%, var(--border));
+}
 /* Cookbook Serve Advanced fold — wraps the rarely-touched tuning rows
    (KV/Attention/Swap/Env for vLLM, llama.cpp batch/cache/split, VRAM
    monitor, speculative, extra args). Matches the existing .hwfit-panel-
@@ -194,14 +222,26 @@ details.hwfit-serve-advanced > .hwfit-serve-checks:last-of-type {
 }
 .settings-input {
   flex: 1;
-  padding: 5px 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  padding: 8px 12px;
+  background: var(--glass-bg, var(--bg));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--accent-base, var(--accent, var(--border))) 30%, var(--border));
+  border-radius: var(--radius-lg, 8px);
   color: var(--fg);
   font-family: inherit;
   font-size: 12px;
-  transition: border-color 0.15s;
+  transition: var(--transition-smooth, all 0.3s ease);
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0,0,0,0.1));
+}
+.settings-input[type="number"]::-webkit-outer-spin-button,
+.settings-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.settings-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 /* Hide the native number-input spinner arrows (e.g. SMTP/IMAP Port) — they
    render unstyled and ugly. Field still accepts only numbers. */
@@ -216,5 +256,6 @@ details.hwfit-serve-advanced > .hwfit-serve-checks:last-of-type {
 }
 .settings-input:focus {
   outline: none;
-  border-color: var(--red);
+  border-color: var(--accent-base, var(--accent, var(--red)));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-base, var(--accent, var(--red))) 20%, transparent), var(--shadow-sm, 0 0 0 0 transparent);
 }

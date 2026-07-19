@@ -33,9 +33,12 @@
 }
 .note-card-pin.active {
   display: flex;
-  background: color-mix(in srgb, var(--accent, var(--red)) 12%, var(--bg));
-  border-color: color-mix(in srgb, var(--accent, var(--red)) 45%, var(--border));
-  color: var(--accent, var(--red));
+  background: color-mix(in srgb, var(--accent-base, var(--accent, var(--red))) 20%, var(--glass-bg, rgba(20,20,20,0.4)));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-color: var(--accent-base, var(--accent, var(--red)));
+  color: var(--accent-base, var(--accent, var(--red)));
+  box-shadow: 0 0 12px var(--accent-base, var(--accent, var(--red)));
   opacity: 1;
 }
 .note-card-selected .note-card-select {
