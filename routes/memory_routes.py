@@ -273,8 +273,7 @@ def setup_memory_routes(memory_manager: MemoryManager, session_manager: SessionM
         removes empty rows, exact duplicates, and very high-confidence near
         duplicates while preserving pinned/manual entries.
         """
-<<<<<<< HEAD
-=======
+
         from routes.model.shared import _load_settings, _normalize_base, build_chat_url
         from core.database import ModelEndpoint
         import json as _json
@@ -322,7 +321,7 @@ def setup_memory_routes(memory_manager: MemoryManager, session_manager: SessionM
         if not endpoint_url or not model:
             raise HTTPException(400, "No default model configured — set one in Settings")
 
->>>>>>> dev
+
         user = _owner(request)
         result = apply_local_tidy(memory_manager, memory_vector, owner=user)
         return {

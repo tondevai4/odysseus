@@ -229,8 +229,7 @@ def _save_for_user(user: Optional[str], prefs: dict):
     all_prefs["_users"][user] = prefs
     _save(all_prefs)
 
-<<<<<<< HEAD
-=======
+
 
 def _is_empty_oracle_value(value) -> bool:
     if value is None:
@@ -263,7 +262,7 @@ def _seed_oracle_if_empty(user: Optional[str]) -> dict:
     return seeded
 
 
->>>>>>> dev
+
 def setup_prefs_routes():
     router = APIRouter(prefix="/api/prefs", tags=["preferences"])
 
@@ -275,10 +274,7 @@ def setup_prefs_routes():
     @router.get("/{key}")
     async def get_pref(request: Request, key: str):
         user = get_current_user(request)
-<<<<<<< HEAD
         # Seed Oracle defaults on first access
-=======
->>>>>>> dev
         if key == ORACLE_PREF_KEY:
             value = _seed_oracle_if_empty(user)
             return {"key": key, "value": value}
