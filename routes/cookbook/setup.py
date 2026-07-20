@@ -18,6 +18,10 @@ from src.auth_helpers import require_user
 from src.constants import COOKBOOK_STATE_FILE
 from pydantic import BaseModel
 
+class SetupRequest(BaseModel):
+    host: str
+    ssh_port: str = "22"
+
 from core.middleware import require_admin
 from routes._validators import validate_remote_host, validate_ssh_port
 from core.platform_compat import (
