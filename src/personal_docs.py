@@ -1,3 +1,5 @@
 ﻿# src/personal_docs.py — backward-compatibility shim.
 # Canonical location: src/documents/personal_docs.py
-from src.documents.personal_docs import *  # noqa: F401,F403
+import sys
+import src.documents.personal_docs
+sys.modules[__name__] = src.documents.personal_docs

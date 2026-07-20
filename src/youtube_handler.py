@@ -1,3 +1,5 @@
 ﻿# src/youtube_handler.py — backward-compatibility shim.
 # Canonical location: src/integrations/youtube_handler.py
-from src.integrations.youtube_handler import *  # noqa: F401,F403
+import sys
+import src.integrations.youtube_handler
+sys.modules[__name__] = src.integrations.youtube_handler

@@ -1,3 +1,5 @@
 ﻿# src/chat_helpers.py — backward-compatibility shim.
 # Canonical location: src/chat/helpers.py
-from src.chat.helpers import *  # noqa: F401,F403
+import sys
+import src.chat.helpers
+sys.modules[__name__] = src.chat.helpers

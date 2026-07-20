@@ -1,3 +1,5 @@
 ﻿# src/model_discovery.py — backward-compatibility shim.
 # Canonical location: src/llm/model_discovery.py
-from src.llm.model_discovery import *  # noqa: F401,F403
+import sys
+import src.llm.model_discovery
+sys.modules[__name__] = src.llm.model_discovery

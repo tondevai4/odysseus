@@ -1,3 +1,5 @@
-﻿# src/llm_core.py — backward-compatibility shim.
+# src/llm_core.py — backward-compatibility shim.
 # Canonical location: src/llm/core.py
-from src.llm.core import *  # noqa: F401,F403
+import sys
+from src.llm import core
+sys.modules[__name__] = core

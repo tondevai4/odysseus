@@ -1,3 +1,5 @@
 ﻿# src/bg_jobs.py — backward-compatibility shim.
 # Canonical location: src/scheduling/bg_jobs.py
-from src.scheduling.bg_jobs import *  # noqa: F401,F403
+import sys
+import src.scheduling.bg_jobs
+sys.modules[__name__] = src.scheduling.bg_jobs

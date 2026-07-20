@@ -1,3 +1,5 @@
 ﻿# src/chat_handler.py — backward-compatibility shim.
 # Canonical location: src/chat/handler.py
-from src.chat.handler import *  # noqa: F401,F403
+import sys
+import src.chat.handler
+sys.modules[__name__] = src.chat.handler
