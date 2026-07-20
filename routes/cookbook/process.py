@@ -17,6 +17,13 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from src.auth_helpers import require_user
 from src.constants import COOKBOOK_STATE_FILE
 from pydantic import BaseModel
+from typing import Optional
+
+class KillPidRequest(BaseModel):
+    pid: int
+    signal: Optional[str] = "TERM"
+    host: Optional[str] = "localhost"
+    ssh_port: Optional[str] = "22"
 
 from core.middleware import require_admin
 from routes._validators import validate_remote_host, validate_ssh_port
