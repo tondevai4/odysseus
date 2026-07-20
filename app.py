@@ -151,6 +151,9 @@ else:
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", RevalidatingStatic(directory="static"), name="static")
 
+os.makedirs("frontend/dist/assets", exist_ok=True)
+app.mount("/assets", RevalidatingStatic(directory="frontend/dist/assets"), name="assets")
+
 # ========= GENERATED IMAGES =========
 from routes.system_routes import router as system_router
 app.include_router(system_router)
