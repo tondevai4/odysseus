@@ -183,7 +183,7 @@ if AUTH_ENABLED:
         "/api/version",
         "/login",
     }
-    AUTH_EXEMPT_PREFIXES = ["/static", "/api/ui", "/api/gym", "/api/oracle"]
+    AUTH_EXEMPT_PREFIXES = ["/static", "/api/ui", "/api/gym", "/api/oracle", "/api/system"]
     # Dynamic paths whose own handler proves identity via a path-embedded
     # secret instead of the session/bearer auth. The route handler at
     # routes/task_routes.py validates the per-task `webhook_token` itself
@@ -784,6 +784,33 @@ app.include_router(setup_gym_routes())
 # Oracle Multi-Persona Strategic Decision Engine
 from routes.oracle import setup_oracle_decision_routes
 app.include_router(setup_oracle_decision_routes())
+
+# System Administration, Git Refactoring & Cost Router
+from routes.system import setup_system_routes
+app.include_router(setup_system_routes())
+
+# Global Self-Healing Exception Trap
+@app.exception_handler(Exception)
+async def global_self_healing_exception_handler(request: Request, exc: Exception):
+    import traceback
+    from core.exceptions import handle_system_exception
+    trace = traceback.format_exc()
+    job_id = handle_system_exception(
+        endpoint=request.url.path,
+        method=request.method,
+        exc=exc,
+        stack_trace=trace,
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal Server Error",
+            "detail": str(exc),
+            "repair_job_id": job_id,
+            "message": "Exception captured by Wolverine Self-Healing Engine. Auto-repair queued.",
+        },
+    )
+
 
 
 # ========= ROUTES (kept in app.py) =========

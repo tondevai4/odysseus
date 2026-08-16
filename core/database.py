@@ -604,6 +604,21 @@ class DailyBriefing(TimestampMixin, Base):
     owner        = Column(String, nullable=True, index=True)
 
 
+class SystemRepairJob(TimestampMixin, Base):
+    """Auto-repair and self-healing Git patch job generated on system runtime exceptions."""
+    __tablename__ = "system_repair_jobs"
+
+    id              = Column(String, primary_key=True, index=True)
+    endpoint        = Column(String, nullable=False, index=True)
+    error_type      = Column(String, nullable=False)
+    stack_trace     = Column(Text, nullable=False)
+    proposed_branch = Column(String, nullable=True)
+    status          = Column(String, default="pending", nullable=False, index=True)  # pending, patched, resolved, failed
+    diff_preview    = Column(Text, nullable=True)
+    owner           = Column(String, nullable=True, index=True)
+
+
+
 
 class CrewMember(TimestampMixin, Base):
     """A custom AI persona ('crew member') with its own personality, model, tools, and memory scope."""

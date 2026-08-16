@@ -218,6 +218,17 @@ async def _daemon_loop():
             except Exception as e:
                 logger.error(f"Daemon error in nightly evolution: {e}")
 
+        # Nightly Maintenance & Pruning check (around 04:00 AM once per day)
+        last_maint = _LAST_RUNS.get("nightly_maintenance")
+        if now.hour == 4 and (not last_maint or last_maint.date() != now.date()):
+            try:
+                from core.maintenance import run_nightly_maintenance
+                await run_nightly_maintenance()
+                _LAST_RUNS["nightly_maintenance"] = now
+            except Exception as e:
+                logger.error(f"Daemon error in nightly maintenance: {e}")
+
+
         # Interest profiler (every 4 hours)
         last_profiler = _LAST_RUNS.get("interest_profiler")
         if not last_profiler or (now - last_profiler).total_seconds() >= 14400:

@@ -26,6 +26,7 @@ from core.database import (  # explicit re-exports for IDE/type-checker visibili
     OracleDecision,
     UserPreferenceFact,
     DailyBriefing,
+    SystemRepairJob,
     CrewMember,
     ScheduledTask,
     TaskRun,
