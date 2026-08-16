@@ -2162,3 +2162,17 @@ async def stream_llm_with_fallback(candidates, messages, **kwargs):
     # Every candidate failed pre-content — surface the last error.
     if last_error:
         yield last_error
+
+
+# Cost Router integration
+from src.cost_router import (
+    route_llm_call,
+    get_daily_spend,
+    record_spend,
+    set_daily_spend,
+    is_budget_exceeded,
+    TIER_0_LOCAL,
+    TIER_1_SUB_CENT,
+    TIER_2_REASONING,
+)
+

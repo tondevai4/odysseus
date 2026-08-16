@@ -1,4 +1,4 @@
-# src/llm_core/cost_router.py
+# src/cost_router.py
 """
 Smart Multi-Tier Model Cost Router for YVES.
 Dynamically routes tasks across Local Free (Ollama), Sub-Cent (gpt-4o-mini), and High-Reasoning (o3-mini/gpt-4o)

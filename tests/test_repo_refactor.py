@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from app import app
 from core.database import SessionLocal, SystemRepairJob
-from src.llm_core.cost_router import (
+from src.cost_router import (
     route_llm_call,
     get_daily_spend,
     record_spend,

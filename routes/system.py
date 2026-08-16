@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from core.database import SessionLocal, SystemRepairJob, utcnow_naive
-from src.llm_core.cost_router import get_daily_spend, is_budget_exceeded, route_llm_call
+from src.cost_router import get_daily_spend, is_budget_exceeded, route_llm_call
 from src.agent_loop.repo_refactor import propose_code_patch, list_patch_branches, delete_patch_branch
 from core.maintenance import run_nightly_maintenance
 
