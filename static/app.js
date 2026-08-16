@@ -28,7 +28,6 @@ import notesModule from './js/notes.js';
 import adminModule from './js/admin.js';
 import settingsModule from './js/settings.js';
 import commandCenterModule from './js/commandCenter.js';
-import housingBidsModule from './js/housingBids.js';
 import readingListModule from './js/readingList.js';
 import gymLogModule from './js/gymLog.js';
 import archiveModule from './js/archive.js';
@@ -934,13 +933,6 @@ function initializeEventListeners() {
       if (notesModule) {
         notesModule.togglePanel();
       }
-    });
-  }
-  const toolHousingBidsBtn = el('tool-housing-bids-btn');
-  if (toolHousingBidsBtn) {
-    toolHousingBidsBtn.addEventListener('click', () => {
-      if (housingBidsModule.isOpen()) housingBidsModule.close();
-      else housingBidsModule.open();
     });
   }
   const toolReadingListBtn = el('tool-reading-list-btn');
@@ -3447,7 +3439,6 @@ function startOdysseusApp() {
     openNotes: () => {
       if (notesModule && notesModule.openPanel) notesModule.openPanel();
     },
-    openHousingBids: () => housingBidsModule.open(),
     openReadingList: () => readingListModule.open(),
     openGymLog: () => gymLogModule.open(),
     openArchive: () => archiveModule.open(),

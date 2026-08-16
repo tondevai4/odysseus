@@ -169,7 +169,7 @@ async function _loadOracleSummary() {
     if (parts.length) {
       _text(body, 'p', 'command-oracle-summary', parts.join(' · '));
     } else {
-      _text(body, 'p', 'command-oracle-empty', 'No Oracle profile yet. Open STRNOS Oracle to add signs, gratitude, or numerology.');
+      _text(body, 'p', 'command-oracle-empty', 'No Oracle profile yet. Open Oracle to add signs, gratitude, or numerology.');
     }
     if (payload.latest_sign?.value) {
       _text(body, 'p', 'command-oracle-note', `Latest sign: ${payload.latest_sign.value}`);
@@ -177,7 +177,7 @@ async function _loadOracleSummary() {
     _text(body, 'p', 'command-oracle-note', 'Vedic engine pending. Numerology runs locally.');
   } catch (error) {
     body.replaceChildren();
-    _text(body, 'p', 'command-oracle-empty', 'STRNOS Oracle is unavailable right now.');
+    _text(body, 'p', 'command-oracle-empty', 'Oracle is unavailable right now.');
   } finally {
     _fitAboveComposer();
   }
@@ -185,7 +185,6 @@ async function _loadOracleSummary() {
 
 function init({
   openNotes,
-  openHousingBids,
   openReadingList,
   openGymLog,
   openArchive,
@@ -208,12 +207,6 @@ function init({
 
     if (action.dataset.commandCenterAction === 'notes' && typeof openNotes === 'function') {
       openNotes();
-    }
-    if (
-      action.dataset.commandCenterAction === 'housing-bids'
-      && typeof openHousingBids === 'function'
-    ) {
-      openHousingBids();
     }
     if (
       action.dataset.commandCenterAction === 'reading-list'

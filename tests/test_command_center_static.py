@@ -19,7 +19,6 @@ def test_command_center_is_part_of_the_existing_welcome_screen():
         "Career / Labouring Mission",
         "Money",
         "Habits",
-        "Housing Bids",
     ):
         assert title in welcome
 

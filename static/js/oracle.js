@@ -159,7 +159,7 @@ function renderOverview(body) {
   const upcoming = important.find((item) => item.date >= today()) || important[0];
 
   const hero = $('section', 'oracle-hero-card');
-  hero.appendChild($('span', 'oracle-kicker', 'YVES · Powered by STRNOS · SaturnOS'));
+  hero.appendChild($('span', 'oracle-kicker', 'YVES · Oracle'));
   hero.appendChild($('h3', '', `Boss — I’m Yves.`));
   hero.appendChild($('p', '', 'Signs without delusion. Manifestation with receipts. Symbolic guidance, practical execution.'));
   const heroActions = $('div', 'oracle-actions');
@@ -608,8 +608,8 @@ function build() {
     <div class="oracle-content" role="dialog" aria-modal="true" aria-labelledby="oracle-title">
       <header class="oracle-header">
         <div>
-          <span class="oracle-kicker">YVES · Powered by STRNOS · SaturnOS</span>
-          <h3 id="oracle-title">STRNOS Oracle</h3>
+          <span class="oracle-kicker">YVES · Oracle</span>
+          <h3 id="oracle-title">Oracle</h3>
           <p>Boss — I’m Yves. Signs, dates, gratitude, numerology and action receipts.</p>
         </div>
         <button type="button" class="oracle-close" aria-label="Close Oracle">&times;</button>
