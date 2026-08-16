@@ -1,4 +1,4 @@
-﻿/* ============================================ */
+/* ============================================ */
 /* Vanta UI â€” Consolidated Stylesheet           */
 /* ============================================ */
 
@@ -38169,4 +38169,100 @@ body.theme-frosted .modal {
 }
 
 /* Oracle styles are in static/css/oracle.css */
+
+/* ─── iOS PWA Safe Area Insets ───────────────────────────────────────────────
+   When added to iPhone home screen (standalone mode), iOS does NOT apply safe
+   area insets automatically. We must pad key elements ourselves using
+   env(safe-area-inset-*). The status bar (top ~44px) and home indicator
+   (bottom ~34px) are the main culprits on iPhone 11.
+
+   We only apply these in standalone/fullscreen mode so the normal browser
+   experience is unaffected.
+*/
+
+@media (display-mode: standalone) {
+
+  /* ── Top: push everything below the status bar ── */
+  .sidebar,
+  #icon-rail,
+  .icon-rail {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Chat area top bar (when sidebar is collapsed / hamburger mode) */
+  .chat-top-bar {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Command center / welcome screen header spacing */
+  .chat-container.welcome-active .welcome-header,
+  .command-shell-header {
+    padding-top: max(20px, env(safe-area-inset-top));
+  }
+
+  /* ── Bottom: lift the chat input above the home indicator ── */
+
+  /* The wrapper that contains .chat-input-bar sits inside .chat-container */
+  .input-bar-wrapper,
+  .chat-input-wrap {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Fallback: target chat-input-bar directly if wrapper doesn't exist */
+  .chat-container .chat-input-bar {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Minimized dock buttons also need lifting */
+  .minimized-dock {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  /* Sidebar user bar at the very bottom */
+  .sidebar-user-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ── Left/right: handle notch on landscape (future-proofing) ── */
+  .sidebar:not(.right-side) {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .sidebar.right-side {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Also handle the Apple-specific meta tag path (some older iOS versions
+   use display-mode: fullscreen instead of standalone for black-translucent) */
+@media (display-mode: fullscreen) {
+
+  .sidebar,
+  #icon-rail,
+  .icon-rail {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .chat-top-bar {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .input-bar-wrapper,
+  .chat-input-wrap {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .chat-container .chat-input-bar {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  .minimized-dock {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .sidebar-user-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 
