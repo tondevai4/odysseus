@@ -2,7 +2,7 @@ import os
 import logging
 import sqlite3
 from datetime import datetime, timezone
-from sqlalchemy import event, create_engine, Column, String, Text, Boolean, DateTime, Integer, ForeignKey, JSON, Index, func, text
+from sqlalchemy import event, create_engine, Column, String, Text, Boolean, DateTime, Integer, Float, ForeignKey, JSON, Index, func, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -546,6 +546,63 @@ class DynamicWidget(TimestampMixin, Base):
     config_json = Column(Text, nullable=True)
 
     tool        = relationship("DynamicTool", back_populates="widgets")
+
+
+class WorkoutEntry(TimestampMixin, Base):
+    """Workout and gym log entry tracking progressive overload."""
+    __tablename__ = "workout_entries"
+
+    id          = Column(String, primary_key=True, index=True)
+    timestamp   = Column(DateTime, default=utcnow_naive, nullable=False, index=True)
+    exercise    = Column(String, nullable=False, index=True)
+    sets        = Column(Integer, default=1, nullable=False)
+    reps        = Column(Integer, default=1, nullable=False)
+    weight_kg   = Column(Float, default=0.0, nullable=False)
+    rpe         = Column(Float, nullable=True)
+    notes       = Column(Text, nullable=True)
+    owner       = Column(String, nullable=True, index=True)
+
+    __table_args__ = (
+        Index('ix_workout_exercise_time', 'exercise', 'timestamp'),
+    )
+
+
+class OracleDecision(TimestampMixin, Base):
+    """Multi-persona strategic decision evaluation matrix."""
+    __tablename__ = "oracle_decisions"
+
+    id              = Column(String, primary_key=True, index=True)
+    title           = Column(String, nullable=False)
+    premise         = Column(Text, nullable=False)
+    critique_risk   = Column(Text, nullable=True)
+    critique_growth = Column(Text, nullable=True)
+    synthesis_score = Column(Float, default=0.0, nullable=False)
+    verdict         = Column(Text, nullable=True)
+    owner           = Column(String, nullable=True, index=True)
+
+
+class UserPreferenceFact(TimestampMixin, Base):
+    """Consolidated user profile facts and preferences discovered by evolution engine."""
+    __tablename__ = "user_preference_facts"
+
+    id                 = Column(String, primary_key=True, index=True)
+    category           = Column(String, nullable=False, index=True)
+    fact               = Column(Text, nullable=False)
+    confidence         = Column(Float, default=1.0, nullable=False)
+    source_session_id  = Column(String, nullable=True)
+    owner              = Column(String, nullable=True, index=True)
+
+
+class DailyBriefing(TimestampMixin, Base):
+    """Scheduled morning briefing summaries pushed via daemon/ntfy."""
+    __tablename__ = "daily_briefings"
+
+    id           = Column(String, primary_key=True, index=True)
+    date         = Column(String, nullable=False, index=True)  # YYYY-MM-DD
+    summary      = Column(Text, nullable=False)
+    bullets_json = Column(Text, nullable=True)
+    owner        = Column(String, nullable=True, index=True)
+
 
 
 class CrewMember(TimestampMixin, Base):

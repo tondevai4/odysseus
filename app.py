@@ -183,7 +183,7 @@ if AUTH_ENABLED:
         "/api/version",
         "/login",
     }
-    AUTH_EXEMPT_PREFIXES = ["/static", "/api/ui"]
+    AUTH_EXEMPT_PREFIXES = ["/static", "/api/ui", "/api/gym", "/api/oracle"]
     # Dynamic paths whose own handler proves identity via a path-embedded
     # secret instead of the session/bearer auth. The route handler at
     # routes/task_routes.py validates the per-task `webhook_token` itself
@@ -777,6 +777,15 @@ app.include_router(setup_companion_routes())
 from routes.ui_components import setup_ui_components_routes
 app.include_router(setup_ui_components_routes())
 
+# Gym Log & Progressive Overload
+from routes.gym import setup_gym_routes
+app.include_router(setup_gym_routes())
+
+# Oracle Multi-Persona Strategic Decision Engine
+from routes.oracle import setup_oracle_decision_routes
+app.include_router(setup_oracle_decision_routes())
+
+
 # ========= ROUTES (kept in app.py) =========
 
 def _serve_html_with_nonce(request: Request, file_path: str) -> HTMLResponse:
@@ -1133,12 +1142,24 @@ async def _startup_event():
     # cookbook_serve entry in BUILTIN_ACTIONS + src/cookbook_serve_lifecycle.py
     # removes the feature.
     from src.cookbook_serve_lifecycle import cookbook_serve_lifecycle_loop
-    _startup_tasks.append(asyncio.create_task(cookbook_serve_lifecycle_loop()))
+    # Start proactive background daemon (morning briefings, interest profiler, nightly evolution)
+    try:
+        from core.proactive_daemon import start_proactive_daemon
+        _p_daemon = start_proactive_daemon()
+        if _p_daemon:
+            _startup_tasks.append(_p_daemon)
+    except Exception as _pd_err:
+        logger.warning(f"Proactive daemon startup notice: {_pd_err}")
 
     logger.info("Application startup complete")
 
 async def _shutdown_event():
     logger.info("Application shutting down...")
+    try:
+        from core.proactive_daemon import stop_proactive_daemon
+        stop_proactive_daemon()
+    except Exception:
+        pass
     if upload_cleanup_task:
         upload_cleanup_task.cancel()
         try:
@@ -1161,3 +1182,4 @@ async def _shutdown_event():
     except Exception as e:
         logger.warning(f"MCP shutdown error: {e}")
     logger.info("Application shutdown complete")
+

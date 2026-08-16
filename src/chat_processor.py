@@ -235,6 +235,37 @@ class ChatProcessor:
             "role": "system",
             "content": VANTA_CORE_PROMPT,
         })
+
+        # Pre-Flight Learned Experience & Constraints (Reflexion Heuristics)
+        try:
+            from src.agent_loop.reflection import query_heuristics, is_user_correction, extract_heuristic
+            heuristics = query_heuristics(message, n_results=3, threshold=0.80)
+            if heuristics:
+                heuristics_text = "\n".join(f"- {h}" for h in heuristics)
+                preface.append({
+                    "role": "system",
+                    "content": f"### Learned Experience & Constraints\n{heuristics_text}",
+                })
+
+            # Correction trap: if user message corrects previous turn, trigger background extraction
+            if is_user_correction(message) and session:
+                prev_messages = getattr(session, "messages", [])
+                if prev_messages and len(prev_messages) >= 2:
+                    last_assistant = prev_messages[-1].get("content", "") if isinstance(prev_messages[-1], dict) else getattr(prev_messages[-1], "content", "")
+                    last_user = prev_messages[-2].get("content", "") if isinstance(prev_messages[-2], dict) else getattr(prev_messages[-2], "content", "")
+                    # Extract in background task
+                    try:
+                        import asyncio
+                        asyncio.create_task(extract_heuristic(
+                            task=last_user,
+                            failed_action=last_assistant[:200],
+                            error_or_feedback=message,
+                        ))
+                    except Exception:
+                        pass
+        except Exception as _heur_err:
+            logger.debug(f"Reflexion heuristic injection notice: {_heur_err}")
+
         if preset_system_prompt:
             preface.append({
                 "role": "system",
@@ -244,6 +275,7 @@ class ChatProcessor:
                     f"{preset_system_prompt}"
                 )
             })
+
         routine = resolve_active_vanta_routine(message, session)
         note_intent = note_management_intent(message)
         reading_turn = (
