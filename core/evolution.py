@@ -68,7 +68,7 @@ async def run_nightly_evolution(
     # 1. Read recent chat messages from SQLite
     try:
         with SessionLocal() as db:
-            query = db.query(ChatMessage).filter(ChatMessage.created_at >= cutoff)
+            query = db.query(ChatMessage).filter(ChatMessage.timestamp >= cutoff)
             messages = query.all()
             for msg in messages:
                 content = getattr(msg, "content", "") or ""

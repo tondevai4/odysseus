@@ -54,7 +54,10 @@ def _heuristic_rule_synthesis(task: str, failed_action: str, error_or_feedback: 
     clean_feedback = error_or_feedback.strip()
     # If feedback is a direct instruction like "always calculate ... at £300/day"
     if clean_feedback.lower().startswith("always ") or clean_feedback.lower().startswith("never "):
-        return clean_feedback.capitalize()
+        if clean_feedback:
+            return clean_feedback[0].upper() + clean_feedback[1:]
+        return clean_feedback
+
 
     # Extract error type or keyword
     if "SyntaxError" in clean_feedback:

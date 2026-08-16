@@ -21,6 +21,7 @@ from core.database import (
     UserPreferenceFact,
     DailyBriefing,
     ChatMessage,
+    Session,
     utcnow_naive,
 )
 from src.agent_loop.reflection import (
@@ -166,15 +167,27 @@ async def test_nightly_evolution_and_soul(tmp_path):
 
     # Seed sample chat message with preference
     with SessionLocal() as db:
+        sess = db.query(Session).filter(Session.id == "session-evo-1").first()
+        if not sess:
+            sess = Session(
+                id="session-evo-1",
+                name="Evolution Test Session",
+                endpoint_url="http://localhost:11434/v1",
+                model="test-model",
+            )
+            db.add(sess)
+            db.commit()
+
         msg = ChatMessage(
             id=f"msg-evo-{int(datetime.datetime.now().timestamp())}",
             session_id="session-evo-1",
             role="user",
             content="I prefer dark mode, always use metric units, and my bench press goal is 120kg.",
-            created_at=utcnow_naive(),
+            timestamp=utcnow_naive(),
         )
         db.add(msg)
         db.commit()
+
 
     evo_res = await run_nightly_evolution(data_dir=test_data_dir, lookback_hours=24)
     assert evo_res["success"] is True

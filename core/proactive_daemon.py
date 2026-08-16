@@ -130,7 +130,7 @@ async def run_interest_profiler(lookback_hours: int = 48) -> Dict[str, Any]:
 
     try:
         with SessionLocal() as db:
-            messages = db.query(ChatMessage).filter(ChatMessage.created_at >= cutoff).all()
+            messages = db.query(ChatMessage).filter(ChatMessage.timestamp >= cutoff).all()
             for msg in messages:
                 content = (getattr(msg, "content", "") or "").lower()
                 if "currency" in content or "convert usd" in content or "exchange rate" in content:
