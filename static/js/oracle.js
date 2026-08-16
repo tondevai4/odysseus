@@ -270,7 +270,7 @@ function bridgeToChat() {
   if (signs[0]) parts.push(`(Latest sign: ${signs[0].value})`);
   const message = parts.join(' ');
   window.dispatchEvent(new CustomEvent('oracle:bridge-to-chat', { detail: { message } }));
-  close();
+  closeModal();
 }
 
 // ─── Journal Tab ──────────────────────────────────────────────────────────────
@@ -731,8 +731,8 @@ function build() {
       <main class="oracle-body" data-oracle-body></main>
     </div>
   `;
-  _modal.querySelector('.oracle-close')?.addEventListener('click', close);
-  _modal.addEventListener('click', (event) => { if (event.target === _modal) close(); });
+  _modal.querySelector('.oracle-close')?.addEventListener('click', () => closeModal());
+  _modal.addEventListener('click', (event) => { if (event.target === _modal) closeModal(); });
   document.body.appendChild(_modal);
 }
 
@@ -753,7 +753,7 @@ async function open(tab = 'today') {
   }
 }
 
-function close() {
+function closeModal() {
   if (!_modal) return;
   _modal.hidden = true;
   document.body.classList.remove('modal-open');
@@ -766,5 +766,5 @@ function init() {
   _initialized = true;
 }
 
-export { init, open, close };
-export default { init, open, close };
+export { init, open, closeModal as close };
+export default { init, open, close: closeModal };
