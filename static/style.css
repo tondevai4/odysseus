@@ -38593,5 +38593,82 @@ body.theme-frosted .modal {
   cursor: pointer;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   TOOL CREATOR & PHASE 4 AUTONOMOUS ENGINE STYLES
+   ───────────────────────────────────────────────────────────── */
+.tc-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--fg-muted, #9ca3af);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.tc-tab-btn:hover {
+  color: var(--fg, #e5e7eb);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tc-tab-btn.active {
+  color: #ffffff;
+  border-bottom-color: var(--brand-color, #c1122f);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tc-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg, #e5e7eb);
+  border: 1px solid var(--border, #2d2d33);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.tc-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tc-btn-primary {
+  background: var(--brand-color, #c1122f) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.tc-btn-primary:hover {
+  background: color-mix(in srgb, var(--brand-color, #c1122f) 85%, #fff) !important;
+  box-shadow: 0 4px 12px rgba(193, 18, 47, 0.35);
+}
+
+.tc-btn-danger {
+  background: rgba(244, 63, 94, 0.15) !important;
+  color: #f43f5e !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+.tc-btn-danger:hover {
+  background: rgba(244, 63, 94, 0.25) !important;
+}
+
+.tc-btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.tc-tool-card:hover {
+  border-color: color-mix(in srgb, var(--brand-color, #c1122f) 50%, var(--border, #2d2d33)) !important;
+  transform: translateY(-1px);
+}
+
+
 
 

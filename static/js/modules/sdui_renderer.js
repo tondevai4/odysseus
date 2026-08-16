@@ -33,49 +33,16 @@ const SDUI = {
   },
 
   renderSidebarTools(items) {
-    let section = document.getElementById('sidebar-dynamic-section');
-    const sidebarInner = document.querySelector('.sidebar-sections') || document.getElementById('sidebar');
-    if (!sidebarInner) return;
+    // Remove the legacy bottom section if it was previously created
+    const oldSection = document.getElementById('sidebar-dynamic-section');
+    if (oldSection) oldSection.remove();
 
-    if (!section) {
-      section = document.createElement('div');
-      section.id = 'sidebar-dynamic-section';
-      section.className = 'sidebar-section';
-      section.innerHTML = `
-        <div class="sidebar-section-header">
-          <span class="section-title">DYNAMIC TOOLS</span>
-          <span class="badge" id="sdui-tool-count">${items.length}</span>
-        </div>
-        <div class="sidebar-section-content" id="sidebar-dynamic-tools-list"></div>
-      `;
-      sidebarInner.appendChild(section);
+    // Update the first-class Tool Creator badge in the Tools sidebar
+    const badge = document.getElementById('tool-creator-badge');
+    if (badge) {
+      badge.textContent = String(items.length || 0);
+      badge.style.display = items.length > 0 ? 'inline-block' : 'none';
     }
-
-    const list = document.getElementById('sidebar-dynamic-tools-list');
-    const badge = document.getElementById('sdui-tool-count');
-    if (badge) badge.textContent = String(items.length);
-    if (!list) return;
-
-    list.innerHTML = '';
-    if (items.length === 0) {
-      section.style.display = 'none';
-      return;
-    }
-    section.style.display = 'block';
-
-    items.forEach(item => {
-      const btn = document.createElement('button');
-      btn.className = 'sidebar-item sdui-nav-item';
-      btn.setAttribute('data-tool-id', item.tool_id || item.tool_name);
-      btn.innerHTML = `
-        <span class="sdui-item-icon">⚡</span>
-        <span class="sdui-item-title">${this.escapeHtml(item.title || item.tool_name)}</span>
-      `;
-      btn.addEventListener('click', () => {
-        this.openTab(item.tool_id || item.tool_name);
-      });
-      list.appendChild(btn);
-    });
   },
 
   async openTab(toolId) {

@@ -53,11 +53,13 @@ import { initSidebarLayout, syncRailSide } from './js/sidebar-layout.js';
 import { initSectionCollapse, initSectionDrag } from './js/section-management.js';
 import SDUI from './js/modules/sdui_renderer.js';
 import QuickCapture from './js/modules/quick_capture.js';
+import toolCreatorModule from './js/toolCreator.js';
 
 const API_BASE = window.location.origin;
 window.themeModule = themeModule;
 window.sessionModule = sessionModule;
 window.uiModule = uiModule;
+window.toolCreatorModule = toolCreatorModule;
 window.adminModule = adminModule;
 window.cookbookModule = cookbookModule;
 
@@ -4171,12 +4173,13 @@ function startOdysseusApp() {
     });
   }
 
-  // Initialize Server-Driven UI (SDUI) dynamic toolbar and Quick Capture spotlight
+  // Initialize Server-Driven UI (SDUI) dynamic toolbar, Quick Capture spotlight & Tool Creator
   try {
     SDUI.init();
     QuickCapture.init();
+    toolCreatorModule.init();
   } catch (e) {
-    console.error('Failed to init SDUI / QuickCapture:', e);
+    console.error('Failed to init SDUI / QuickCapture / ToolCreator:', e);
   }
 }
 
