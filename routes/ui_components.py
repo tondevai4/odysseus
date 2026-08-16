@@ -134,6 +134,108 @@ async def api_execute_dynamic_tool(name: str, body: Optional[DynamicToolExecutio
         raise HTTPException(status_code=500, detail=f"Tool execution failed: {str(e)}")
 
 
+
+@router.get("/api/ui/tab/{tool_id}")
+async def get_ui_tab_schema(tool_id: str):
+    """Return full Server-Driven UI (SDUI) component schema and initial data for a dynamic tab."""
+    try:
+        with SessionLocal() as db:
+            tool = (
+                db.query(DynamicTool)
+                .filter((DynamicTool.id == tool_id) | (DynamicTool.name == tool_id))
+                .first()
+            )
+            if not tool:
+                # Check in-memory tools
+                handler = get_dynamic_tool_handler(tool_id)
+                if handler:
+                    return {
+                        "tool_id": tool_id,
+                        "name": tool_id,
+                        "title": tool_id.replace("_", " ").title(),
+                        "description": f"Dynamic tool {tool_id}",
+                        "components": [
+                            {
+                                "type": "form",
+                                "title": "Run Tool",
+                                "endpoint": f"/api/ui/execute-tool/{tool_id}",
+                                "fields": [{"name": "input", "label": "Input Parameter", "type": "text"}],
+                            }
+                        ],
+                        "data": {},
+                    }
+                raise HTTPException(status_code=404, detail=f"Dynamic tool '{tool_id}' not found")
+
+            # Build components based on associated widgets or default schema
+            widgets = db.query(DynamicWidget).filter(DynamicWidget.tool_id == tool.id).all()
+            components = []
+            if widgets:
+                for w in widgets:
+                    cfg = json.loads(w.config_json) if w.config_json else {}
+                    components.append({
+                        "id": w.id,
+                        "type": w.widget_type,
+                        "title": w.title,
+                        "endpoint": w.endpoint or f"/api/ui/execute-tool/{tool.name}",
+                        "icon": w.icon or "Wrench",
+                        "config": cfg,
+                    })
+            else:
+                components.append({
+                    "id": f"comp-{tool.id}",
+                    "type": "metric_card",
+                    "title": tool.name.replace("_", " ").title(),
+                    "endpoint": f"/api/ui/execute-tool/{tool.name}",
+                    "icon": "Wrench",
+                    "config": {},
+                })
+
+            return {
+                "tool_id": tool.id,
+                "name": tool.name,
+                "title": tool.name.replace("_", " ").title(),
+                "description": tool.description or "",
+                "enabled": tool.enabled,
+                "components": components,
+                "data": {},
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error loading SDUI tab schema for '{tool_id}': {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
+
+@router.delete("/api/ui/tool/{tool_id}")
+async def delete_or_disable_dynamic_tool(tool_id: str):
+    """Disable or remove a dynamic tool from the UI toolbar and registry."""
+    try:
+        with SessionLocal() as db:
+            tool = (
+                db.query(DynamicTool)
+                .filter((DynamicTool.id == tool_id) | (DynamicTool.name == tool_id))
+                .first()
+            )
+            if not tool:
+                raise HTTPException(status_code=404, detail=f"Dynamic tool '{tool_id}' not found")
+
+            tool.enabled = False
+            db.commit()
+
+            return {
+                "success": True,
+                "tool_id": tool.id,
+                "name": tool.name,
+                "status": "disabled",
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error disabling dynamic tool '{tool_id}': {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
+
 def setup_ui_components_routes() -> APIRouter:
     """Factory function for router registration in app.py."""
     return router
+

@@ -51,6 +51,8 @@ import spinnerModule from './js/spinner.js';
 import { initKeyboardShortcuts } from './js/keyboard-shortcuts.js';
 import { initSidebarLayout, syncRailSide } from './js/sidebar-layout.js';
 import { initSectionCollapse, initSectionDrag } from './js/section-management.js';
+import SDUI from './js/modules/sdui_renderer.js';
+import QuickCapture from './js/modules/quick_capture.js';
 
 const API_BASE = window.location.origin;
 window.themeModule = themeModule;
@@ -4167,6 +4169,14 @@ function startOdysseusApp() {
     document.querySelectorAll('pre code:not(.hljs)').forEach(block => {
       window.hljs.highlightElement(block);
     });
+  }
+
+  // Initialize Server-Driven UI (SDUI) dynamic toolbar and Quick Capture spotlight
+  try {
+    SDUI.init();
+    QuickCapture.init();
+  } catch (e) {
+    console.error('Failed to init SDUI / QuickCapture:', e);
   }
 }
 
