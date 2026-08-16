@@ -3027,6 +3027,10 @@ async def stream_agent_loop(
                 student_reply=full_response,
                 owner=owner,
             ):
+                yield evt
+        except Exception as _esc_err:
+            logger.warning(f"teacher escalation hook failed: {_esc_err}", exc_info=True)
+
     yield "data: [DONE]\n\n"
 
 
@@ -3035,3 +3039,4 @@ async def stream_agent_loop(
 # ---------------------------------------------------------------------------
 from .sandbox import run_in_sandbox, validate_code_safety
 from .self_heal import heal_and_retry, heal_and_retry_sync
+
