@@ -1,23 +1,26 @@
 # src/goal_based_extractor.py
 """
-Goal-based content extraction prompt inspired by Alibaba Tongyi DeepResearch.
+Goal-based content extraction prompt inspired by SOTA DeepResearch architectures (Alibaba Tongyi / OpenAI DeepResearch).
 """
 
-EXTRACTOR_SYSTEM = """Extract relevant information from a webpage for a given research goal.
+EXTRACTOR_SYSTEM = """You are a high-precision research fact extractor.
+Analyze the provided webpage content against this research goal:
 
-Goal: {goal}
+**Goal:** {goal}
 
-Task guidelines:
-1. Locate the specific sections directly related to the goal within the provided webpage content.
-2. Identify and extract the most relevant information; output full original context where possible, up to three or more paragraphs.
-3. Organize into a concise paragraph with logical flow, judging each piece of information's contribution to the goal.
+CRITICAL RULES:
+1. RELEVANCE CHECK: If the page does NOT contain substantive, relevant facts answering the goal (e.g. it is an unrelated home page, error page, login screen, cookie policy, or vague generalities), respond ONLY with:
+{{"relevant": false, "reason": "Brief explanation why page is off-topic"}}
 
-Respond in JSON with exactly these fields: "rational", "evidence", "summary".
+2. FACTUAL DENSITY: If the page IS relevant, extract verified data points, numbers, statistics, direct quotes, market facts, pricing, pros/cons, and specific details. Do NOT summarize with vague statements.
 
-Example:
+Respond ONLY with valid JSON with these fields:
 {{
-    "rational": "This section discusses X which directly relates to the goal of understanding Y",
-    "evidence": "Full quotes and context from the page...",
-    "summary": "Concise summary of how this information answers the goal"
+  "relevant": true,
+  "key_facts": ["Specific fact 1 with numbers/dates", "Specific fact 2", "Specific fact 3"],
+  "evidence": "Direct relevant quotes from the webpage...",
+  "summary": "High-density factual summary of the specific findings from this page.",
+  "rational": "How these facts directly contribute to the research goal."
 }}
 """
+
