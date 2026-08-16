@@ -913,8 +913,33 @@ async def _execute_tool_block_impl(
             desc = f"mcp: {tool}"
             result = {"error": "MCP manager not available", "exit_code": 1}
     else:
-        desc = f"unknown: {tool}"
-        result = {"error": f"Unknown tool type: {tool}", "exit_code": 1}
+        # Check dynamic tool registry
+        from src.agent_tools.tool_maker import get_dynamic_tool_handler
+        dyn_handler = get_dynamic_tool_handler(tool)
+        if dyn_handler:
+            desc = f"dynamic: {tool}"
+            try:
+                args = {}
+                raw_c = (content or "").strip()
+                if raw_c.startswith("{") and raw_c.endswith("}"):
+                    try:
+                        args = json.loads(raw_c)
+                    except Exception:
+                        args = {"input": raw_c}
+                elif raw_c:
+                    args = {"input": raw_c}
+
+                if asyncio.iscoroutinefunction(dyn_handler):
+                    dyn_res = await dyn_handler(**args)
+                else:
+                    dyn_res = dyn_handler(**args)
+                result = {"output": str(dyn_res), "exit_code": 0, "result": dyn_res}
+            except Exception as dyn_err:
+                result = {"error": f"Dynamic tool execution failed: {dyn_err}", "exit_code": 1}
+        else:
+            desc = f"unknown: {tool}"
+            result = {"error": f"Unknown tool type: {tool}", "exit_code": 1}
+
 
     logger.info(f"Tool executed: {desc} -> exit_code={result.get('exit_code', 'n/a')}")
     return desc, result

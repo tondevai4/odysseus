@@ -115,6 +115,14 @@ def initialize_managers(base_dir: str, rag_manager=None) -> Dict[str, Any]:
     if "brave" in saved_keys:
         update_search_config(api_key=saved_keys["brave"])
         logger.info("Loaded Brave API key from saved configuration")
+
+    # Load all dynamic/synthesized tools into runtime memory
+    try:
+        from src.agent_tools.dynamic import load_all_dynamic_tools
+        loaded_tools = load_all_dynamic_tools()
+        logger.info(f"Loaded {loaded_tools} dynamic tools into runtime registry")
+    except Exception as e:
+        logger.debug(f"Dynamic tools initialization notice: {e}")
     
     return {
         "memory_manager": memory_manager,

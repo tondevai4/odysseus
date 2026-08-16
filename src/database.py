@@ -20,6 +20,8 @@ from core.database import (  # explicit re-exports for IDE/type-checker visibili
     Webhook,
     UserTool,
     UserToolData,
+    DynamicTool,
+    DynamicWidget,
     CrewMember,
     ScheduledTask,
     TaskRun,

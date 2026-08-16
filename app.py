@@ -773,6 +773,10 @@ app.include_router(setup_contacts_routes())
 from companion import setup_companion_routes
 app.include_router(setup_companion_routes())
 
+# Server-Driven UI (SDUI) & Dynamic Tool Components
+from routes.ui_components import setup_ui_components_routes
+app.include_router(setup_ui_components_routes())
+
 # ========= ROUTES (kept in app.py) =========
 
 def _serve_html_with_nonce(request: Request, file_path: str) -> HTMLResponse:

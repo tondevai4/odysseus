@@ -516,6 +516,38 @@ class UserToolData(Base):
     )
 
 
+class DynamicTool(TimestampMixin, Base):
+    """Dynamically synthesized Python tools created by agent or user at runtime."""
+    __tablename__ = "dynamic_tools"
+
+    id          = Column(String, primary_key=True, index=True)
+    name        = Column(String, unique=True, nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    file_path   = Column(String, nullable=False)
+    enabled     = Column(Boolean, default=True, nullable=False)
+    author      = Column(String, nullable=True, default="ai")
+    version     = Column(Integer, default=1)
+    meta_json   = Column(Text, nullable=True)
+
+    widgets     = relationship("DynamicWidget", back_populates="tool", cascade="all, delete-orphan")
+
+
+class DynamicWidget(TimestampMixin, Base):
+    """Server-Driven UI widget corresponding to a dynamic tool or dashboard item."""
+    __tablename__ = "dynamic_widgets"
+
+    id          = Column(String, primary_key=True, index=True)
+    tool_id     = Column(String, ForeignKey("dynamic_tools.id", ondelete="CASCADE"), nullable=True)
+    title       = Column(String, nullable=False)
+    widget_type = Column(String, nullable=False, default="metric_card")  # feed, chart, metric_card, button
+    endpoint    = Column(String, nullable=True)
+    icon        = Column(String, nullable=True, default="")
+    position    = Column(Integer, default=0)
+    config_json = Column(Text, nullable=True)
+
+    tool        = relationship("DynamicTool", back_populates="widgets")
+
+
 class CrewMember(TimestampMixin, Base):
     """A custom AI persona ('crew member') with its own personality, model, tools, and memory scope."""
     __tablename__ = "crew_members"
