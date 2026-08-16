@@ -86,7 +86,20 @@ def test_explanatory_calendar_questions_stay_plain_chat():
     assert intent.reason == "explanatory feature question"
 
 
+def test_memory_actions_promote_to_agent():
+    assert message_needs_tools("add this to memories: I like espresso")
+    assert message_needs_tools("remember that my daughter's birthday is June 5")
+    assert message_needs_tools("please save to my memory: I work as a carpenter")
+    assert message_needs_tools("Can you remember that I prefer dark mode?")
+    assert message_needs_tools("what do you remember about me?")
+    assert message_needs_tools("show my memories")
+    assert classify_tool_intent("add this to memories: I like espresso").category == "memory"
+    assert classify_tool_intent("remember that my dog is Buster").category == "memory"
+    assert classify_tool_intent("what do you remember?").category == "memory"
+
+
 def test_router_reports_non_calendar_categories():
     assert classify_tool_intent("reply to that email").category == "email"
     assert classify_tool_intent("open my calendar").category == "ui"
     assert classify_tool_intent("research cost effective local models").category == "research"
+    assert classify_tool_intent("add this to memories: test").category == "memory"

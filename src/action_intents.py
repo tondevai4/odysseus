@@ -141,7 +141,12 @@ _ROUTING_PATTERNS: tuple[tuple[str, str, Pattern[str]], ...] = tuple(
         ("email", "email composition request", r"\b(?:send|write|reply)\s+(?:an?\s+)?(?:email|message|mail)\b"),
         ("email", "email contact request", r"\bemail\s+\w+\b"),
         ("email", "check inbox request", r"\bcheck\s+(?:my\s+)?(?:email|inbox|mail)\b"),
-        ("email", "unread email request", r"\bunread\s+(?:email|mail)s?\b"),
+        # Memory actions: saving facts, preferences, remembering items, or retrieving stored memories.
+        ("memory", "add to memory request", rf"{_PLEASE}(?:add|save|store|put)\b.{{0,120}}\b(?:to|in|into)\s+(?:my\s+|your\s+)?(?:memories|memory|brain)\b"),
+        ("memory", "remember fact request", rf"{_PLEASE}(?:remember|memorize|keep\s+in\s+mind|never\s+forget)\b\s+.+"),
+        ("memory", "assistant remember request", rf"{_ACTION_QUESTION}(?:remember|memorize|keep\s+in\s+mind|add\s+.{{0,80}}\bto\s+(?:my\s+|your\s+)?(?:memory|memories)|save\s+.{{0,80}}\bto\s+(?:my\s+|your\s+)?(?:memory|memories))\b"),
+        ("memory", "memory lookup request", rf"\b(?:what\s+do\s+you\s+remember|what(?:'s|\s+is)\s+in\s+(?:my\s+|your\s+)?memory|show\s+my\s+memories|list\s+my\s+memories)\b"),
+        ("memory", "delete/clear memory request", rf"{_PLEASE}(?:delete|remove|forget|clear)\b.{{0,120}}\b(?:from\s+(?:my\s+|your\s+)?(?:memory|memories)|(?:my\s+|your\s+)?(?:memory|memories))\b"),
 
         # UI/control-plane actions that should open panels or flip toggles.
         ("ui", "open/show panel request", rf"{_PLEASE}(?:open|show|bring\s+up)\s+(?:me\s+)?(?:my\s+|the\s+)?{_PANEL}\b"),

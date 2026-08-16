@@ -95,8 +95,8 @@ class MemoryManager:
             Tuple of (is_command, extracted_text) where is_command is True if 
             the message matches the memory command pattern
         """
-        # Pattern for memory commands: "remember: X", "memorize: X", "save: X", etc.
-        pattern = r'^(?:remember|memorize|save|note|store)[:\-]?\s+(.+)$'
+        # Pattern for memory commands: "remember: X", "memorize: X", "save: X", "add to memory: X", etc.
+        pattern = r'^(?:please\s+)?(?:remember|memorize|save|store|note|add\s+(?:this\s+)?to\s+(?:my\s+|your\s+)?(?:memories|memory))[:\-]?\s+(.+)$'
         match = re.match(pattern, message.strip(), re.IGNORECASE)
         
         if match:
