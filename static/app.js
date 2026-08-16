@@ -962,6 +962,17 @@ function initializeEventListeners() {
       oracleModule.open();
     });
   }
+
+  // Oracle brain bridge — "Ask YVES about today's reading" dispatches this from oracle.js
+  window.addEventListener('oracle:bridge-to-chat', (event) => {
+    const message = event.detail?.message || "What's my Oracle today?";
+    const textarea = document.getElementById('message');
+    if (textarea) {
+      textarea.value = message;
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.focus();
+    }
+  });
   // Refresh notes due-reminder badge on load and every 5 minutes
   if (notesModule && notesModule.refreshDueBadge) {
     notesModule.refreshDueBadge();

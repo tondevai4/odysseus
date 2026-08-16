@@ -621,6 +621,70 @@ def oracle_summary(owner: Optional[str]) -> Dict[str, Any]:
     }
 
 
+async def enrich_daily_reading(owner: str, reading: dict) -> str:
+    """Ask the LLM to write a richer narrative version of the daily reading."""
+    state = load_oracle(owner)
+    bp = state.get("birth_profile", {})
+    name = state.get("display_name") or bp.get("full_name") or "Boss"
+    active_mans = [m for m in state.get("manifestations", []) if m.get("status") == "active"]
+    latest_sign = (state.get("synchronicities") or [{}])[0]
+    
+    context_parts = [
+        f"Name: {name}",
+        f"Life Path: {reading.get('numerology', {}).get('life_path', 'unknown')}",
+        f"Today's energy theme: {reading.get('title', '')}",
+        f"Energy: {reading.get('energy', '')}",
+        f"Numerology focus: {reading.get('numerology_focus', '')}",
+        f"Shadow warning: {reading.get('shadow_warning') or reading.get('warning', '')}",
+        f"Best action: {reading.get('best_action', '')}",
+        f"Manifestation prompt: {reading.get('manifestation_prompt', '')}",
+        f"Active manifestations: {', '.join(m.get('title','') for m in active_mans[:3]) or 'none'}",
+        f"Latest sign: {latest_sign.get('value', 'none')} — {latest_sign.get('meaning', '')}",
+    ]
+    
+    system_prompt = (
+        "You are YVES — a grounded, no-nonsense personal oracle for {name}. "
+        "Your tone is direct, warm, and real. Never fake-positive. Never generic CoStar. "
+        "Every insight must end with or imply a practical action receipt. "
+        "No guaranteed predictions. No medical/financial/legal claims. "
+        "Signs are symbolic, not literal. Manifestation requires receipts."
+    ).format(name=name)
+    
+    user_prompt = (
+        "Write an enriched Oracle morning briefing for {name} using this today's reading data:\n\n"
+        "{context}\n\n"
+        "Structure your response as 3-4 flowing paragraphs (not a list):\n"
+        "1. Today's energy and what it means for {name} specifically\n"
+        "2. The shadow to watch and how to navigate it\n"
+        "3. The action receipt — one concrete real-world action that proves faith\n"
+        "4. Optional: connect to an active manifestation or recent sign\n\n"
+        "Keep it under 280 words. Voice: intelligent, grounded, like a trusted advisor who believes in symbolic guidance AND practical execution."
+    ).format(name=name, context="\n".join(context_parts))
+    
+    from src.endpoint_resolver import resolve_endpoint
+    from src.llm_core import llm_call_async
+    
+    url, model, headers = resolve_endpoint("utility", owner=owner)
+    if not url or not model:
+        url, model, headers = resolve_endpoint("default", owner=owner)
+        
+    if not url or not model:
+        return "Oracle enrichment unavailable: no LLM configured."
+        
+    response = await llm_call_async(
+        url=url,
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens=400,
+        temperature=0.7,
+        headers=headers,
+    )
+    return response
+
+
 async def manage_oracle_tool(content: str, owner: Optional[str]) -> Dict[str, Any]:
     try:
         args = json.loads(content or "{}")

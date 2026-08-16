@@ -14,6 +14,7 @@ from services.oracle_service import (
     calculate_numerology,
     cosmic_calendar,
     daily_reading,
+    enrich_daily_reading,
     load_oracle,
     oracle_summary,
     update_manifestation,
@@ -111,6 +112,10 @@ class DailyBody(BaseModel):
     save: bool = False
 
 
+class EnrichBody(BaseModel):
+    date: str = ""
+
+
 def _bad_request(exc: OracleError) -> HTTPException:
     return HTTPException(status_code=400, detail=str(exc))
 
@@ -154,6 +159,18 @@ def setup_oracle_routes() -> APIRouter:
             return daily_reading(get_current_user(request), body.date or None, save=body.save)
         except OracleError as exc:
             raise _bad_request(exc) from exc
+
+    @router.post("/daily/enrich")
+    async def enrich_oracle_daily(body: EnrichBody, request: Request):
+        owner = get_current_user(request)
+        try:
+            reading = daily_reading(owner, body.date or None)
+            enriched_text = await enrich_daily_reading(owner, reading)
+            return {"enriched": enriched_text, "base_reading": reading}
+        except OracleError as exc:
+            raise HTTPException(status_code=422, detail=str(exc))
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Enrichment failed: {exc}")
 
     @router.get("/gratitude")
     async def list_gratitude(request: Request):
