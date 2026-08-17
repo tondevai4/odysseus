@@ -31,7 +31,7 @@ services:
       - SEARXNG_INSTANCE=http://searxng:8080
       - CHROMADB_HOST=chromadb
       - CHROMADB_PORT=8000
-      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/app.db}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/app.db}
       - AUTH_ENABLED=${AUTH_ENABLED:-true}
       - LOCALHOST_BYPASS=${LOCALHOST_BYPASS:-false}
       - ODYSSEUS_ADMIN_USER=${ODYSSEUS_ADMIN_USER:-admin}

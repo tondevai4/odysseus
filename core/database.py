@@ -33,6 +33,9 @@ class TimestampMixin:
 from src.constants import DATA_DIR, AUTH_FILE, MEMORY_FILE, USER_PREFS_FILE, SETTINGS_FILE
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR}/app.db")
 
+
+
+
 # Create engine
 engine = create_engine(
     DATABASE_URL,
