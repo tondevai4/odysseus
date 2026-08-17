@@ -23,6 +23,23 @@ from .web_tools import WebSearchTool, WebFetchTool
 from .filesystem_tools import ReadFileTool, WriteFileTool, EditFileTool, LsTool, GlobTool, GrepTool, GetWorkspaceTool
 from .document_tools import CreateDocumentTool, UpdateDocumentTool, EditDocumentTool, SuggestDocumentTool, ManageDocumentTool
 
+async def _execute_synthesize_tool(content: str, ctx: dict = None) -> str:
+    import json
+    from src.agent_tools.tool_maker import synthesize_tool
+    try:
+        data = json.loads(content) if isinstance(content, str) else content
+    except Exception:
+        data = {"name": "custom_tool", "description": "Generated tool", "code_body": content}
+    res = await synthesize_tool(
+        name=data.get("name"),
+        description=data.get("description", ""),
+        code_body=data.get("code_body", ""),
+        test_code=data.get("test_code", ""),
+        ui_schema=data.get("ui_schema", {}),
+        author=ctx.get("owner", "ai") if ctx else "ai",
+    )
+    return json.dumps(res, indent=2)
+
 TOOL_HANDLERS = {
     "bash": BashTool().execute,
     "python": PythonTool().execute,
@@ -40,6 +57,7 @@ TOOL_HANDLERS = {
     "suggest_document": SuggestDocumentTool().execute,
     "manage_documents": ManageDocumentTool().execute,
     "get_workspace": GetWorkspaceTool().execute,
+    "synthesize_tool": _execute_synthesize_tool,
 }
 
 # ---------------------------------------------------------------------------
@@ -52,7 +70,7 @@ PYTHON_TIMEOUT = 30
 
 # Tool types that trigger execution
 TOOL_TAGS = {"bash", "python", "web_search", "web_fetch", "read_file", "write_file", "edit_file",
-             "grep", "glob", "ls", "get_workspace",
+             "grep", "glob", "ls", "get_workspace", "synthesize_tool",
              "create_document", "update_document", "edit_document",
              "search_chats",
              "chat_with_model", "create_session", "list_sessions",

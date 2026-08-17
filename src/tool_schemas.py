@@ -52,6 +52,27 @@ FUNCTION_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "synthesize_tool",
+            "description": "Autonomously create, sandbox-test, and register a new dynamic Python tool and UI widget (e.g. transfer radar, workout analyzer, scraping feed) into YVES at runtime without server restarts.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Unique snake_case tool name (e.g. 'transfer_radar')"},
+                    "description": {"type": "string", "description": "Clear summary of what the tool does"},
+                    "code_body": {"type": "string", "description": "Complete Python function implementation"},
+                    "test_code": {"type": "string", "description": "Test assertions to verify the function in the sandbox"},
+                    "ui_schema": {
+                        "type": "object",
+                        "description": "Server-Driven UI widget config (title, widget_type: 'feed'|'metric_card'|'chart'|'table'|'button', icon)"
+                    }
+                },
+                "required": ["name", "description", "code_body"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "web_search",
             "description": "Quick single web lookup for a fact or current event mid-task. NOT for 'research X' / 'do research on X' — those are deep-research jobs; use trigger_research instead.",
             "parameters": {

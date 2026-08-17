@@ -2488,12 +2488,62 @@ function initDangerZone() {
   });
 }
 
+/* ── Autonomous Engine & Cost Router Settings ── */
+async function initAutonomousEngineSettings() {
+  const maintBtn = el('adm-runMaintBtn');
+  const maintMsg = el('adm-maintMsg');
+
+  if (maintBtn && !maintBtn.dataset.bound) {
+    maintBtn.dataset.bound = 'true';
+    maintBtn.addEventListener('click', async () => {
+      maintBtn.disabled = true;
+      maintBtn.textContent = 'Running...';
+      if (maintMsg) maintMsg.textContent = '';
+      try {
+        const res = await fetch('/api/system/maintenance/run', { method: 'POST', credentials: 'same-origin' });
+        const data = await res.json();
+        if (maintMsg) {
+          maintMsg.textContent = `Maintenance complete: ${data.tools_audited} tools audited, SQLite vacuumed.`;
+          maintMsg.style.color = '#34d399';
+        }
+      } catch (err) {
+        if (maintMsg) {
+          maintMsg.textContent = `Error: ${err.message}`;
+          maintMsg.style.color = '#f43f5e';
+        }
+      }
+      maintBtn.disabled = false;
+      maintBtn.textContent = 'Run System Maintenance Now';
+    });
+  }
+
+  // Refresh status
+  const spendEl = el('settings-daily-spend');
+  const repairEl = el('settings-repair-count');
+  try {
+    const [costRes, repairRes] = await Promise.all([
+      fetch('/api/system/cost-router/status').then(r => r.json()).catch(() => ({})),
+      fetch('/api/system/repairs').then(r => r.json()).catch(() => ({ jobs: [] })),
+    ]);
+    if (spendEl && costRes.daily_spend_usd !== undefined) {
+      spendEl.innerHTML = `$${Number(costRes.daily_spend_usd).toFixed(2)} <span style="font-size:11px;color:var(--fg-muted,#9ca3af);font-weight:400;">/ $5.00</span>`;
+    }
+    if (repairEl && repairRes.jobs) {
+      const active = repairRes.jobs.filter(j => j.status === 'pending').length;
+      repairEl.textContent = `${active} Active Issue${active === 1 ? '' : 's'}`;
+      repairEl.style.color = active > 0 ? '#f43f5e' : '#34d399';
+    }
+  } catch (e) {
+    console.debug('Failed to load engine status:', e);
+  }
+}
+
 /* ═══════════════════════════════════════════
    INIT & REFRESH
    ═══════════════════════════════════════════ */
 function initAll() {
   modalEl = el('settings-modal');
-  const inits = [initSignupToggle, initAddUser, initEndpointForm, initMcpForm, initCalDAV, initBackup, initDangerZone, initTokenForm, () => settingsModule.initIntegrations()];
+  const inits = [initSignupToggle, initAddUser, initEndpointForm, initMcpForm, initCalDAV, initBackup, initDangerZone, initTokenForm, initAutonomousEngineSettings, () => settingsModule.initIntegrations()];
   for (const fn of inits) {
     try { fn(); } catch (e) { console.error('Admin init error in', fn.name || 'anonymous', e); }
   }
@@ -2507,6 +2557,7 @@ function refreshAll() {
   loadBuiltinTools();
   loadMcpServers();
   loadTokens();
+  initAutonomousEngineSettings();
 }
 
 /* ═══════════════════════════════════════════
